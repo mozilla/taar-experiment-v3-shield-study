@@ -8,13 +8,19 @@
  * reloading, as the .xpi file has not been recreated.
  */
 
+console.log("Starting up firefox");
+
 const firefox = require("selenium-webdriver/firefox");
 const path = require("path");
 const Context = firefox.Context;
 
 const {
   installAddon,
-  promiseSetupDriver
+  promiseSetupDriver,
+  getTelemetryPings,
+  printPings,
+  takeScreenshot,
+  writePingsJson
 } = require("./test/utils");
 
 
@@ -53,7 +59,7 @@ const minimistHandler = {
 
   try {
     const driver = await promiseSetupDriver();
-    console.log("Starting up firefox");
+    console.log("Firefox started");
 
     // install the addon
     if (process.env.XPI) {
@@ -66,6 +72,26 @@ const minimistHandler = {
     // navigate to a regular page
     driver.setContext(Context.CONTENT);
     driver.get("about:debugging");
+
+    console.log("The addon should now be loaded and you should be able to interact with the addon in the newly opened Firefox instance.");
+
+    // allow our shield study addon some time to start
+    console.log("Waiting 2 seconds to allow for initial telemetry to be sent");
+    await driver.sleep(2000);
+
+    await takeScreenshot(driver);
+    console.log("Screenshot dumped");
+
+    const telemetryPingsFilterOptions = {
+      type: [ "shield-study", "shield-study-addon" ],
+      headersOnly: false,
+    };
+    const pings = await getTelemetryPings(driver, telemetryPingsFilterOptions);
+    console.log("Shield study telemetry pings: ");
+    printPings(pings);
+
+    writePingsJson(pings);
+    console.log("Shield study telemetry pings written to pings.json");
 
   } catch (e) {
     console.error(e); // eslint-disable-line no-console

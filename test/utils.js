@@ -193,7 +193,42 @@ module.exports.getTelemetryPings = async(driver, options) => {
   }, options);
 };
 
+module.exports.printPings = async(pings) => {
 
+  if (pings.length === 0) {
+    console.log('No pings');
+    return;
+  }
+
+  const p0 = pings[0].payload;
+  // print common fields
+  console.log(
+    `
+// common fields
+
+branch        ${p0.branch}
+study_name    ${p0.study_name}
+addon_version ${p0.addon_version}
+version       ${p0.version}
+
+    `
+  )
+
+  pings.forEach(p => {
+    console.log(p.creationDate, p.payload.type);
+    console.log(JSON.stringify(p.payload.data, null, 2))
+  })
+
+};
+
+module.exports.writePingsJson = async(pings, filepath = "./pings.json") => {
+  try {
+    return await Fs.outputFile(filepath,
+      JSON.stringify(pings, null, '\t'));
+  } catch (error) {
+    throw error;
+  }
+};
 
 
 // TODO glind, this interface feels janky
