@@ -2,6 +2,15 @@
   "name": "WebExtension-study-BrowserActionButtonChoice",
   "version": "0.2.0",
   "manifest_version": 2,
+  "permissions": [
+  	"storage",
+  	"webNavigation",
+  	"tabs",
+    "management"
+  ],
+  "page_action": {
+    "browser_style": true
+  },
   "background": {
     "scripts": ["background.js"]
   },

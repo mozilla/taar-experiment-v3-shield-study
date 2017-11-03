@@ -1,7 +1,10 @@
-# Shield Study Embedded Web Extension Template
+# TAAR Experiment v2
 
-**Note**:  This is toy / demonstration [Shield Study](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) Legacy Addon.  Use this as a template for yours
+Tests the new [Telemetry-Aware Add-on Recommender](https://github.com/mozilla/taar) (TAAR).
 
+The previous experiment is found [here](https://github.com/benmiroglio/taar-experiment).
+
+For more information, see [https://docs.google.com/document/d/1ZrfxNfBiEiAkqz4ZW9wmWfJF5sdfQg-Xq6_2mY1EXtI/edit#]()
 
 ## Getting started
 

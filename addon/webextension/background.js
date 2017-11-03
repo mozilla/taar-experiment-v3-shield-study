@@ -65,66 +65,101 @@ function telemetry (data) {
 }
 
 
-class BrowserActionButtonChoiceFeature {
-  /**
-    * - set image, text, click handler (telemetry)
-    * - tell Legacy Addon to send
-    */
-  constructor(variation) {
-    console.log("initilizing BrowserActionButtonChoiceFeature:", variation.name);
-    this.timesClickedInSession = 0;
+function triggerPopup() {
+  browser.runtime.sendMessage({"trigger-popup": true})
+  browser.storage.local.set({sawPopup: true})
+}
 
-    // modify BrowserAction (button) ui for this particular {variation}
-    console.log("path:", `icons/${variation.name}.svg`)
-    browser.browserAction.setIcon({path: `icons/${variation.name}.svg`});
-    browser.browserAction.setTitle({title: variation.name});
-    browser.browserAction.onClicked.addListener(() => this.handleButtonClick());
+function webNavListener(info) {
+  // Filter out any sub-frame related navigation event
+  if (info.frameId !== 0) {
+    return;
+  }
+  browser.storage.local.get("hostNavigationStats").then(results => {
+      // Initialize the saved stats if not yet initialized.
+      if (!results.hostNavigationStats) {
+        results = {
+          hostNavigationStats: {}
+        };
+      }
+    const testing=false;
+    const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase()
+
+    const {hostNavigationStats} = results;
+    hostNavigationStats["totalWebNav"] = hostNavigationStats["totalWebNav"] || 0
+    hostNavigationStats['totalWebNav']++
+
+    const totalCount = hostNavigationStats['totalWebNav'];
+    const tabId = info.tabId;
+    const sawPopup = browser.storage.local.get("sawPopup")
+
+    console.log('TotalURI: ' + totalCount);
+
+    sawPopup.then(function(result) {
+          if (!result.sawPopup || testing) { // client has not seen popup
+              // arbitrary condition for now
+              if (totalCount > 0) {
+                browser.storage.local.set({"PA-tabId": tabId})
+                browser.pageAction.show(tabId)
+                browser.pageAction.setPopup({
+                  tabId,
+                  popup: "/popup/locales/" + locale + "/popup.html"
+                });
+                // wait 500ms second to make sure pageAction exists in chrome
+                // so we can pageAction.show() from bootsrap.js
+                setTimeout(triggerPopup, 500);
+              }
+          } else { //client has seen the popup
+              browser.storage.local.get("PA-hidden").then(function(result) {
+                if (!result["PA-hidden"]) { // page action is still visible
+                   browser.storage.local.get("PA-tabId").then(function(result2) {
+                      browser.pageAction.hide(result2["PA-tabId"])
+                      browser.storage.local.set({"PA-hidden": true})
+                    })
+                   browser.webNavigation.onCompleted.removeListener(webNavListener)
+                }
+              })
+            }
+          })
+      // Persist the updated webNav stats.
+      browser.storage.local.set(results);
+  })
+}
+
+
+class TAARExperiment {
+
+  constructor() {
+    this.popUpVariations = new Set(["vanilla-disco-popup", ,"taar-disco-popup"])
+  }
+  logStorage() {
+    browser.storage.local.get().then(console.log)
+  }
+  async start() {
+    this.info = await msgStudy('info')
+    let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized']
+    if (isFirstRun) await this.firstRun()
+
+    this.branch = (await browser.storage.local.get('branch'))['branch']
+
+    // only montior navigation for branches qualified to
+    // receive the pop-up.
+    if (this.popUpVariations.has(this.info.variation.name)) {
+        this.monitorNavigation()
+    }
   }
 
-  /** handleButtonClick
-    *
-    * - instrument browserAction button clicks
-    * - change label
-    */
-  handleButtonClick() {
-    // note: doesn't persist across a session, unless you use localStorage or similar.
-    this.timesClickedInSession += 1;
-    console.log("got a click", this.timesClickedInSession);
-    browser.browserAction.setBadgeText({text: this.timesClickedInSession.toString()});
+  async firstRun() {
+    await browser.storage.local.set({sawPopup: false})
+    browser.runtime.sendMessage({"init": true})
+  }
 
-    // telemetry: FIRST CLICK
-    if (this.timesClickedInSession == 1) {
-      this.telemetry({"event": "button-first-click-in-session"});
-    }
-
-    // telemetry EVERY CLICK
-    telemetry({"event": "button-click", timesClickedInSession: ""+this.timesClickedInSession});
-
-    // webExtension-initiated ending for "used-often"
-    //
-    // - 3 timesClickedInSession in a session ends the study.
-    // - see `../Config.jsm` for what happens during this ending.
-    if (this.timesClickedInSession >= 3) {
-      msgStudyUtils("endStudy", {reason: "used-often"});
-    }
+  monitorNavigation() {
+    browser.webNavigation.onCompleted.addListener(webNavListener,
+        {url: [{schemes: ["http", "https"]}]});
   }
 }
 
-/** CONFIGURE and INSTRUMENT the BrowserAction button for a specific variation
- *
- *  1. Request 'info' from the hosting Legacy Extension.
- *  2. We only care about the `variation` key.
- *  3. initialize the feature, using our specific variation
- */
-function runOnce() {
-  msgStudyUtils("info").then(
-    ({variation}) => new BrowserActionButtonChoiceFeature(variation)
-  ).catch(function defaultSetup() {
-    // Errors here imply that this is NOT embedded.
-    console.log("you must be running as part of `web-ext`.  You get 'corn dog'!");
-    new BrowserActionButtonChoiceFeature({"name": "isolatedcorndog"})
-  });
-}
+let experiment = new TAARExperiment();
+experiment.start();
 
-// actually start
-runOnce()

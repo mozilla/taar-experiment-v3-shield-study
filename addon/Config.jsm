@@ -6,9 +6,52 @@
 - Cu.import in this file will work for any 'general firefox things' (Services,etc)
   but NOT for addon-specific libs
 */
-
+const {utils: Cu} = Components;
+Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
+Cu.import("resource://gre/modules/Console.jsm")
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
-var EXPORTED_SYMBOLS = ["config"];
+const EXPORTED_SYMBOLS = ["config"];
+const slug = "taarexpv2"; // matches chrome.manifest;
+const locales = new Set(
+  [
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en-gb",
+    "en-us",
+    "es-ar",
+    "es-es",
+    "es-la",
+    "fi",
+    "fr",
+    "fr-ca",
+    "he",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "ms",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "pt-br",
+    "ro",
+    "ru",
+    "sk",
+    "sr",
+    "sv",
+    "th",
+    "tl",
+    "tr",
+    "uk",
+    "vi",
+    "zh-tw"
+  ]);
 
 var config = {
   // required STUDY key
@@ -28,8 +71,10 @@ var config = {
     // required keys: studyName, endings, telemetry
 
     // will be used activeExperiments tagging
-    "studyName": "buttonFeatureExperiment",
-
+    "studyName": "TAARExperimentV2",
+    "forceVariation": {
+      "name": "vanilla-disco-popup",
+    }, // optional, use to override/decide
     /** **endings**
       * - keys indicate the 'endStudy' even that opens these.
       * - urls should be static (data) or external, because they have to
@@ -85,25 +130,29 @@ var config = {
   // a place to put an 'isEligible' function
   // Will run only during first install attempt
   "isEligible": async function() {
-    // get whatever prefs, addons, telemetry, anything!
-    // Cu.import can see 'firefox things', but not package things.
-    return true;
+    /*
+    return true if profile is at most one week old
+    */
+
+    // const locale = TelemetryEnvironment.currentEnvironment.settings.locale;
+    const locale = "notelig"
+    const proflileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
+    // MS -> Days
+    const currentDay = Math.round(Date.now() / 60 / 60 / 24 / 1000)
+    return (currentDay - proflileCreationDate) <= 7 && locales.has(locale)
   },
 
-  /* Button study branches and sample weights
-     - test kittens vs. puppies if we can only have one.
-       - downweight lizards.  Lizards is a 'poison' branch, meant to
-         help control for novelty effect
-  */
+  // Equal weighting for each  of the 4 variations
   "weightedVariations": [
-    {"name": "kittens",
-      "weight": 1.5},
-    {"name": "puppers",
-      "weight": 1.5},
-    {"name": "lizard",
-      "weight": 1},  // we want more puppers in our sample
+    {"name": "vanilla-disco-popup",
+      "weight": 1},
+    {"name": "taar-disco-popup",
+      "weight": 1},
+    {"name": "vanilla-disco",
+      "weight": 1},
+    {"name": "taar-disco",
+      "weight": 1}
   ],
-
 
   // Optional: relative to bootstrap.js in the xpi
   "studyUtilsPath": `./StudyUtils.jsm`,
