@@ -1,24 +1,24 @@
 {
-  "name": "shield-studies-addon-template",
-  "description": "Template Shield Study",
-  "version": "1.2.0",
-  "author": "Mozilla Gregg Lind <glind@mozilla.com>",
+  "name": "taarexpv2",
+  "description": "TAAR Experiment v2 Shield Study",
+  "version": "0.0.1",
+  "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "addon": {
     "ABOUT": "use these variables fill the moustache templates",
-    "id": "@template-button-study.shield.mozilla.com",
-    "name": "Shield Bootstrap Example - Button Study",
+    "id": "@taarexpv2.shield.mozilla.com",
+    "name": "TAAR Experiment v2 Shield Study",
     "minVersion": "57.0",
     "maxVersion": "*",
     "multiprocessCompatible": true,
     "hasEmbeddedWebExtension": true,
-    "chromeResource": "template-shield-study-button-study",
-    "creator": "Gregg Lind <glind@mozilla.com>",
-    "description": "template shield study to serve a as base.  This one is about Toolbar Buttons",
+    "chromeResource": "taarexpv2",
+    "creator": "Fredrik Wollsén <fwollsen@mozilla.com>",
+    "description": "TAAR Experiment v2 Shield Study",
     "bugzilla": "<tbd: bug to attach for signing>",
     "iconPath": "icon.png"
   },
   "bugs": {
-    "url": "https://github.com/mozilla/shield-studies-addon-template/issues"
+    "url": "https://github.com/motin/taar-experiment-v2-shield-study/issues"
   },
   "devDependencies": {
     "addons-linter": "^0.28.0",
@@ -45,7 +45,7 @@
     "selenium-webdriver": "^3.5.0",
     "shield-studies-addon-utils": "^4.1.0"
   },
-  "homepage": "http://github.com/mozilla/shield-studies-addon-template",
+  "homepage": "https://github.com/motin/taar-experiment-v2-shield-study",
   "keywords": [
     "mozilla",
     "legacy-addon",
@@ -56,7 +56,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/mozilla/shield-studies-addon-template.git"
+    "url": "git://github.com/motin/taar-experiment-v2-shield-study.git"
   },
   "scripts": {
     "build": "bash ./bin/xpi.sh",

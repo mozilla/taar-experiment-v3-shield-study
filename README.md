@@ -1,4 +1,4 @@
-# TAAR Experiment v2
+# TAAR Experiment v2 Shield Study
 
 Tests the new [Telemetry-Aware Add-on Recommender](https://github.com/mozilla/taar) (TAAR).
 
