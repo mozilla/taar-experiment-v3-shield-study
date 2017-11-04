@@ -13,6 +13,8 @@ console.log("Starting up firefox");
 const firefox = require("selenium-webdriver/firefox");
 const path = require("path");
 const Context = firefox.Context;
+const webdriver = require("selenium-webdriver");
+const Key = webdriver.Key;
 
 const {
   installAddon,
@@ -20,7 +22,9 @@ const {
   getTelemetryPings,
   printPings,
   takeScreenshot,
-  writePingsJson
+  writePingsJson,
+  promiseUrlBar,
+  MODIFIER_KEY
 } = require("./test/utils");
 
 
@@ -69,9 +73,15 @@ const minimistHandler = {
       console.log("Load temporary addon.");
     }
 
-    // navigate to a regular page
+    // navigate to about:debugging
     driver.setContext(Context.CONTENT);
     driver.get("about:debugging");
+
+    // open the browser console
+    driver.setContext(Context.CHROME);
+    const urlBar = await promiseUrlBar(driver);
+    const openBrowserConsole = Key.chord(MODIFIER_KEY, Key.SHIFT, "j");
+    await urlBar.sendKeys(openBrowserConsole);
 
     console.log("The addon should now be loaded and you should be able to interact with the addon in the newly opened Firefox instance.");
 
