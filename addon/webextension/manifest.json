@@ -3,15 +3,17 @@
   "version": "0.2.0",
   "manifest_version": 2,
   "permissions": [
-  	"storage",
-  	"webNavigation",
-  	"tabs",
+    "storage",
+    "webNavigation",
+    "tabs",
     "management"
   ],
   "page_action": {
     "browser_style": true
   },
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   }
 }

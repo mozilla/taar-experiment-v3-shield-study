@@ -61,9 +61,9 @@ async function startup(addonData, reason) {
 
 
   /** addon_install ONLY:
-    * - note first seen,
-    * - check eligible
-    */
+   * - note first seen,
+   * - check eligible
+   */
   if ((REASONS[reason]) === "ADDON_INSTALL") {
     //  telemetry "enter" ONCE
     studyUtils.firstSeen();
@@ -72,7 +72,7 @@ async function startup(addonData, reason) {
       // 1. uses config.endings.ineligible.url if any,
       // 2. sends UT for "ineligible"
       // 3. then uninstalls addon
-      await studyUtils.endStudy({reason: "ineligible"});
+      await studyUtils.endStudy({ reason: "ineligible" });
       return;
     }
   }
@@ -80,22 +80,23 @@ async function startup(addonData, reason) {
   // startup for eligible users.
   // 1. sends `install` ping IFF ADDON_INSTALL.
   // 2. sets activeExperiments in telemetry environment.
-  await studyUtils.startup({reason});
+  await studyUtils.startup({ reason });
 
   // if you have code to handle expiration / long-timers, it could go here
-  (function fakeTrackExpiration() {})();
+  (function fakeTrackExpiration() {
+  })();
 
   // initiate the chrome-privileged part of the study add-on
-  const feature = new Feature({variation, studyUtils, reasonName: REASONS[reason]});
+  const feature = new Feature({ variation, studyUtils, reasonName: REASONS[reason] });
 
   // IFF your study has an embedded webExtension, start it.
   const { webExtension } = addonData;
   if (webExtension) {
     webExtension.startup().then(api => {
-      const {browser} = api;
+      const { browser } = api;
       /** spec for messages intended for Shield =>
-        * {shield:true,msg=[info|endStudy|telemetry],data=data}
-        */
+       * {shield:true,msg=[info|endStudy|telemetry],data=data}
+       */
       browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
       // other browser.runtime.onMessage handlers for your addon, if any
       feature.afterWebExtensionStartup(browser);
@@ -111,10 +112,10 @@ async function startup(addonData, reason) {
 }
 
 /** Shutdown needs to distinguish between USER-DISABLE and other
-  * times that `endStudy` is called.
-  *
-  * studyUtils._isEnding means this is a '2nd shutdown'.
-  */
+ * times that `endStudy` is called.
+ *
+ * studyUtils._isEnding means this is a '2nd shutdown'.
+ */
 function shutdown(addonData, reason) {
   console.log("shutdown", REASONS[reason] || reason);
   // FRAGILE: handle uninstalls initiated by USER or by addon
@@ -123,7 +124,7 @@ function shutdown(addonData, reason) {
     if (!studyUtils._isEnding) {
       // we are the first 'uninstall' requestor => must be user action.
       console.log("probably: user requested shutdown");
-      studyUtils.endStudy({reason: "user-disable"});
+      studyUtils.endStudy({ reason: "user-disable" });
       return;
     }
     // normal shutdown, or 2nd uninstall request
@@ -146,7 +147,6 @@ function install(addonData, reason) {
   console.log("install", REASONS[reason] || reason);
   // handle ADDON_UPGRADE (if needful) here
 }
-
 
 
 // helper to let Dev or QA set the variation name

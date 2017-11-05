@@ -2,21 +2,21 @@
 
 
 /**  Example Feature module for a Shield Study.
-  *
-  *  UI:
-  *  - during INSTALL only, show a notification bar with 2 buttons:
-  *    - "Thanks".  Accepts the study (optional)
-  *    - "I don't want this".  Uninstalls the study.
-  *
-  *  Firefox code:
-  *  - Implements the 'introduction' to the 'button choice' study, via notification bar.
-  *
-  *  Demonstrates `studyUtils` API:
-  *
-  *  - `telemetry` to instrument "shown", "accept", and "leave-study" events.
-  *  - `endStudy` to send a custom study ending.
-  *
-  **/
+ *
+ *  UI:
+ *  - during INSTALL only, show a notification bar with 2 buttons:
+ *    - "Thanks".  Accepts the study (optional)
+ *    - "I don't want this".  Uninstalls the study.
+ *
+ *  Firefox code:
+ *  - Implements the 'introduction' to the 'button choice' study, via notification bar.
+ *
+ *  Demonstrates `studyUtils` API:
+ *
+ *  - `telemetry` to instrument "shown", "accept", and "leave-study" events.
+ *  - `endStudy` to send a custom study ending.
+ *
+ **/
 
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(EXPORTED_SYMBOLS|Feature)" }]*/
 
@@ -36,8 +36,8 @@ XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
   "resource:///modules/RecentWindow.jsm");
 
 /** Return most recent NON-PRIVATE browser window, so that we can
-  * manipulate chrome elements on it.
-  */
+ * manipulate chrome elements on it.
+ */
 function getMostRecentBrowserWindow() {
   return RecentWindow.getMostRecentBrowserWindow({
     private: false,
@@ -51,7 +51,7 @@ class clientStatus {
     this.clickedButton = null;
     this.sawPop = false;
     this.activeAddons = new Set()
-    this.addonHistory  = new Set()
+    this.addonHistory = new Set()
     this.lastInstalled = null
     this.lastDisabled = null
     this.startTime = null
@@ -61,7 +61,7 @@ class clientStatus {
     let prev = this.activeAddons
     let curr = getNonSystemAddons()
 
-    console.log({'prev':prev, 'curr':curr})
+    console.log({ 'prev': prev, 'curr': curr })
 
     let currDiff = curr.difference(prev)
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
@@ -70,7 +70,7 @@ class clientStatus {
         this.lastInstalled = newInstalls.values().next().value
       }
     } else { //an add-on was disabled or uninstalled
-      this.lastDisabled =  prev.difference(curr).values().next().value
+      this.lastDisabled = prev.difference(curr).values().next().value
     }
     this.activeAddons = curr
   }
@@ -85,7 +85,7 @@ function getNonSystemAddons() {
       result.add(addon)
     }
   }
-  return(result)
+  return (result)
 }
 
 function getNonSystemAddonData() {
@@ -100,12 +100,12 @@ function getNonSystemAddonData() {
 
 function bucketURI(uri) {
   if (uri != "about:addons") {
-        if (uri.indexOf("addons.mozilla.org") > 0) {
-        uri = "AMO"
-      } else {
-        uri = "other"
-      }
+    if (uri.indexOf("addons.mozilla.org") > 0) {
+      uri = "AMO"
+    } else {
+      uri = "other"
     }
+  }
   return uri
 }
 
@@ -118,13 +118,13 @@ function addonChangeListener(change, client, studyUtils) {
     if (client.lastInstalled) {
       //send telemetry
       var dataOut = {
-           "clickedButton": String(client.clickedButton),
-           "sawPopup": String(client.sawPopup),
-           "startTime": String(client.startTime),
-           "addon_id": String(client.lastInstalled),
-           "srcURI": String(uri),
-           "pingType": "install"
-        }
+        "clickedButton": String(client.clickedButton),
+        "sawPopup": String(client.sawPopup),
+        "startTime": String(client.startTime),
+        "addon_id": String(client.lastInstalled),
+        "srcURI": String(uri),
+        "pingType": "install"
+      }
       console.log("Just installed", client.lastInstalled, "from", uri)
       console.log(dataOut)
       studyUtils.telemetry(dataOut)
@@ -137,13 +137,13 @@ function addonChangeListener(change, client, studyUtils) {
 
       //send telemetry
       var dataOut = {
-           "clickedButton": String(client.clickedButton),
-           "sawPopup": String(client.sawPopup),
-           "startTime": String(client.startTime),
-           "addon_id": String(client.lastDisabled),
-           "srcURI": String(uri),
-           "pingType": "uninstall"
-        }
+        "clickedButton": String(client.clickedButton),
+        "sawPopup": String(client.sawPopup),
+        "startTime": String(client.startTime),
+        "addon_id": String(client.lastDisabled),
+        "srcURI": String(uri),
+        "pingType": "uninstall"
+      }
       studyUtils.telemetry(dataOut)
       console.log(dataOut)
 
@@ -172,30 +172,30 @@ function closePageAction() {
 }
 
 Set.prototype.difference = function(setB) {
-    var difference = new Set(this);
-    for (var elem of setB) {
-        difference.delete(elem);
-    }
-    return difference;
+  var difference = new Set(this);
+  for (var elem of setB) {
+    difference.delete(elem);
+  }
+  return difference;
 }
 
 Set.prototype.union = function(setB) {
-    var union = new Set(this);
-    for (var elem of setB) {
-        union.add(elem);
-    }
-    return union;
+  var union = new Set(this);
+  for (var elem of setB) {
+    union.add(elem);
+  }
+  return union;
 }
 
 class Feature {
   /** A Demonstration feature.
-    *
-    *  - variation: study info about particular client study variation
-    *  - studyUtils:  the configured studyUtils singleton.
-    *  - reasonName: string of bootstrap.js startup/shutdown reason
-    *
-    */
-  constructor({variation, studyUtils, reasonName}) {
+   *
+   *  - variation: study info about particular client study variation
+   *  - studyUtils:  the configured studyUtils singleton.
+   *  - reasonName: string of bootstrap.js startup/shutdown reason
+   *
+   */
+  constructor({ variation, studyUtils, reasonName }) {
     // unused.  Some other UI might use the specific variation info for things.
     this.variation = variation;
     this.studyUtils = studyUtils;
@@ -240,15 +240,15 @@ class Feature {
         console.log("init received")
         client.startTime = Date.now();
         var dataOut = {
-           "clickedButton": String(client.clickedButton),
-           "sawPopup": String(client.sawPopup),
-           "startTime": String(client.startTime),
-           "addon_id": String(client.lastInstalled),
-           "srcURI": "null",
-           "pingType": "init"
+          "clickedButton": String(client.clickedButton),
+          "sawPopup": String(client.sawPopup),
+          "startTime": String(client.startTime),
+          "addon_id": String(client.lastInstalled),
+          "srcURI": "null",
+          "pingType": "init"
         }
-      this.telemetry(dataOut)
-      console.log(dataOut)
+        this.telemetry(dataOut)
+        console.log(dataOut)
         sendReply(dataOut);
       }
       else if (msg['trigger-popup']) {
@@ -259,16 +259,16 @@ class Feature {
 
       }
       else if (msg['clicked-disco-button']) {
-          var window = Services.wm.getMostRecentWindow('navigator:browser')
-          window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", {relatedToCurrent:true});
-          client.clickedButton = true;
-          closePageAction();
-          sendReply(null);
+        var window = Services.wm.getMostRecentWindow('navigator:browser')
+        window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
+        client.clickedButton = true;
+        closePageAction();
+        sendReply(null);
       }
       else if (msg['clicked-close-button']) {
-          client.clickedButton = false
-          closePageAction();
-          sendReply(null);
+        client.clickedButton = false
+        closePageAction();
+        sendReply(null);
       }
     });
 
@@ -279,7 +279,6 @@ class Feature {
     this.studyUtils.telemetry(stringStringMap);
   }
 }
-
 
 
 // webpack:`libraryTarget: 'this'`
