@@ -28,8 +28,7 @@ async function msgStudyUtils(msg, data) {
   if (!allowed.includes(msg)) throw new Error(`shieldUtils doesn't know ${msg}, only knows ${allowed}`);
   try {
     // the 'shield' key is how the Host listener knows it's for shield.
-    const ans = await browser.runtime.sendMessage({ shield: true, msg, data });
-    return ans;
+    return await browser.runtime.sendMessage({ shield: true, msg, data });
   } catch (e) {
     console.error("ERROR msgStudyUtils", msg, data, e);
     throw e
@@ -51,6 +50,7 @@ async function msgStudyUtils(msg, data) {
  *   Bold claim:  catching errors here
  *
  */
+/*
 function telemetry(data) {
   function throwIfInvalid(obj) {
     // Check: all keys and values must be strings,
@@ -64,11 +64,11 @@ function telemetry(data) {
   throwIfInvalid(data);
   return msgStudyUtils("telemetry", data);
 }
-
+*/
 
 function triggerPopup() {
-  browser.runtime.sendMessage({ "trigger-popup": true })
-  browser.storage.local.set({ sawPopup: true })
+  browser.runtime.sendMessage({ "trigger-popup": true });
+  browser.storage.local.set({ sawPopup: true });
 }
 
 function webNavListener(info) {
@@ -86,15 +86,15 @@ function webNavListener(info) {
       };
     }
     const testing = false;
-    const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase()
+    const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
 
     const { hostNavigationStats } = results;
-    hostNavigationStats["totalWebNav"] = hostNavigationStats["totalWebNav"] || 0
-    hostNavigationStats['totalWebNav']++
+    hostNavigationStats["totalWebNav"] = hostNavigationStats["totalWebNav"] || 0;
+    hostNavigationStats['totalWebNav']++;
 
     const totalCount = hostNavigationStats['totalWebNav'];
     const tabId = info.tabId;
-    const sawPopup = browser.storage.local.get("sawPopup")
+    const sawPopup = browser.storage.local.get("sawPopup");
 
     console.log('TotalURI: ' + totalCount);
 
@@ -133,35 +133,37 @@ function webNavListener(info) {
 class TAARExperiment {
 
   constructor() {
-    this.popUpVariations = new Set(["vanilla-disco-popup", "taar-disco-popup"])
+    this.popUpVariations = new Set(["vanilla-disco-popup", "taar-disco-popup"]);
   }
 
+  /*
   logStorage() {
-    browser.storage.local.get().then(console.log)
+    browser.storage.local.get().then(console.log);
   }
+  */
 
   async start() {
-    this.info = await msgStudyUtils('info')
-    let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized']
-    if (isFirstRun) await this.firstRun()
+    this.info = await msgStudyUtils('info');
+    let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized'];
+    if (isFirstRun) await TAARExperiment.firstRun();
 
-    this.branch = (await browser.storage.local.get('branch'))['branch']
+    this.branch = (await browser.storage.local.get('branch'))['branch'];
 
     // only montior navigation for branches qualified to
     // receive the pop-up.
     console.log('this.popUpVariations', this.popUpVariations);
     console.log('this.info.variation.name', this.info.variation.name);
     if (this.popUpVariations.has(this.info.variation.name)) {
-      this.monitorNavigation()
+      TAARExperiment.monitorNavigation()
     }
   }
 
-  async firstRun() {
-    await browser.storage.local.set({ sawPopup: false })
-    browser.runtime.sendMessage({ "init": true })
+  static async firstRun() {
+    await browser.storage.local.set({ sawPopup: false });
+    browser.runtime.sendMessage({ "init": true });
   }
 
-  monitorNavigation() {
+  static monitorNavigation() {
     console.log('monitorNavigation');
     browser.webNavigation.onCompleted.addListener(webNavListener,
       { url: [{ schemes: ["http", "https"] }] });

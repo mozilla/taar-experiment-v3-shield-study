@@ -16,7 +16,7 @@ h1, h2 {
 
 p {
     line-height: 19px;
-    margin: .5em 0 0em 0;
+    margin: .5em 0 0 0;
     font-size: 12px;
 }
 
@@ -94,12 +94,12 @@ body {
 
 .button-style {
     /*font-family: 'Helvetica Neue', Helvetica, sans-serif;*/
-    margin-left: 0px;
+    margin-left: 0;
     width: 210.25px;
-    padding: 24.5px 0px;
+    padding: 24.5px 0;
     /*margin: 8px auto;*/
     font-size: 12px;
-    line-height: 0px;
+    line-height: 0;
     display: inline-block;
     text-align: center;
     cursor: pointer;
@@ -136,7 +136,3 @@ body {
     cursor: pointer;
     filter: brightness(85%);
 }
-
-}
-
-

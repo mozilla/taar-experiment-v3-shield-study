@@ -9,10 +9,10 @@
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
 Cu.import("resource://gre/modules/TelemetryController.jsm");
-Cu.import("resource://gre/modules/Console.jsm")
+Cu.import("resource://gre/modules/Console.jsm");
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
 const EXPORTED_SYMBOLS = ["config"];
-const slug = "taarexpv2"; // matches chrome.manifest;
+// const slug = "taarexpv2"; // matches chrome.manifest;
 const locales = new Set(
   [
     "ar",
@@ -51,7 +51,7 @@ const locales = new Set(
     "tr",
     "uk",
     "vi",
-    "zh-tw"
+    "zh-tw",
   ]);
 
 var config = {
@@ -129,14 +129,18 @@ var config = {
   // Will run only during first install attempt
   "isEligible": async function() {
 
+    const locale = "en-us";
+    const eligibleLocale = locales.has(locale);
+
     // tmp. TODO: figure out how to solve the issue with profileCreation not being available reliably when
     // telemetry delayed initialization is shortened via config, then revert back to waiting for telemetry etc
-    return true;
+    return eligibleLocale;
 
     /*
     return true if profile is at most one week old
     */
 
+    /*
     // Ensure that we collect telemetry payloads only after it is fully initialized
     // See http://searchfox.org/mozilla-central/rev/423b2522c48e1d654e30ffc337164d677f934ec3/toolkit/components/telemetry/TelemetryController.jsm#295
     await TelemetryController.promiseInitialized();
@@ -145,30 +149,31 @@ var config = {
     //const locale = "notelig";
     const locale = "en";
     const profileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
-    console.log('profileCreationDate', profileCreationDate);
+    console.log("profileCreationDate", profileCreationDate);
     // MS -> Days
     const currentDay = Math.round(Date.now() / 60 / 60 / 24 / 1000);
-    return (currentDay - profileCreationDate) <= 7 && locales.has(locale);
+    return (currentDay - profileCreationDate) <= 7 && eligableLocal;
+    */
   },
 
   // Equal weighting for each  of the 4 variations
   "weightedVariations": [
     {
       "name": "vanilla-disco-popup",
-      "weight": 1
+      "weight": 1,
     },
     {
       "name": "taar-disco-popup",
-      "weight": 1
+      "weight": 1,
     },
     {
       "name": "vanilla-disco",
-      "weight": 1
+      "weight": 1,
     },
     {
       "name": "taar-disco",
-      "weight": 1
-    }
+      "weight": 1,
+    },
   ],
 
   // Optional: relative to bootstrap.js in the xpi

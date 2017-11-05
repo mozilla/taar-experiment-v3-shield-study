@@ -38,117 +38,107 @@ XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
 /** Return most recent NON-PRIVATE browser window, so that we can
  * manipulate chrome elements on it.
  */
+
+/*
 function getMostRecentBrowserWindow() {
   return RecentWindow.getMostRecentBrowserWindow({
     private: false,
     allowPopups: false,
   });
 }
+*/
 
 
 class clientStatus {
   constructor() {
     this.clickedButton = null;
     this.sawPop = false;
-    this.activeAddons = new Set()
-    this.addonHistory = new Set()
-    this.lastInstalled = null
-    this.lastDisabled = null
-    this.startTime = null
+    this.activeAddons = new Set();
+    this.addonHistory = new Set();
+    this.lastInstalled = null;
+    this.lastDisabled = null;
+    this.startTime = null;
   }
 
   updateAddons() {
-    let prev = this.activeAddons
-    let curr = getNonSystemAddons()
+    const prev = this.activeAddons;
+    const curr = getNonSystemAddons();
 
-    console.log({ 'prev': prev, 'curr': curr })
+    console.log({ "prev": prev, "curr": curr });
 
-    let currDiff = curr.difference(prev)
+    const currDiff = curr.difference(prev);
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
-      var newInstalls = curr.difference(this.addonHistory)
+      const newInstalls = curr.difference(this.addonHistory);
       if (newInstalls.size > 0) { // new install, not a re-enable
-        this.lastInstalled = newInstalls.values().next().value
+        this.lastInstalled = newInstalls.values().next().value;
       }
-    } else { //an add-on was disabled or uninstalled
-      this.lastDisabled = prev.difference(curr).values().next().value
+    } else { // an add-on was disabled or uninstalled
+      this.lastDisabled = prev.difference(curr).values().next().value;
     }
-    this.activeAddons = curr
+    this.activeAddons = curr;
   }
 }
 
 function getNonSystemAddons() {
-  var activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons
-  var result = new Set()
-  for (var addon in activeAddons) {
-    let data = activeAddons[addon]
+  const activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons;
+  const result = new Set();
+  for (const addon in activeAddons) {
+    const data = activeAddons[addon];
     if (!data.isSystem && !data.foreignInstall) {
-      result.add(addon)
+      result.add(addon);
     }
   }
-  return (result)
-}
-
-function getNonSystemAddonData() {
-  var activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons
-  for (var addon in activeAddons) {
-    let data = activeAddons[addon]
-    if (!data.isSystem && !data.foreignInstall) {
-      console.log(data)
-    }
-  }
+  return (result);
 }
 
 function bucketURI(uri) {
-  if (uri != "about:addons") {
+  if (uri !== "about:addons") {
     if (uri.indexOf("addons.mozilla.org") > 0) {
-      uri = "AMO"
+      uri = "AMO";
     } else {
-      uri = "other"
+      uri = "other";
     }
   }
-  return uri
+  return uri;
 }
 
 function addonChangeListener(change, client, studyUtils) {
-  if (change == "addons-changed") {
-    console.log("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------")
-    client.updateAddons()
-    var uri = bucketURI(Services.wm.getMostRecentWindow('navigator:browser').gBrowser.currentURI.asciiSpec);
+  if (change === "addons-changed") {
+    console.log("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------");
+    client.updateAddons();
+    const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
     if (client.lastInstalled) {
-      //send telemetry
-      var dataOut = {
+      // send telemetry
+      const dataOut = {
         "clickedButton": String(client.clickedButton),
         "sawPopup": String(client.sawPopup),
         "startTime": String(client.startTime),
         "addon_id": String(client.lastInstalled),
         "srcURI": String(uri),
-        "pingType": "install"
-      }
-      console.log("Just installed", client.lastInstalled, "from", uri)
-      console.log(dataOut)
-      studyUtils.telemetry(dataOut)
+        "pingType": "install",
+      };
+      console.log("Just installed", client.lastInstalled, "from", uri);
+      console.log(dataOut);
+      studyUtils.telemetry(dataOut);
 
-      /////
       client.lastInstalled = null;
-    }
-    else if (client.lastDisabled) {
-      console.log("Just disabled", client.lastDisabled, "from", uri)
+    } else if (client.lastDisabled) {
+      console.log("Just disabled", client.lastDisabled, "from", uri);
 
-      //send telemetry
-      var dataOut = {
+      // send telemetry
+      const dataOut = {
         "clickedButton": String(client.clickedButton),
         "sawPopup": String(client.sawPopup),
         "startTime": String(client.startTime),
         "addon_id": String(client.lastDisabled),
         "srcURI": String(uri),
-        "pingType": "uninstall"
-      }
-      studyUtils.telemetry(dataOut)
-      console.log(dataOut)
+        "pingType": "uninstall",
+      };
+      studyUtils.telemetry(dataOut);
+      console.log(dataOut);
 
-      //////
-      client.lastDisabled = null
+      client.lastDisabled = null;
 
     }
 
@@ -158,34 +148,34 @@ function addonChangeListener(change, client, studyUtils) {
 
 async function getPageAction() {
 
-  var window = Services.wm.getMostRecentWindow('navigator:browser')
-  var pageAction = window.document.getElementById("taarexpv2_mozilla_com-page-action")
-  console.log('window.document', window.document);
-  console.log('pageAction', pageAction);
+  const window = Services.wm.getMostRecentWindow("navigator:browser");
+  const pageAction = window.document.getElementById("taarexpv2_mozilla_com-page-action");
+  console.log("window.document", window.document);
+  console.log("pageAction", pageAction);
   return pageAction;
 
 }
 
 function closePageAction() {
-  var pageAction = getPageAction()
-  pageAction.parentNode.removeChild(pageAction);
+  const pageAction = getPageAction();
+  pageAction.remove();
 }
 
 Set.prototype.difference = function(setB) {
-  var difference = new Set(this);
-  for (var elem of setB) {
+  const difference = new Set(this);
+  for (const elem of setB) {
     difference.delete(elem);
   }
   return difference;
-}
+};
 
 Set.prototype.union = function(setB) {
-  var union = new Set(this);
-  for (var elem of setB) {
+  const union = new Set(this);
+  for (const elem of setB) {
     union.add(elem);
   }
   return union;
-}
+};
 
 class Feature {
   /** A Demonstration feature.
@@ -202,22 +192,20 @@ class Feature {
     this.client = new clientStatus();
 
     // only during INSTALL
-    /*
     if (reasonName === "ADDON_INSTALL") {
-      this.introductionNotificationBar();
+      // this.introductionNotificationBar();
     }
-    */
 
     // log what the study variation and other info is.
     console.log(`info ${JSON.stringify(studyUtils.info())}`);
 
-    const clientId = ClientID.getClientID()
+    const clientId = ClientID.getClientID();
 
-    //default
-    var aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%"
-    if (variation.name == "taar-disco-popup" || variation.name == "taar-disco") {
-      aboutAddonsDomain += "?clientId=" + clientId
-      Preferences.set("extensions.webservice.discoverURL", aboutAddonsDomain)
+    // default
+    let aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%";
+    if (variation.name === "taar-disco-popup" || variation.name === "taar-disco") {
+      aboutAddonsDomain += "?clientId=" + clientId;
+      Preferences.set("extensions.webservice.discoverURL", aboutAddonsDomain);
     }
 
   }
@@ -226,47 +214,44 @@ class Feature {
 
     const client = this.client;
 
-    client.activeAddons = getNonSystemAddons()
-    client.addonHistory = getNonSystemAddons()
+    client.activeAddons = getNonSystemAddons();
+    client.addonHistory = getNonSystemAddons();
     TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
-      addonChangeListener(x, client, studyUtils)
-      console.log(client)
+      addonChangeListener(x, client, this.studyUtils);
+      console.log(client);
     });
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
-      console.log('msg, sender, sendReply', msg, sender, sendReply);
+      console.log("msg, sender, sendReply", msg, sender, sendReply);
       // message handers //////////////////////////////////////////
-      if (msg["init"]) {
-        console.log("init received")
+      if (msg.init) {
+        console.log("init received");
         client.startTime = Date.now();
-        var dataOut = {
+        const dataOut = {
           "clickedButton": String(client.clickedButton),
           "sawPopup": String(client.sawPopup),
           "startTime": String(client.startTime),
           "addon_id": String(client.lastInstalled),
           "srcURI": "null",
-          "pingType": "init"
-        }
-        this.telemetry(dataOut)
-        console.log(dataOut)
+          "pingType": "init",
+        };
+        this.telemetry(dataOut);
+        console.log(dataOut);
         sendReply(dataOut);
-      }
-      else if (msg['trigger-popup']) {
-        var pageAction = getPageAction()
-        pageAction.click()
+      } else if (msg["trigger-popup"]) {
+        const pageAction = getPageAction();
+        pageAction.click();
         sendReply(null);
 
 
-      }
-      else if (msg['clicked-disco-button']) {
-        var window = Services.wm.getMostRecentWindow('navigator:browser')
+      } else if (msg["clicked-disco-button"]) {
+        const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
         client.clickedButton = true;
         closePageAction();
         sendReply(null);
-      }
-      else if (msg['clicked-close-button']) {
-        client.clickedButton = false
+      } else if (msg["clicked-close-button"]) {
+        client.clickedButton = false;
         closePageAction();
         sendReply(null);
       }

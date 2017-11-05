@@ -16,7 +16,7 @@ const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${config.studyUtilsPath}`;
 const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
 const studyConfig = config.study;
 
-console.log({ "CONFIG": config, "isEligible": config.isEligible() })
+console.log({ "CONFIG": config, "isEligible": config.isEligible() });
 
 const REASONS = studyUtils.REASONS;
 
@@ -25,8 +25,8 @@ const BASE = `taarexpv2`;
 XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Feature.jsm`);
 
 
-// var log = createLog(studyConfig.study.studyName, config.log.bootstrap.level);  // defined below.
-// log("LOG started!");
+var log = createLog(studyConfig.study.studyName, config.log.bootstrap.level); // defined below.
+log("LOG started!");
 
 /* Example addon-specific module imports.  Remember to Unload during shutdown() below.
 
@@ -108,7 +108,7 @@ async function startup(addonData, reason) {
   console.log(`info ${JSON.stringify(studyUtils.info())}`);
 
   // start up the chrome-privileged part of the study
-  //feature.privilegedStartup();
+  // feature.privilegedStartup();
 }
 
 /** Shutdown needs to distinguish between USER-DISABLE and other
@@ -130,7 +130,7 @@ function shutdown(addonData, reason) {
     // normal shutdown, or 2nd uninstall request
 
     // QA NOTE:  unload addon specific modules here.
-    //Cu.unload();
+    // Cu.unload();
 
 
     // clean up our modules.
@@ -165,11 +165,11 @@ function getVariationFromPref(weightedVariations) {
 
 
 // logging, unfinished
-// function createLog(name, levelWord) {
-//  Cu.import("resource://gre/modules/Log.jsm");
-//  var L = Log.repository.getLogger(name);
-//  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-//  L.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
-//  return L;
-// }
+function createLog(name, levelWord) {
+  Cu.import("resource://gre/modules/Log.jsm");
+  var L = Log.repository.getLogger(name);
+  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
+  L.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
+  return L;
+}
 
