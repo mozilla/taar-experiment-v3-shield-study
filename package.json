@@ -5,9 +5,9 @@
   "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "addon": {
     "ABOUT": "use these variables fill the moustache templates",
-    "id": "@taarexpv2.shield.mozilla.com",
+    "id": "taarexpv2@shield.mozilla.com",
     "name": "TAAR Experiment v2 Shield Study",
-    "minVersion": "57.0",
+    "minVersion": "56.0",
     "maxVersion": "*",
     "multiprocessCompatible": true,
     "hasEmbeddedWebExtension": true,

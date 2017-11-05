@@ -8,7 +8,7 @@
   *
   *   - all communication to the Legacy Addon is via `browser.runtime.sendMessage`
   *
-  *   - Only the webExtension can initiate messages.  see `msgStudy('info')` below.
+  *   - Only the webExtension can initiate messages.  see `msgStudyUtils('info')` below.
   */
 
 
@@ -71,11 +71,13 @@ function triggerPopup() {
 }
 
 function webNavListener(info) {
+  console.log('webNavListener info', info);
   // Filter out any sub-frame related navigation event
   if (info.frameId !== 0) {
     return;
   }
   browser.storage.local.get("hostNavigationStats").then(results => {
+  console.log('hostNavigationStats results', results);
       // Initialize the saved stats if not yet initialized.
       if (!results.hostNavigationStats) {
         results = {
@@ -130,13 +132,13 @@ function webNavListener(info) {
 class TAARExperiment {
 
   constructor() {
-    this.popUpVariations = new Set(["vanilla-disco-popup", ,"taar-disco-popup"])
+    this.popUpVariations = new Set(["vanilla-disco-popup", "taar-disco-popup"])
   }
   logStorage() {
     browser.storage.local.get().then(console.log)
   }
   async start() {
-    this.info = await msgStudy('info')
+    this.info = await msgStudyUtils('info')
     let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized']
     if (isFirstRun) await this.firstRun()
 
@@ -144,6 +146,8 @@ class TAARExperiment {
 
     // only montior navigation for branches qualified to
     // receive the pop-up.
+    console.log('this.popUpVariations', this.popUpVariations);
+    console.log('this.info.variation.name', this.info.variation.name);
     if (this.popUpVariations.has(this.info.variation.name)) {
         this.monitorNavigation()
     }
@@ -155,6 +159,7 @@ class TAARExperiment {
   }
 
   monitorNavigation() {
+    console.log('monitorNavigation');
     browser.webNavigation.onCompleted.addListener(webNavListener,
         {url: [{schemes: ["http", "https"]}]});
   }

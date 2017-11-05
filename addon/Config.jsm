@@ -130,16 +130,21 @@ var config = {
   // a place to put an 'isEligible' function
   // Will run only during first install attempt
   "isEligible": async function() {
+
+    return true;
+
     /*
     return true if profile is at most one week old
     */
 
     // const locale = TelemetryEnvironment.currentEnvironment.settings.locale;
-    const locale = "notelig"
-    const proflileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
+    //const locale = "notelig";
+    const locale = "en";
+    const profileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
+    console.log('profileCreationDate', profileCreationDate);
     // MS -> Days
-    const currentDay = Math.round(Date.now() / 60 / 60 / 24 / 1000)
-    return (currentDay - proflileCreationDate) <= 7 && locales.has(locale)
+    const currentDay = Math.round(Date.now() / 60 / 60 / 24 / 1000);
+    return (currentDay - profileCreationDate) <= 7 && locales.has(locale);
   },
 
   // Equal weighting for each  of the 4 variations

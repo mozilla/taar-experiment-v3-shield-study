@@ -28,7 +28,7 @@ const REASONS = studyUtils.REASONS;
 
 // QA NOTE: Study Specific Modules - package.json:addon.chromeResouce
 const BASE = `template-shield-study-button-study`;
-XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Feature.jsm`);
+//XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Feature.jsm`);
 
 
 // var log = createLog(studyConfig.study.studyName, config.log.bootstrap.level);  // defined below.
@@ -169,16 +169,19 @@ async function startup(addonData, reason) {
   // `addonData`: Array [ "id", "version", "installPath", "resourceURI", "instanceID", "webExtension" ]  bootstrap.js:48
   console.log("startup", REASONS[reason] || reason);
 
+  var client = new clientStatus();
+
   /* Configuration of Study Utils*/
   studyUtils.setup({
     ...config,
     addon: { id: addonData.id, version: addonData.version },
   });
   // choose the variation for this particular user, then set it.
-  const variation = getVariationFromPref(config.weightedVariations) ||
+  const variation = (studyConfig.forceVariation ||
     await studyUtils.deterministicVariation(
-      config.weightedVariations
-    );
+      studyConfig.weightedVariations
+    )
+  );
   studyUtils.setVariation(variation);
   console.log(`studyUtils has config and variation.name: ${variation.name}.  Ready to send telemetry`);
 
@@ -238,8 +241,8 @@ async function startup(addonData, reason) {
         */
       browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
       // other browser.runtime.onMessage handlers for your addon, if any
-      browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
       browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
+        console.log('msg, sender, sendReply', msg, sender, sendReply);
         // message handers //////////////////////////////////////////
         if (msg["init"]) {
           console.log("init received")
@@ -254,11 +257,13 @@ async function startup(addonData, reason) {
           }
         studyUtils.telemetry(dataOut)
         console.log(dataOut)
+          sendReply(dataOut);
         }
         else if (msg['trigger-popup']) {
           var window = Services.wm.getMostRecentWindow('navigator:browser')
           var pageAction = window.document.getElementById("taarexp_mozilla_com-page-action")
           pageAction.click()
+          sendReply(null);
 
 
         }
@@ -267,10 +272,12 @@ async function startup(addonData, reason) {
             window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", {relatedToCurrent:true});
             client.clickedButton = true;
             closePageAction();
+            sendReply(null);
         }
         else if (msg['clicked-close-button']) {
             client.clickedButton = false
             closePageAction();
+            sendReply(null);
         }
       });
     });
@@ -280,7 +287,7 @@ async function startup(addonData, reason) {
   console.log(`info ${JSON.stringify(studyUtils.info())}`);
 
   // Actually Start up your feature
-  new Feature({variation, studyUtils, reasonName: REASONS[reason]});
+  //new Feature({variation, studyUtils, reasonName: REASONS[reason]});
 }
 
 /** Shutdown needs to distinguish between USER-DISABLE and other
@@ -337,8 +344,6 @@ function getVariationFromPref(weightedVariations) {
   return name; // undefined
 }
 
-
-/*
 Set.prototype.difference = function(setB) {
     var difference = new Set(this);
     for (var elem of setB) {
@@ -354,7 +359,6 @@ Set.prototype.union = function(setB) {
     }
     return union;
 }
-*/
 
 // logging, unfinished
 // function createLog(name, levelWord) {
