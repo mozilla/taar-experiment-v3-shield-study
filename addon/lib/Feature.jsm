@@ -24,6 +24,11 @@ const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Console.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/Preferences.jsm");
+Cu.import("resource://gre/modules/ClientID.jsm");
+Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
+Cu.import("resource://gre/modules/TelemetryController.jsm");
+Cu.import("resource://gre/modules/AddonManager.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
@@ -31,7 +36,7 @@ XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
   "resource:///modules/RecentWindow.jsm");
 
 /** Return most recent NON-PRIVATE browser window, so that we can
-  * maniuplate chrome elements on it.
+  * manipulate chrome elements on it.
   */
 function getMostRecentBrowserWindow() {
   return RecentWindow.getMostRecentBrowserWindow({
@@ -40,6 +45,147 @@ function getMostRecentBrowserWindow() {
   });
 }
 
+
+class clientStatus {
+  constructor() {
+    this.clickedButton = null;
+    this.sawPop = false;
+    this.activeAddons = new Set()
+    this.addonHistory  = new Set()
+    this.lastInstalled = null
+    this.lastDisabled = null
+    this.startTime = null
+  }
+
+  updateAddons() {
+    let prev = this.activeAddons
+    let curr = getNonSystemAddons()
+
+    console.log({'prev':prev, 'curr':curr})
+
+    let currDiff = curr.difference(prev)
+    if (currDiff.size > 0) { // an add-on was installed or re-enabled
+      var newInstalls = curr.difference(this.addonHistory)
+      if (newInstalls.size > 0) { // new install, not a re-enable
+        this.lastInstalled = newInstalls.values().next().value
+      }
+    } else { //an add-on was disabled or uninstalled
+      this.lastDisabled =  prev.difference(curr).values().next().value
+    }
+    this.activeAddons = curr
+  }
+}
+
+function getNonSystemAddons() {
+  var activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons
+  var result = new Set()
+  for (var addon in activeAddons) {
+    let data = activeAddons[addon]
+    if (!data.isSystem && !data.foreignInstall) {
+      result.add(addon)
+    }
+  }
+  return(result)
+}
+
+function getNonSystemAddonData() {
+  var activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons
+  for (var addon in activeAddons) {
+    let data = activeAddons[addon]
+    if (!data.isSystem && !data.foreignInstall) {
+      console.log(data)
+    }
+  }
+}
+
+function bucketURI(uri) {
+  if (uri != "about:addons") {
+        if (uri.indexOf("addons.mozilla.org") > 0) {
+        uri = "AMO"
+      } else {
+        uri = "other"
+      }
+    }
+  return uri
+}
+
+function addonChangeListener(change, client, studyUtils) {
+  if (change == "addons-changed") {
+    console.log("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------")
+    client.updateAddons()
+    var uri = bucketURI(Services.wm.getMostRecentWindow('navigator:browser').gBrowser.currentURI.asciiSpec);
+
+    if (client.lastInstalled) {
+      //send telemetry
+      var dataOut = {
+           "clickedButton": String(client.clickedButton),
+           "sawPopup": String(client.sawPopup),
+           "startTime": String(client.startTime),
+           "addon_id": String(client.lastInstalled),
+           "srcURI": String(uri),
+           "pingType": "install"
+        }
+      console.log("Just installed", client.lastInstalled, "from", uri)
+      console.log(dataOut)
+      studyUtils.telemetry(dataOut)
+
+      /////
+      client.lastInstalled = null;
+    }
+    else if (client.lastDisabled) {
+      console.log("Just disabled", client.lastDisabled, "from", uri)
+
+      //send telemetry
+      var dataOut = {
+           "clickedButton": String(client.clickedButton),
+           "sawPopup": String(client.sawPopup),
+           "startTime": String(client.startTime),
+           "addon_id": String(client.lastDisabled),
+           "srcURI": String(uri),
+           "pingType": "uninstall"
+        }
+      studyUtils.telemetry(dataOut)
+      console.log(dataOut)
+
+      //////
+      client.lastDisabled = null
+
+    }
+
+
+  }
+}
+
+async function getPageAction() {
+
+  var window = Services.wm.getMostRecentWindow('navigator:browser')
+  var pageAction = window.document.getElementById("taarexpv2_mozilla_com-page-action")
+  console.log('window.document', window.document);
+  console.log('pageAction', pageAction);
+  return pageAction;
+
+}
+
+function closePageAction() {
+  var pageAction = getPageAction()
+  pageAction.parentNode.removeChild(pageAction);
+}
+
+Set.prototype.difference = function(setB) {
+    var difference = new Set(this);
+    for (var elem of setB) {
+        difference.delete(elem);
+    }
+    return difference;
+}
+
+Set.prototype.union = function(setB) {
+    var union = new Set(this);
+    for (var elem of setB) {
+        union.add(elem);
+    }
+    return union;
+}
 
 class Feature {
   /** A Demonstration feature.
@@ -53,73 +199,81 @@ class Feature {
     // unused.  Some other UI might use the specific variation info for things.
     this.variation = variation;
     this.studyUtils = studyUtils;
+    this.client = new clientStatus();
 
     // only during INSTALL
+    /*
     if (reasonName === "ADDON_INSTALL") {
       this.introductionNotificationBar();
     }
+    */
+
+    // log what the study variation and other info is.
+    console.log(`info ${JSON.stringify(studyUtils.info())}`);
+
+    const clientId = ClientID.getClientID()
+
+    //default
+    var aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%"
+    if (variation.name == "taar-disco-popup" || variation.name == "taar-disco") {
+      aboutAddonsDomain += "?clientId=" + clientId
+      Preferences.set("extensions.webservice.discoverURL", aboutAddonsDomain)
+    }
+
   }
 
-  /** Display instrumented 'notification bar' explaining the feature to the user
-    *
-    *   Telemetry Probes:
-    *
-    *   - {event: introduction-shown}
-    *
-    *   - {event: introduction-accept}
-    *
-    *   - {event: introduction-leave-study}
-    *
-    *    Note:  Bar WILL NOT SHOW if the only window open is a private window.
-    *
-    *    Note:  Handling of 'x' is not implemented.  For more complete implementation:
-    *
-    *      https://github.com/gregglind/57-perception-shield-study/blob/680124a/addon/lib/Feature.jsm#L148-L152
-    *
-  */
-  introductionNotificationBar() {
-    const feature = this;
-    const recentWindow = getMostRecentBrowserWindow();
-    const doc = recentWindow.document;
-    const notificationBox = doc.querySelector(
-      "#high-priority-global-notificationbox"
-    );
+  afterWebExtensionStartup(browser) {
 
-    if (!notificationBox) return;
+    const client = this.client;
 
-    // api: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/Method/appendNotification
-    notificationBox.appendNotification(
-      "Welcome to the new feature! Look for changes!",
-      "feature orienation",
-      null, // icon
-      notificationBox.PRIORITY_INFO_HIGH, // priority
-      // buttons
-      [{
-        label: "Thanks!",
-        isDefault: true,
-        acceptButton() {
-          feature.telemetry({
-            event: "introduction-accept",
-          });
-        },
-      },
-      {
-        label: "I do not want this.",
-        leaveStudyButton() {
-          feature.telemetry({
-            event: "introduction-leave-study",
-          });
-          feature.studyUtils.endStudy("");
-        },
-      }],
-      // callback for nb events
-      null
-    );
-    feature.telemetry({
-      event: "introduction-shown",
+    client.activeAddons = getNonSystemAddons()
+    client.addonHistory = getNonSystemAddons()
+    TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
+      addonChangeListener(x, client, studyUtils)
+      console.log(client)
+    });
+
+    browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
+      console.log('msg, sender, sendReply', msg, sender, sendReply);
+      // message handers //////////////////////////////////////////
+      if (msg["init"]) {
+        console.log("init received")
+        client.startTime = Date.now();
+        var dataOut = {
+           "clickedButton": String(client.clickedButton),
+           "sawPopup": String(client.sawPopup),
+           "startTime": String(client.startTime),
+           "addon_id": String(client.lastInstalled),
+           "srcURI": "null",
+           "pingType": "init"
+        }
+      this.telemetry(dataOut)
+      console.log(dataOut)
+        sendReply(dataOut);
+      }
+      else if (msg['trigger-popup']) {
+        var pageAction = getPageAction()
+        pageAction.click()
+        sendReply(null);
+
+
+      }
+      else if (msg['clicked-disco-button']) {
+          var window = Services.wm.getMostRecentWindow('navigator:browser')
+          window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", {relatedToCurrent:true});
+          client.clickedButton = true;
+          closePageAction();
+          sendReply(null);
+      }
+      else if (msg['clicked-close-button']) {
+          client.clickedButton = false
+          closePageAction();
+          sendReply(null);
+      }
     });
 
   }
+
   /* good practice to have the literal 'sending' be wrapped up */
   telemetry(stringStringMap) {
     this.studyUtils.telemetry(stringStringMap);

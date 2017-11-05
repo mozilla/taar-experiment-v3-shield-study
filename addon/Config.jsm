@@ -73,9 +73,6 @@ var config = {
 
     // will be used activeExperiments tagging
     "studyName": "TAARExperimentV2",
-    "forceVariation": {
-      "name": "vanilla-disco-popup",
-    }, // optional, use to override/decide
     /** **endings**
       * - keys indicate the 'endStudy' even that opens these.
       * - urls should be static (data) or external, because they have to
