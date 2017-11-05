@@ -8,6 +8,7 @@
 */
 const {utils: Cu} = Components;
 Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
+Cu.import("resource://gre/modules/TelemetryController.jsm");
 Cu.import("resource://gre/modules/Console.jsm")
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
 const EXPORTED_SYMBOLS = ["config"];
@@ -131,11 +132,17 @@ var config = {
   // Will run only during first install attempt
   "isEligible": async function() {
 
+    // tmp. TODO: figure out how to solve the issue with profileCreation not being available reliably when
+    // telemetry delayed initialization is shortened via config, then revert back to waiting for telemetry etc
     return true;
 
     /*
     return true if profile is at most one week old
     */
+
+    // Ensure that we collect telemetry payloads only after it is fully initialized
+    // See http://searchfox.org/mozilla-central/rev/423b2522c48e1d654e30ffc337164d677f934ec3/toolkit/components/telemetry/TelemetryController.jsm#295
+    await TelemetryController.promiseInitialized();
 
     // const locale = TelemetryEnvironment.currentEnvironment.settings.locale;
     //const locale = "notelig";
