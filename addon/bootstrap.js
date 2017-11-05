@@ -159,9 +159,18 @@ function addonChangeListener(change, client) {
   }
 }
 
-function closePageAction() {
+async function getPageAction() {
+
   var window = Services.wm.getMostRecentWindow('navigator:browser')
-  var pageAction = window.document.getElementById("taarexp_mozilla_com-page-action")
+  var pageAction = window.document.getElementById("taarexpv2_mozilla_com-page-action")
+  console.log('window.document', window.document);
+  console.log('pageAction', pageAction);
+  return pageAction;
+
+}
+
+function closePageAction() {
+  var pageAction = getPageAction()
   pageAction.parentNode.removeChild(pageAction);
 }
 
@@ -260,8 +269,7 @@ async function startup(addonData, reason) {
           sendReply(dataOut);
         }
         else if (msg['trigger-popup']) {
-          var window = Services.wm.getMostRecentWindow('navigator:browser')
-          var pageAction = window.document.getElementById("taarexp_mozilla_com-page-action")
+          var pageAction = getPageAction()
           pageAction.click()
           sendReply(null);
 
