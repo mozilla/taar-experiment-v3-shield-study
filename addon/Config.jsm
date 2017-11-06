@@ -23,13 +23,10 @@ const locales = new Set(
     "el",
     "en-gb",
     "en-us",
-    "es-ar",
     "es-es",
     "es-la",
     "fi",
     "fr",
-    "fr-ca",
-    "he",
     "hu",
     "id",
     "it",
@@ -46,7 +43,6 @@ const locales = new Set(
     "sk",
     "sr",
     "sv",
-    "th",
     "tl",
     "tr",
     "uk",
@@ -149,22 +145,18 @@ var config = {
     */
   },
 
-  // Equal weighting for each  of the 4 variations
+  // Equal weighting for each of the 3 variations
   "weightedVariations": [
     {
-      "name": "vanilla-disco-popup",
+      "name": "linear-taar-popup",
       "weight": 1,
     },
     {
-      "name": "taar-disco-popup",
+      "name": "ensamble-taar-popup",
       "weight": 1,
     },
     {
-      "name": "vanilla-disco",
-      "weight": 1,
-    },
-    {
-      "name": "taar-disco",
+      "name": "control",
       "weight": 1,
     },
   ],
