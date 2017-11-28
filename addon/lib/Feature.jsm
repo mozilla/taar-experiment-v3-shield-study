@@ -156,15 +156,30 @@ function getPageAction() {
     pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield-study_mozilla_com");
   }
   if (!pageAction) {
-    console.log("Error: Page action element not found. Debug content: window.document, pageAction, all urlbar page action classed elements", window.document, pageAction, window.document.querySelectorAll('.urlbar-page-action'));
+    throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll('.urlbar-page-action')]);
   }
   return pageAction;
 
 }
 
+class PageActionElementNotFoundError extends Error {
+  constructor(debugInfo) {
+    const message = `"Error: TAAR V2 study add-on page action element not found. Debug content: window.document, pageAction, all urlbar page action classed elements: ${debugInfo.toString()}`;
+    super(message);
+    this.message = message;
+    this.name = "PageActionElementNotFoundError";
+  }
+}
+
 function closePageAction() {
-  const pageAction = getPageAction();
-  pageAction.remove();
+  try {
+    const pageAction = getPageAction();
+    pageAction.remove();
+  } catch (e) {
+    if (e.name === "PageActionElementNotFoundError") {
+      // All good, no element found
+    }
+  }
 }
 
 Set.prototype.difference = function(setB) {
