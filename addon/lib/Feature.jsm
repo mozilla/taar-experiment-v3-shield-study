@@ -64,7 +64,7 @@ class clientStatus {
     const prev = this.activeAddons;
     const curr = getNonSystemAddons();
 
-    this.log.debug({ "prev": prev, "curr": curr });
+    console.log({ "prev": prev, "curr": curr });
 
     const currDiff = curr.difference(prev);
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
@@ -104,7 +104,7 @@ function bucketURI(uri) {
 
 function addonChangeListener(change, client, studyUtils) {
   if (change === "addons-changed") {
-    this.log.debug("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------");
+    console.log("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------");
     client.updateAddons();
     const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
@@ -118,13 +118,13 @@ function addonChangeListener(change, client, studyUtils) {
         "srcURI": String(uri),
         "pingType": "install",
       };
-      this.log.debug("Just installed", client.lastInstalled, "from", uri);
-      this.log.debug(dataOut);
+      console.log("Just installed", client.lastInstalled, "from", uri);
+      console.log(dataOut);
       studyUtils.telemetry(dataOut);
 
       client.lastInstalled = null;
     } else if (client.lastDisabled) {
-      this.log.debug("Just disabled", client.lastDisabled, "from", uri);
+      console.log("Just disabled", client.lastDisabled, "from", uri);
 
       // send telemetry
       const dataOut = {
@@ -136,7 +136,7 @@ function addonChangeListener(change, client, studyUtils) {
         "pingType": "uninstall",
       };
       studyUtils.telemetry(dataOut);
-      this.log.debug(dataOut);
+      console.log(dataOut);
 
       client.lastDisabled = null;
 
@@ -150,8 +150,9 @@ async function getPageAction() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
   const pageAction = window.document.getElementById("taarexpv2_mozilla_com-page-action");
-  this.log.debug("window.document", window.document);
-  this.log.debug("pageAction", pageAction);
+  console.log("window.document", window.document);
+  console.log("pageAction", pageAction);
+
   return pageAction;
 
 }
