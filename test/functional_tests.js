@@ -31,7 +31,18 @@ async function getShieldPingsAfterTimestamp(driver, ts) {
   return utils.getTelemetryPings(driver, { type: ["shield-study", "shield-study-addon"], timestamp: ts });
 }
 
-function summarizePings(pings) { return pings.map(p => [p.payload.type, p.payload.data]); }
+function summarizePings(pings) {
+  return pings.map(p => {
+
+    // prevent irrelevant comparisons of dynamic variables
+    if (p.payload.data.attributes && p.payload.data.attributes.startTime) {
+      p.payload.data.attributes.startTime = "***";
+    }
+
+    return [p.payload.type, p.payload.data];
+
+  });
+}
 
 /*
 async function postTestReset(driver) {
@@ -133,18 +144,10 @@ describe("basic functional tests", function() {
     assert(foundPings.length > 0, "at least one shield-study telemetry ping with study_state=enter");
   });
 
-  it("telemetry: has entered, installed, shown", function() {
+  it("telemetry: has entered, installed, etc", function() {
     // Telemetry:  order, and summary of pings is good.
     const observed = summarizePings(pings);
     const expected = [
-      [
-        "shield-study-addon",
-        {
-          "attributes": {
-            "event": "introduction-shown",
-          },
-        },
-      ],
       [
         "shield-study",
         {
@@ -155,6 +158,19 @@ describe("basic functional tests", function() {
         "shield-study",
         {
           "study_state": "enter",
+        },
+      ],
+      [
+        "shield-study-addon",
+        {
+          "attributes": {
+            "addon_id": "null",
+            "clickedButton": "null",
+            "pingType": "init",
+            "sawPopup": "undefined",
+            "srcURI": "null",
+            "startTime": "***",
+          },
         },
       ],
     ];
