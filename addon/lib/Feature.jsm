@@ -263,6 +263,9 @@ class Feature {
   telemetry(stringStringMap) {
     this.studyUtils.telemetry(stringStringMap);
   }
+
+  /* no-op shutdown */
+  shutdown() {}
 }
 
 

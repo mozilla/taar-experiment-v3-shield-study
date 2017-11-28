@@ -48,7 +48,8 @@ const FIREFOX_PREFERENCES = {
 // useful if we need to test on a specific version of Firefox
 async function promiseActualBinary(binary) {
   try {
-    const normalizedBinary = await FxRunnerUtils.normalizeBinary(binary);
+    let normalizedBinary = await FxRunnerUtils.normalizeBinary(binary);
+    normalizedBinary = path.resolve(normalizedBinary);
     await Fs.stat(normalizedBinary);
     return normalizedBinary;
   } catch (ex) {
@@ -59,9 +60,10 @@ async function promiseActualBinary(binary) {
   }
 }
 
-
-
-
+/**
+  * Uses process.env.FIREFOX_BINARY
+  *
+  */
 module.exports.promiseSetupDriver = async() => {
   const profile = new firefox.Profile();
 
@@ -78,8 +80,10 @@ module.exports.promiseSetupDriver = async() => {
     .forBrowser("firefox")
     .setFirefoxOptions(options);
 
+  //
   const binaryLocation = await promiseActualBinary(process.env.FIREFOX_BINARY || "nightly");
-  //console.log(binaryLocation);
+
+  // console.log(binaryLocation);
   await options.setBinary(new firefox.Binary(binaryLocation));
   const driver = await builder.build();
   // Firefox will be started up by now
@@ -170,19 +174,27 @@ module.exports.allAddons = async(driver) => {
 };
 */
 
-// Returns array of pings of type `type` in sorted order by timestamp
-// first element is most recent ping
-// as seen in shield-study-addon-util's `utils.jsm`
-module.exports.getTelemetryPings = async(driver, options) => {
+/** Returns array of pings of type `type` in reverse sorted order by timestamp
+  * first element is most recent ping
+  *
+  * as seen in shield-study-addon-util's `utils.jsm`
+  * options
+  * - type:  string or array of ping types
+  * - n:  positive integer. at most n pings.
+  * - timestamp:  only pings after this timestamp.
+  * - headersOnly: boolean, just the 'headers' for the pings, not the full bodies.
+  */
+module.exports.getTelemetryPings = async(driver, passedOptions) => {
   // callback is how you get the return back from the script
   return driver.executeAsyncScript(async(options, callback) => {
-    let {type, n, timestamp, headersOnly} = options;
+    let {type} = options;
+    const { n, timestamp, headersOnly} = options;
     Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
     // {type, id, timestampCreated}
     let pings = await TelemetryArchive.promiseArchivedPingList();
     if (type) {
       if (!(type instanceof Array)) {
-        type = [type];  // Array-ify if it's a string
+        type = [type]; // Array-ify if it's a string
       }
     }
     if (type) pings = pings.filter(p => type.includes(p.type));
@@ -194,7 +206,7 @@ module.exports.getTelemetryPings = async(driver, options) => {
     const pingData = headersOnly ? pings : pings.map(ping => TelemetryArchive.promiseArchivedPingById(ping.id));
 
     callback(await Promise.all(pingData));
-  }, options);
+  }, passedOptions);
 };
 
 module.exports.printPings = async(pings) => {
@@ -246,7 +258,7 @@ class getChromeElementBy {
         By[method](selector)), 1000);
     } catch (e) {
       // if there an error, the button was not found
-      console.log(e);
+      console.error(e);
       return null;
     }
   }

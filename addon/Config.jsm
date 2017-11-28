@@ -115,9 +115,6 @@ var config = {
   // required LOG key
   "log": {
     // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
-    "bootstrap": {
-      "level": "Debug",
-    },
     "studyUtils": {
       "level": "Trace",
     },
