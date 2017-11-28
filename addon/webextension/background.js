@@ -67,8 +67,18 @@ function telemetry(data) {
 */
 
 function triggerPopup() {
-  browser.runtime.sendMessage({ "trigger-popup": true });
-  browser.storage.local.set({ sawPopup: true });
+
+  function handleResponse(message) {
+    console.log(`Message from the privileged script: ${message.response}`);
+    browser.storage.local.set({ sawPopup: true });
+  }
+
+  function handleError(error) {
+    console.log(`Error: ${error}`);
+  }
+
+  const sending = browser.runtime.sendMessage({ "trigger-popup": true });
+  sending.then(handleResponse, handleError);
 }
 
 function webNavListener(info) {

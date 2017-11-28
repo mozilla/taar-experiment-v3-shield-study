@@ -245,7 +245,7 @@ class Feature {
     });
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
-      this.log.debug("msg, sender, sendReply", msg, sender, sendReply);
+      this.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
       // message handers //////////////////////////////////////////
       if (msg.init) {
         this.log.debug("init received");
@@ -264,7 +264,7 @@ class Feature {
       } else if (msg["trigger-popup"]) {
         const pageAction = getPageAction();
         pageAction.click();
-        sendReply(null);
+        sendReply({response: "Successfully triggered pop-up"});
 
 
       } else if (msg["clicked-disco-button"]) {
