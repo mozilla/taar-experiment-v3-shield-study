@@ -85,7 +85,7 @@ function webNavListener(info) {
         hostNavigationStats: {}
       };
     }
-    const testing = false;
+    const testing = false; // true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
     const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
 
     const { hostNavigationStats } = results;
@@ -101,7 +101,7 @@ function webNavListener(info) {
     sawPopup.then(function(result) {
       if (!result.sawPopup || testing) { // client has not seen popup
         // arbitrary condition for now
-        if (totalCount > 0) {
+        if (totalCount > 0 || testing) {
           browser.storage.local.set({ "PA-tabId": tabId })
           browser.pageAction.show(tabId)
           browser.pageAction.setPopup({
