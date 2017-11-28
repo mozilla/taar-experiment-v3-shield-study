@@ -235,12 +235,13 @@ class Feature {
   afterWebExtensionStartup(browser) {
 
     const client = this.client;
+    const self = this;
 
     client.activeAddons = getNonSystemAddons();
     client.addonHistory = getNonSystemAddons();
     TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
-      addonChangeListener(x, client, this.studyUtils);
-      this.log.debug(client);
+      addonChangeListener(x, client, self.studyUtils);
+      self.log.debug(client);
     });
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
