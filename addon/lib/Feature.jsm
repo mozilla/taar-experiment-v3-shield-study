@@ -146,13 +146,18 @@ function addonChangeListener(change, client, studyUtils) {
   }
 }
 
-async function getPageAction() {
+function getPageAction() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
-  const pageAction = window.document.getElementById("taarexpv2_mozilla_com-page-action");
-  console.log("window.document", window.document);
-  console.log("pageAction", pageAction);
-
+  // Id reference style as was working in taar v1
+  let pageAction = window.document.getElementById("taarexpv2_shield-study_mozilla_com-page-action");
+  // Firefox 57+
+  if (!pageAction) {
+    pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield-study_mozilla_com");
+  }
+  if (!pageAction) {
+    console.log("Error: Page action element not found. Debug content: window.document, pageAction, all urlbar page action classed elements", window.document, pageAction, window.document.querySelectorAll('.urlbar-page-action'));
+  }
   return pageAction;
 
 }
