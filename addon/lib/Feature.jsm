@@ -267,7 +267,8 @@ class Feature {
   }
 
   /* no-op shutdown */
-  shutdown() {}
+  shutdown() {
+  }
 }
 
 
