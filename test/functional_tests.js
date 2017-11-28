@@ -28,7 +28,7 @@ const MOZILLA_ORG = "http://mozilla.org";
 /* Part 1:  Utilities */
 
 async function getShieldPingsAfterTimestamp(driver, ts) {
-  return utils.getTelemetryPings(driver, {type: ["shield-study", "shield-study-addon"], timestamp: ts});
+  return utils.getTelemetryPings(driver, { type: ["shield-study", "shield-study-addon"], timestamp: ts });
 }
 
 function summarizePings(pings) { return pings.map(p => [p.payload.type, p.payload.data]); }
@@ -101,8 +101,10 @@ describe("basic functional tests", function() {
   }
   */
 
-  beforeEach(async() => {});
-  afterEach(async() => {});
+  beforeEach(async() => {
+  });
+  afterEach(async() => {
+  });
   // afterEach(async() => postTestReset(driver));
 
   /* Expected behaviour:
