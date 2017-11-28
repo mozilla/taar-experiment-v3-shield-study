@@ -64,7 +64,7 @@ class clientStatus {
     const prev = this.activeAddons;
     const curr = getNonSystemAddons();
 
-    console.log({ "prev": prev, "curr": curr });
+    this.log.debug({ "prev": prev, "curr": curr });
 
     const currDiff = curr.difference(prev);
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
@@ -104,7 +104,7 @@ function bucketURI(uri) {
 
 function addonChangeListener(change, client, studyUtils) {
   if (change === "addons-changed") {
-    console.log("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------");
+    this.log.debug("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------");
     client.updateAddons();
     const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
@@ -118,13 +118,13 @@ function addonChangeListener(change, client, studyUtils) {
         "srcURI": String(uri),
         "pingType": "install",
       };
-      console.log("Just installed", client.lastInstalled, "from", uri);
-      console.log(dataOut);
+      this.log.debug("Just installed", client.lastInstalled, "from", uri);
+      this.log.debug(dataOut);
       studyUtils.telemetry(dataOut);
 
       client.lastInstalled = null;
     } else if (client.lastDisabled) {
-      console.log("Just disabled", client.lastDisabled, "from", uri);
+      this.log.debug("Just disabled", client.lastDisabled, "from", uri);
 
       // send telemetry
       const dataOut = {
@@ -136,7 +136,7 @@ function addonChangeListener(change, client, studyUtils) {
         "pingType": "uninstall",
       };
       studyUtils.telemetry(dataOut);
-      console.log(dataOut);
+      this.log.debug(dataOut);
 
       client.lastDisabled = null;
 
@@ -150,8 +150,8 @@ async function getPageAction() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
   const pageAction = window.document.getElementById("taarexpv2_mozilla_com-page-action");
-  console.log("window.document", window.document);
-  console.log("pageAction", pageAction);
+  this.log.debug("window.document", window.document);
+  this.log.debug("pageAction", pageAction);
   return pageAction;
 
 }
@@ -185,11 +185,12 @@ class Feature {
    *  - reasonName: string of bootstrap.js startup/shutdown reason
    *
    */
-  constructor({ variation, studyUtils, reasonName }) {
+  constructor({ variation, studyUtils, reasonName, log }) {
     // unused.  Some other UI might use the specific variation info for things.
     this.variation = variation;
     this.studyUtils = studyUtils;
     this.client = new clientStatus();
+    this.log = log;
 
     // only during INSTALL
     if (reasonName === "ADDON_INSTALL") {
@@ -197,7 +198,7 @@ class Feature {
     }
 
     // log what the study variation and other info is.
-    console.log(`info ${JSON.stringify(studyUtils.info())}`);
+    this.log.debug(`info ${JSON.stringify(studyUtils.info())}`);
 
     const clientId = ClientID.getClientID();
 
@@ -218,14 +219,14 @@ class Feature {
     client.addonHistory = getNonSystemAddons();
     TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
       addonChangeListener(x, client, this.studyUtils);
-      console.log(client);
+      this.log.debug(client);
     });
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
-      console.log("msg, sender, sendReply", msg, sender, sendReply);
+      this.log.debug("msg, sender, sendReply", msg, sender, sendReply);
       // message handers //////////////////////////////////////////
       if (msg.init) {
-        console.log("init received");
+        this.log.debug("init received");
         client.startTime = Date.now();
         const dataOut = {
           "clickedButton": String(client.clickedButton),
@@ -236,7 +237,7 @@ class Feature {
           "pingType": "init",
         };
         this.telemetry(dataOut);
-        console.log(dataOut);
+        this.log.debug(dataOut);
         sendReply(dataOut);
       } else if (msg["trigger-popup"]) {
         const pageAction = getPageAction();

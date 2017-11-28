@@ -89,7 +89,7 @@ async function startup(addonData, reason) {
   (function fakeTrackExpiration() {})();
 
   // initiate the chrome-privileged part of the study add-on
-  this.feature = new Feature({ variation, studyUtils, reasonName: REASONS[reason] });
+  this.feature = new Feature({ variation, studyUtils, reasonName: REASONS[reason], log });
 
   // IFF your study has an embedded webExtension, start it.
   const { webExtension } = addonData;
@@ -101,7 +101,7 @@ async function startup(addonData, reason) {
        */
       browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
       // other browser.runtime.onMessage handlers for your addon, if any
-      feature.afterWebExtensionStartup(browser);
+      this.feature.afterWebExtensionStartup(browser);
 
     });
   }

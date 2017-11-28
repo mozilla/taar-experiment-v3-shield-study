@@ -212,7 +212,7 @@ module.exports.getTelemetryPings = async(driver, passedOptions) => {
 module.exports.printPings = async(pings) => {
 
   if (pings.length === 0) {
-    console.log('No pings');
+    console.log("No pings");
     return;
   }
 
@@ -228,19 +228,19 @@ addon_version ${p0.addon_version}
 version       ${p0.version}
 
     `
-  )
+  );
 
   pings.forEach(p => {
     console.log(p.creationDate, p.payload.type);
-    console.log(JSON.stringify(p.payload.data, null, 2))
-  })
+    console.log(JSON.stringify(p.payload.data, null, 2));
+  });
 
 };
 
 module.exports.writePingsJson = async(pings, filepath = "./pings.json") => {
   try {
     return await Fs.outputFile(filepath,
-      JSON.stringify(pings, null, '\t'));
+      JSON.stringify(pings, null, "\t"));
   } catch (error) {
     throw error;
   }
