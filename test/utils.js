@@ -33,6 +33,9 @@ const FIREFOX_PREFERENCES = {
   // NECESSARY for all 57+ builds
   "extensions.legacy.enabled": true,
 
+  // Include log output in browser console
+  "shield.testing.logging.level": 10, // Trace
+
   // Force variation for testing
   "shield.test.variation": "vanilla-disco-popup",
 
