@@ -137,9 +137,8 @@ function webNavListener(info) {
 
 
 class TAARExperiment {
-
   constructor() {
-    this.popUpVariations = new Set(["vanilla-disco-popup", "taar-disco-popup"]);
+    this.popUpVariations = new Set(["linear-taar-popup", "ensamble-taar-popup"]);
   }
 
   /*
@@ -161,6 +160,8 @@ class TAARExperiment {
     console.log('this.info.variation.name', this.info.variation.name);
     if (this.popUpVariations.has(this.info.variation.name)) {
       TAARExperiment.monitorNavigation()
+    } else {
+      console.log('No popup will be triggered since the current variation is not a popup-variation');
     }
   }
 
