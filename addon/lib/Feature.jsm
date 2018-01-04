@@ -32,7 +32,8 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
-const CLIENT_STATUS_PREF = "extensions.taarexp2.client-status";
+const PREF_BRANCH = "extensions.taarexp2";
+const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
   "resource:///modules/RecentWindow.jsm");
@@ -356,7 +357,8 @@ class Feature {
 
   /* remove artifacts of this study */
   shutdown() {
-    Preferences.set(CLIENT_STATUS_PREF, null);
+    var defaultBranch = Services.prefs.getDefaultBranch(null);
+    defaultBranch.deleteBranch(PREF_BRANCH);
   }
 }
 
