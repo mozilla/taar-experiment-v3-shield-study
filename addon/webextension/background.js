@@ -84,6 +84,17 @@ function triggerPopup() {
 
 function webNavListener(info) {
   console.log('webNavListener info', info);
+  webNavListener_trackDiscoPaneLoading(info);
+  webNavListener_popupRelated(info);
+}
+
+function webNavListener_trackDiscoPaneLoading(info) {
+  if (info.frameId > 0 && info.url.indexOf('https://discovery.addons.mozilla.org/') > -1 && info.parentFrameId === 0) {
+    browser.runtime.sendMessage({ "disco-pane-loaded": true });
+  }
+}
+
+function webNavListener_popupRelated(info) {
   // Filter out any sub-frame related navigation event
   if (info.frameId !== 0) {
     return;
@@ -127,7 +138,6 @@ function webNavListener(info) {
         browser.storage.local.get("PA-tabId").then(function(result2) {
           browser.pageAction.hide(result2["PA-tabId"])
         });
-        browser.webNavigation.onCompleted.removeListener(webNavListener);
       }
     });
     // Persist the updated webNav stats.

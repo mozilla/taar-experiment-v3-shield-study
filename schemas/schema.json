@@ -9,9 +9,10 @@
         "srcURI": {"type": "string"},
         "startTime": {"type": "string"},
         "sawPopup": {"type": "string"},
-        "clickedButton": {"type": "string"}}
+        "clickedButton": {"type": "string"}},
+        "discoPaneLoaded": {"type": "string"}
       },
       "additionalProperties": false,
-      "minProperties": 6
+      "minProperties": 7
     }
 }

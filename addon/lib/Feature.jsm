@@ -51,6 +51,7 @@ function getMostRecentBrowserWindow() {
 
 class clientStatus {
   constructor() {
+    this.discoPaneLoaded = false;
     this.clickedButton = false;
     this.sawPopup = false;
     this.activeAddons = new Set();
@@ -257,6 +258,7 @@ class Feature {
         client.startTime = Date.now();
         // send telemetry
         const dataOut = {
+          "discoPaneLoaded": String(client.discoPaneLoaded),
           "clickedButton": String(client.clickedButton),
           "sawPopup": String(client.sawPopup),
           "startTime": String(client.startTime),
@@ -267,6 +269,20 @@ class Feature {
         self.telemetry(dataOut);
         this.log.debug(dataOut);
         sendReply(dataOut);
+      } else if (msg["disco-pane-loaded"]) {
+        client.discoPaneLoaded = true;
+        // send telemetry
+        const dataOut = {
+          "discoPaneLoaded": String(client.discoPaneLoaded),
+          "clickedButton": String(client.clickedButton),
+          "sawPopup": String(client.sawPopup),
+          "startTime": String(client.startTime),
+          "addon_id": String(client.lastInstalled),
+          "srcURI": "null",
+          "pingType": "disco-pane-loaded",
+        };
+        self.telemetry(dataOut);
+        sendReply({ response: "Disco pane loaded" });
       } else if (msg["trigger-popup"]) {
         client.sawPopup = true;
         // set pref to force discovery page
@@ -275,6 +291,7 @@ class Feature {
         pageAction.click();
         // send telemetry
         const dataOut = {
+          "discoPaneLoaded": String(client.discoPaneLoaded),
           "clickedButton": "false",
           "sawPopup": "true",
           "startTime": String(client.startTime),
@@ -293,6 +310,7 @@ class Feature {
         closePageAction();
         // send telemetry
         const dataOut = {
+          "discoPaneLoaded": String(client.discoPaneLoaded),
           "clickedButton": "true",
           "sawPopup": "true",
           "startTime": String(client.startTime),
