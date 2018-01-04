@@ -115,12 +115,12 @@ function addonChangeListener(change, client, studyUtils) {
         "srcURI": String(uri),
         "pingType": "install",
       };
-      console.log("Just installed", client.lastInstalled, "from", uri);
+      this.log.debug("Just installed", client.lastInstalled, "from", uri);
       studyUtils.telemetry(dataOut);
 
       client.lastInstalled = null;
     } else if (client.lastDisabled) {
-      console.log("Just disabled", client.lastDisabled, "from", uri);
+      this.log.debug("Just disabled", client.lastDisabled, "from", uri);
 
       // send telemetry
       const dataOut = {
@@ -151,7 +151,7 @@ function getPageAction() {
     pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield-study_mozilla_com");
   }
   if (!pageAction) {
-    throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll('.urlbar-page-action')]);
+    throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll(".urlbar-page-action")]);
   }
   return pageAction;
 
@@ -259,19 +259,19 @@ class Feature {
       } else if (msg["trigger-popup"]) {
         client.sawPopup = true;
         // set pref to force discovery page
-        Preferences.set("extensions.ui.lastCategory", "addons://discover/")
+        Preferences.set("extensions.ui.lastCategory", "addons://discover/");
         const pageAction = getPageAction();
         pageAction.click();
         // send telemetry
-        var dataOut = {
+        const dataOut = {
           "clickedButton": "false",
           "sawPopup": "true",
           "startTime": String(client.startTime),
           "addon_id": "null",
           "srcURI": "null",
-          "pingType": "trigger-popup"
-        }
-        self.telemetry(dataOut)
+          "pingType": "trigger-popup",
+        };
+        self.telemetry(dataOut);
         sendReply({ response: "Successfully triggered pop-up" });
 
 
@@ -281,15 +281,15 @@ class Feature {
         client.clickedButton = true;
         closePageAction();
         // send telemetry
-        var dataOut = {
+        const dataOut = {
           "clickedButton": "true",
           "sawPopup": "true",
           "startTime": String(client.startTime),
           "addon_id": "null",
           "srcURI": "null",
-          "pingType": "button-click"
-        }
-        self.telemetry(dataOut)
+          "pingType": "button-click",
+        };
+        self.telemetry(dataOut);
         sendReply(null);
       } else if (msg["clicked-close-button"]) {
         client.clickedButton = false;

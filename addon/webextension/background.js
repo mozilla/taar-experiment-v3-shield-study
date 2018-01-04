@@ -114,7 +114,7 @@ function webNavListener(info) {
         // arbitrary condition for now
         if (totalCount > 2 || testing) {
           browser.storage.local.set({ "PA-tabId": tabId })
-          browser.pageAction.show(tabId)
+          browser.pageAction.show(tabId);
           browser.pageAction.setPopup({
             tabId,
             popup: "/popup/locales/" + locale + "/popup.html"
@@ -129,7 +129,7 @@ function webNavListener(info) {
         });
         browser.webNavigation.onCompleted.removeListener(webNavListener);
       }
-    })
+    });
     // Persist the updated webNav stats.
     browser.storage.local.set(results);
   })
