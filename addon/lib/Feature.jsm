@@ -130,14 +130,11 @@ function addonChangeListener(change, client, featureInstance) {
 
       // send telemetry
       const dataOut = {
-        "clickedButton": String(client.status.clickedButton),
-        "sawPopup": String(client.status.sawPopup),
-        "startTime": String(client.status.startTime),
         "addon_id": String(client.status.lastInstalled),
         "srcURI": String(uri),
         "pingType": "install",
       };
-      featureInstance.telemetry(dataOut);
+      featureInstance.notifyViaTelemetry(dataOut);
 
       client.lastInstalled = null;
     } else if (client.lastDisabled) {
@@ -145,14 +142,11 @@ function addonChangeListener(change, client, featureInstance) {
 
       // send telemetry
       const dataOut = {
-        "clickedButton": String(client.status.clickedButton),
-        "sawPopup": String(client.status.sawPopup),
-        "startTime": String(client.status.startTime),
         "addon_id": String(client.status.lastDisabled),
         "srcURI": String(uri),
         "pingType": "uninstall",
       };
-      featureInstance.telemetry(dataOut);
+      featureInstance.notifyViaTelemetry(dataOut);
 
       client.lastDisabled = null;
 
@@ -277,29 +271,17 @@ class Feature {
         client.setAndPersistStatus("startTime", String(Date.now()));
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.status.discoPaneLoaded),
-          "clickedButton": String(client.status.clickedButton),
-          "sawPopup": String(client.status.sawPopup),
-          "startTime": String(client.status.startTime),
-          "addon_id": String(client.lastInstalled),
-          "srcURI": "null",
           "pingType": "init",
         };
-        self.telemetry(dataOut);
+        self.notifyViaTelemetry(dataOut);
         sendReply(dataOut);
       } else if (msg["disco-pane-loaded"]) {
         client.setAndPersistStatus("discoPaneLoaded", true);
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.status.discoPaneLoaded),
-          "clickedButton": String(client.status.clickedButton),
-          "sawPopup": String(client.status.sawPopup),
-          "startTime": String(client.status.startTime),
-          "addon_id": String(client.lastInstalled),
-          "srcURI": "null",
           "pingType": "disco-pane-loaded",
         };
-        self.telemetry(dataOut);
+        self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Disco pane loaded" });
       } else if (msg["trigger-popup"]) {
         client.setAndPersistStatus("sawPopup", true);
@@ -309,15 +291,9 @@ class Feature {
         pageAction.click();
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.status.discoPaneLoaded),
-          "clickedButton": String(client.status.clickedButton),
-          "sawPopup": String(client.status.sawPopup),
-          "startTime": String(client.status.startTime),
-          "addon_id": "null",
-          "srcURI": "null",
           "pingType": "trigger-popup",
         };
-        self.telemetry(dataOut);
+        self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Triggered pop-up" });
 
 
@@ -328,15 +304,9 @@ class Feature {
         closePageAction();
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.status.discoPaneLoaded),
-          "clickedButton": String(client.status.clickedButton),
-          "sawPopup": String(client.status.sawPopup),
-          "startTime": String(client.status.startTime),
-          "addon_id": "null",
-          "srcURI": "null",
           "pingType": "button-click",
         };
-        self.telemetry(dataOut);
+        self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Clicked discovery pane button" });
       } else if (msg["clicked-close-button"]) {
         client.setAndPersistStatus("clickedButton", false);
@@ -345,6 +315,27 @@ class Feature {
       }
     });
 
+  }
+
+  /**
+   * Wrapper that ensures that telemetry gets sent in the expected format for the study
+   * @param stringStringMap
+   */
+  notifyViaTelemetry(stringStringMap) {
+    const client = this.client;
+    stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    stringStringMap.clickedButton = String(client.status.clickedButton);
+    stringStringMap.sawPopup = String(client.status.sawPopup);
+    stringStringMap.startTime = String(client.status.startTime);
+    stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    if (typeof stringStringMap.addon_id === 'undefined') {
+      stringStringMap.addon_id = "null";
+    }
+    if (typeof stringStringMap.srcURI === 'undefined') {
+      stringStringMap.srcURI = "null";
+    }
+    // send telemetry
+    self.telemetry(dataOut);
   }
 
   /* good practice to have the literal 'sending' be wrapped up */
