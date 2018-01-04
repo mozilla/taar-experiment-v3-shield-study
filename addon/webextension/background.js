@@ -67,15 +67,15 @@ function telemetry(data) {
 }
 */
 
+function handleError(error) {
+  console.log(error);
+}
+
 function triggerPopup() {
 
   function handleResponse(message) {
     console.log(`Message from the privileged script: ${message.response}`);
     browser.storage.local.set({ sawPopup: true });
-  }
-
-  function handleError(error) {
-    console.log(error);
   }
 
   const sending = browser.runtime.sendMessage({ "trigger-popup": true });
@@ -99,50 +99,53 @@ function webNavListener_popupRelated(info) {
   if (info.frameId !== 0) {
     return;
   }
-  browser.storage.local.get("hostNavigationStats").then(results => {
-    console.log('hostNavigationStats results', results);
-    // Initialize the saved stats if not yet initialized.
-    if (!results.hostNavigationStats) {
-      results = {
-        hostNavigationStats: {}
-      };
-    }
+
+  // get up to date client status
+  const sending = browser.runtime.sendMessage({ "getClientStatus": true });
+  const handleResponse = function(clientStatus) {
+
     const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
     const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
-
-    const { hostNavigationStats } = results;
-    hostNavigationStats["totalWebNav"] = hostNavigationStats["totalWebNav"] || 0;
-    hostNavigationStats['totalWebNav']++;
-
-    const totalCount = hostNavigationStats['totalWebNav'];
     const tabId = info.tabId;
-    const sawPopup = browser.storage.local.get("sawPopup");
 
-    console.log('TotalURI: ' + totalCount);
+    clientStatus.totalWebNav++;
 
-    sawPopup.then(function(result) {
-      if ((!result.sawPopup && totalCount <= 3) || forcePopup) { // client has not seen popup
-        // arbitrary condition for now
-        if (totalCount > 2 || forcePopup) {
-          browser.storage.local.set({ "PA-tabId": tabId })
-          browser.pageAction.show(tabId);
-          browser.pageAction.setPopup({
-            tabId,
-            popup: "/popup/locales/" + locale + "/popup.html"
+    browser.runtime.sendMessage({
+      "setAndPersistClientStatus": true,
+      "key": "totalWebNav",
+      "value": clientStatus.totalWebNav
+    }).then(
+      function(clientStatus) {
+
+        console.log('TotalURI: ' + clientStatus.totalWebNav);
+
+        if ((!clientStatus.sawPopup && clientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
+          // arbitrary condition for now
+          if (clientStatus.totalWebNav > 2 || forcePopup) {
+            browser.storage.local.set({ "PA-tabId": tabId });
+            browser.pageAction.show(tabId);
+            browser.pageAction.setPopup({
+              tabId,
+              popup: "/popup/locales/" + locale + "/popup.html"
+            });
+            // wait 500ms second to make sure pageAction exists in chrome
+            // so we can pageAction.show() from bootstrap.js
+            setTimeout(triggerPopup, 500);
+          }
+        } else { //client has seen the popup
+          browser.storage.local.get("PA-tabId").then(function(result2) {
+            browser.pageAction.hide(result2["PA-tabId"]);
           });
-          // wait 500ms second to make sure pageAction exists in chrome
-          // so we can pageAction.show() from bootstrap.js
-          setTimeout(triggerPopup, 500);
         }
-      } else { //client has seen the popup
-        browser.storage.local.get("PA-tabId").then(function(result2) {
-          browser.pageAction.hide(result2["PA-tabId"])
-        });
-      }
-    });
-    // Persist the updated webNav stats.
-    browser.storage.local.set(results);
-  })
+
+      },
+      handleError
+    );
+
+
+  };
+  sending.then(handleResponse, handleError);
+
 }
 
 

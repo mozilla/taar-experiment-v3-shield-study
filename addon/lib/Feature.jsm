@@ -62,6 +62,7 @@ class client {
       this.status.clickedButton = false;
       this.status.sawPopup = false;
       this.status.startTime = null;
+      this.status.totalWebNav = 0;
       this.persistStatus();
     }
     // Temporary class variables for extension tracking logic
@@ -312,6 +313,16 @@ class Feature {
         client.setAndPersistStatus("clickedButton", false);
         closePageAction();
         sendReply({ response: "Closed pop-up" });
+      } else {
+
+        // getter and setter for client status
+        if (msg.getClientStatus) {
+          sendReply(client.status);
+        } else if (msg.setAndPersistClientStatus) {
+          client.setAndPersistStatus(msg.key, msg.value);
+          sendReply(client.status);
+        }
+
       }
     });
 
