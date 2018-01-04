@@ -32,6 +32,8 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
+const CLIENT_STATUS_PREF = "extensions.taarexp2.client-status";
+
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
   "resource:///modules/RecentWindow.jsm");
 
@@ -49,16 +51,33 @@ function getMostRecentBrowserWindow() {
 */
 
 
-class clientStatus {
+class client {
   constructor() {
-    this.discoPaneLoaded = false;
-    this.clickedButton = false;
-    this.sawPopup = false;
+    const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
+    if (clientStatusJson) {
+      this.status = JSON.parse(clientStatusJson);
+    } else {
+      this.status = {};
+      this.status.discoPaneLoaded = false;
+      this.status.clickedButton = false;
+      this.status.sawPopup = false;
+      this.status.startTime = null;
+      this.persistStatus();
+    }
+    // Temporary class variables for extension tracking logic
     this.activeAddons = new Set();
     this.addonHistory = new Set();
     this.lastInstalled = null;
     this.lastDisabled = null;
-    this.startTime = null;
+  }
+
+  setAndPersistStatus(key, value) {
+    this.status[key] = value;
+    this.persistStatus();
+  }
+
+  persistStatus() {
+    Preferences.set(CLIENT_STATUS_PREF, JSON.stringify(this.status));
   }
 
   updateAddons() {
@@ -111,10 +130,10 @@ function addonChangeListener(change, client, featureInstance) {
 
       // send telemetry
       const dataOut = {
-        "clickedButton": String(client.clickedButton),
-        "sawPopup": String(client.sawPopup),
-        "startTime": String(client.startTime),
-        "addon_id": String(client.lastInstalled),
+        "clickedButton": String(client.status.clickedButton),
+        "sawPopup": String(client.status.sawPopup),
+        "startTime": String(client.status.startTime),
+        "addon_id": String(client.status.lastInstalled),
         "srcURI": String(uri),
         "pingType": "install",
       };
@@ -126,10 +145,10 @@ function addonChangeListener(change, client, featureInstance) {
 
       // send telemetry
       const dataOut = {
-        "clickedButton": String(client.clickedButton),
-        "sawPopup": String(client.sawPopup),
-        "startTime": String(client.startTime),
-        "addon_id": String(client.lastDisabled),
+        "clickedButton": String(client.status.clickedButton),
+        "sawPopup": String(client.status.sawPopup),
+        "startTime": String(client.status.startTime),
+        "addon_id": String(client.status.lastDisabled),
         "srcURI": String(uri),
         "pingType": "uninstall",
       };
@@ -204,10 +223,10 @@ class Feature {
    *
    */
   constructor({ variation, studyUtils, reasonName, log }) {
-    // unused.  Some other UI might use the specific variation info for things.
+
     this.variation = variation;
     this.studyUtils = studyUtils;
-    this.client = new clientStatus();
+    this.client = new client();
     this.log = log;
 
     // only during INSTALL
@@ -255,28 +274,27 @@ class Feature {
       // message handers //////////////////////////////////////////
       if (msg.init) {
         this.log.debug("init received");
-        client.startTime = Date.now();
+        client.setAndPersistStatus("startTime", String(Date.now()));
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.discoPaneLoaded),
-          "clickedButton": String(client.clickedButton),
-          "sawPopup": String(client.sawPopup),
-          "startTime": String(client.startTime),
+          "discoPaneLoaded": String(client.status.discoPaneLoaded),
+          "clickedButton": String(client.status.clickedButton),
+          "sawPopup": String(client.status.sawPopup),
+          "startTime": String(client.status.startTime),
           "addon_id": String(client.lastInstalled),
           "srcURI": "null",
           "pingType": "init",
         };
         self.telemetry(dataOut);
-        this.log.debug(dataOut);
         sendReply(dataOut);
       } else if (msg["disco-pane-loaded"]) {
-        client.discoPaneLoaded = true;
+        client.setAndPersistStatus("discoPaneLoaded", true);
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.discoPaneLoaded),
-          "clickedButton": String(client.clickedButton),
-          "sawPopup": String(client.sawPopup),
-          "startTime": String(client.startTime),
+          "discoPaneLoaded": String(client.status.discoPaneLoaded),
+          "clickedButton": String(client.status.clickedButton),
+          "sawPopup": String(client.status.sawPopup),
+          "startTime": String(client.status.startTime),
           "addon_id": String(client.lastInstalled),
           "srcURI": "null",
           "pingType": "disco-pane-loaded",
@@ -284,17 +302,17 @@ class Feature {
         self.telemetry(dataOut);
         sendReply({ response: "Disco pane loaded" });
       } else if (msg["trigger-popup"]) {
-        client.sawPopup = true;
+        client.setAndPersistStatus("sawPopup", true);
         // set pref to force discovery page
         Preferences.set("extensions.ui.lastCategory", "addons://discover/");
         const pageAction = getPageAction();
         pageAction.click();
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.discoPaneLoaded),
-          "clickedButton": "false",
-          "sawPopup": "true",
-          "startTime": String(client.startTime),
+          "discoPaneLoaded": String(client.status.discoPaneLoaded),
+          "clickedButton": String(client.status.clickedButton),
+          "sawPopup": String(client.status.sawPopup),
+          "startTime": String(client.status.startTime),
           "addon_id": "null",
           "srcURI": "null",
           "pingType": "trigger-popup",
@@ -306,14 +324,14 @@ class Feature {
       } else if (msg["clicked-disco-button"]) {
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
-        client.clickedButton = true;
+        client.setAndPersistStatus("clickedButton", true);
         closePageAction();
         // send telemetry
         const dataOut = {
-          "discoPaneLoaded": String(client.discoPaneLoaded),
-          "clickedButton": "true",
-          "sawPopup": "true",
-          "startTime": String(client.startTime),
+          "discoPaneLoaded": String(client.status.discoPaneLoaded),
+          "clickedButton": String(client.status.clickedButton),
+          "sawPopup": String(client.status.sawPopup),
+          "startTime": String(client.status.startTime),
           "addon_id": "null",
           "srcURI": "null",
           "pingType": "button-click",
@@ -321,7 +339,7 @@ class Feature {
         self.telemetry(dataOut);
         sendReply({ response: "Clicked discovery pane button" });
       } else if (msg["clicked-close-button"]) {
-        client.clickedButton = false;
+        client.setAndPersistStatus("clickedButton", false);
         closePageAction();
         sendReply({ response: "Closed pop-up" });
       }
