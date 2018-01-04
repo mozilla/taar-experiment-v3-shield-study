@@ -75,7 +75,7 @@ function triggerPopup() {
   }
 
   function handleError(error) {
-    console.log(`Error: ${error}`);
+    console.log(error);
   }
 
   const sending = browser.runtime.sendMessage({ "trigger-popup": true });
