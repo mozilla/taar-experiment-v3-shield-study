@@ -354,8 +354,9 @@ class Feature {
     this.studyUtils.telemetry(stringStringMap);
   }
 
-  /* no-op shutdown */
+  /* remove artifacts of this study */
   shutdown() {
+    Preferences.set(CLIENT_STATUS_PREF, null);
   }
 }
 
