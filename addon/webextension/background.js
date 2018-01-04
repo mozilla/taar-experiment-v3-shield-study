@@ -137,9 +137,6 @@ function webNavListener(info) {
 
 
 class TAARExperiment {
-  constructor() {
-    this.popUpVariations = new Set(["linear-taar-popup", "ensamble-taar-popup"]);
-  }
 
   /*
   logStorage() {
@@ -151,18 +148,7 @@ class TAARExperiment {
     this.info = await msgStudyUtils('info');
     let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized'];
     if (isFirstRun) await TAARExperiment.firstRun();
-
-    this.branch = (await browser.storage.local.get('branch'))['branch'];
-
-    // only montior navigation for branches qualified to
-    // receive the pop-up.
-    console.log('this.popUpVariations', this.popUpVariations);
-    console.log('this.info.variation.name', this.info.variation.name);
-    if (this.popUpVariations.has(this.info.variation.name)) {
-      TAARExperiment.monitorNavigation()
-    } else {
-      console.log('No popup will be triggered since the current variation is not a popup-variation');
-    }
+    TAARExperiment.monitorNavigation();
   }
 
   static async firstRun() {
