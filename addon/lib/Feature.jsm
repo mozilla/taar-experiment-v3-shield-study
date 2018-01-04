@@ -244,6 +244,7 @@ class Feature {
       if (msg.init) {
         this.log.debug("init received");
         client.startTime = Date.now();
+        // send telemetry
         const dataOut = {
           "clickedButton": String(client.clickedButton),
           "sawPopup": String(client.sawPopup),
@@ -252,7 +253,7 @@ class Feature {
           "srcURI": "null",
           "pingType": "init",
         };
-        this.telemetry(dataOut);
+        self.telemetry(dataOut);
         this.log.debug(dataOut);
         sendReply(dataOut);
       } else if (msg["trigger-popup"]) {
@@ -270,7 +271,7 @@ class Feature {
           "srcURI": "null",
           "pingType": "trigger-popup"
         }
-        studyUtils.telemetry(dataOut)
+        self.telemetry(dataOut)
         sendReply({ response: "Successfully triggered pop-up" });
 
 
@@ -288,7 +289,7 @@ class Feature {
           "srcURI": "null",
           "pingType": "button-click"
         }
-        studyUtils.telemetry(dataOut)
+        self.telemetry(dataOut)
         sendReply(null);
       } else if (msg["clicked-close-button"]) {
         client.clickedButton = false;
