@@ -100,12 +100,14 @@ function bucketURI(uri) {
   return uri;
 }
 
-function addonChangeListener(change, client, studyUtils) {
+function addonChangeListener(change, client, featureInstance) {
   if (change === "addons-changed") {
     client.updateAddons();
     const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
     if (client.lastInstalled) {
+      featureInstance.log.debug("Just installed", client.lastInstalled, "from", uri);
+
       // send telemetry
       const dataOut = {
         "clickedButton": String(client.clickedButton),
@@ -115,12 +117,11 @@ function addonChangeListener(change, client, studyUtils) {
         "srcURI": String(uri),
         "pingType": "install",
       };
-      this.log.debug("Just installed", client.lastInstalled, "from", uri);
-      studyUtils.telemetry(dataOut);
+      featureInstance.telemetry(dataOut);
 
       client.lastInstalled = null;
     } else if (client.lastDisabled) {
-      this.log.debug("Just disabled", client.lastDisabled, "from", uri);
+      featureInstance.log.debug("Just disabled", client.lastDisabled, "from", uri);
 
       // send telemetry
       const dataOut = {
@@ -131,7 +132,7 @@ function addonChangeListener(change, client, studyUtils) {
         "srcURI": String(uri),
         "pingType": "uninstall",
       };
-      studyUtils.telemetry(dataOut);
+      featureInstance.telemetry(dataOut);
 
       client.lastDisabled = null;
 
@@ -245,7 +246,7 @@ class Feature {
     client.activeAddons = getNonSystemAddons();
     client.addonHistory = getNonSystemAddons();
     TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
-      addonChangeListener(x, client, self.studyUtils);
+      addonChangeListener(x, client, self);
     });
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {

@@ -120,7 +120,7 @@ function webNavListener(info) {
             popup: "/popup/locales/" + locale + "/popup.html"
           });
           // wait 500ms second to make sure pageAction exists in chrome
-          // so we can pageAction.show() from bootsrap.js
+          // so we can pageAction.show() from bootstrap.js
           setTimeout(triggerPopup, 500);
         }
       } else { //client has seen the popup
@@ -157,7 +157,7 @@ class TAARExperiment {
   }
 
   static monitorNavigation() {
-    console.log('monitorNavigation');
+    console.log('Monitoring navigation to be able to show popup after 3 page visits');
     browser.webNavigation.onCompleted.addListener(webNavListener,
       { url: [{ schemes: ["http", "https"] }] });
   }
