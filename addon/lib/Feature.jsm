@@ -51,8 +51,8 @@ function getMostRecentBrowserWindow() {
 
 class clientStatus {
   constructor() {
-    this.clickedButton = null;
-    this.sawPop = false;
+    this.clickedButton = false;
+    this.sawPopup = false;
     this.activeAddons = new Set();
     this.addonHistory = new Set();
     this.lastInstalled = null;
@@ -63,8 +63,6 @@ class clientStatus {
   updateAddons() {
     const prev = this.activeAddons;
     const curr = getNonSystemAddons();
-
-    console.log({ "prev": prev, "curr": curr });
 
     const currDiff = curr.difference(prev);
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
@@ -104,7 +102,6 @@ function bucketURI(uri) {
 
 function addonChangeListener(change, client, studyUtils) {
   if (change === "addons-changed") {
-    console.log("\n\n SOMETHING CHANGED WITH ADDONS... \n\n\n -----------------");
     client.updateAddons();
     const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
@@ -119,7 +116,6 @@ function addonChangeListener(change, client, studyUtils) {
         "pingType": "install",
       };
       console.log("Just installed", client.lastInstalled, "from", uri);
-      console.log(dataOut);
       studyUtils.telemetry(dataOut);
 
       client.lastInstalled = null;
@@ -136,7 +132,6 @@ function addonChangeListener(change, client, studyUtils) {
         "pingType": "uninstall",
       };
       studyUtils.telemetry(dataOut);
-      console.log(dataOut);
 
       client.lastDisabled = null;
 
@@ -241,7 +236,6 @@ class Feature {
     client.addonHistory = getNonSystemAddons();
     TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
       addonChangeListener(x, client, self.studyUtils);
-      self.log.debug(client);
     });
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
@@ -262,9 +256,22 @@ class Feature {
         this.log.debug(dataOut);
         sendReply(dataOut);
       } else if (msg["trigger-popup"]) {
+        client.sawPopup = true;
+        // set pref to force discovery page
+        Preferences.set("extensions.ui.lastCategory", "addons://discover/")
         const pageAction = getPageAction();
         pageAction.click();
-        sendReply({response: "Successfully triggered pop-up"});
+        // send telemetry
+        var dataOut = {
+          "clickedButton": "false",
+          "sawPopup": "true",
+          "startTime": String(client.startTime),
+          "addon_id": "null",
+          "srcURI": "null",
+          "pingType": "trigger-popup"
+        }
+        studyUtils.telemetry(dataOut)
+        sendReply({ response: "Successfully triggered pop-up" });
 
 
       } else if (msg["clicked-disco-button"]) {
@@ -272,6 +279,16 @@ class Feature {
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
         client.clickedButton = true;
         closePageAction();
+        // send telemetry
+        var dataOut = {
+          "clickedButton": "true",
+          "sawPopup": "true",
+          "startTime": String(client.startTime),
+          "addon_id": "null",
+          "srcURI": "null",
+          "pingType": "button-click"
+        }
+        studyUtils.telemetry(dataOut)
         sendReply(null);
       } else if (msg["clicked-close-button"]) {
         client.clickedButton = false;

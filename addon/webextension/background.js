@@ -50,6 +50,7 @@ async function msgStudyUtils(msg, data) {
  *   Bold claim:  catching errors here
  *
  */
+
 /*
 function telemetry(data) {
   function throwIfInvalid(obj) {
@@ -109,9 +110,9 @@ function webNavListener(info) {
     console.log('TotalURI: ' + totalCount);
 
     sawPopup.then(function(result) {
-      if (!result.sawPopup || testing) { // client has not seen popup
+      if ((!result.sawPopup && totalCount <= 3) || testing) { // client has not seen popup
         // arbitrary condition for now
-        if (totalCount > 0 || testing) {
+        if (totalCount > 2 || testing) {
           browser.storage.local.set({ "PA-tabId": tabId })
           browser.pageAction.show(tabId)
           browser.pageAction.setPopup({
@@ -123,15 +124,10 @@ function webNavListener(info) {
           setTimeout(triggerPopup, 500);
         }
       } else { //client has seen the popup
-        browser.storage.local.get("PA-hidden").then(function(result) {
-          if (!result["PA-hidden"]) { // page action is still visible
-            browser.storage.local.get("PA-tabId").then(function(result2) {
-              browser.pageAction.hide(result2["PA-tabId"])
-              browser.storage.local.set({ "PA-hidden": true })
-            })
-            browser.webNavigation.onCompleted.removeListener(webNavListener)
-          }
-        })
+        browser.storage.local.get("PA-tabId").then(function(result2) {
+          browser.pageAction.hide(result2["PA-tabId"])
+        });
+        browser.webNavigation.onCompleted.removeListener(webNavListener);
       }
     })
     // Persist the updated webNav stats.

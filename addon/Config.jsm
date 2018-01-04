@@ -82,14 +82,8 @@ var config = {
      */
     "endings": {
       /** standard endings */
-      "user-disable": {
-        "baseUrl": "http://www.example.com/?reason=user-disable",
-      },
-      "ineligible": {
-        "baseUrl": "http://www.example.com/?reason=ineligible",
-      },
-      "expired": {
-        "baseUrl": "http://www.example.com/?reason=expired",
+      "no-endings": {
+        "url": "null",
       },
       /** User defined endings */
       "used-often": {
@@ -107,7 +101,7 @@ var config = {
     },
     "telemetry": {
       "send": true, // assumed false. Actually send pings?
-      "removeTestingFlag": false,  // Marks pings as testing, set true for actual release
+      "removeTestingFlag": true,  // Marks pings as testing, set true for actual release
       // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
     },
   },
@@ -134,7 +128,8 @@ var config = {
     return eligibleLocale;
 
     /*
-    return true if profile is at most one week old
+    return true if 3 <= profile_age <= 12
+    and locale is among those localized
     */
 
     /*
@@ -142,14 +137,15 @@ var config = {
     // See http://searchfox.org/mozilla-central/rev/423b2522c48e1d654e30ffc337164d677f934ec3/toolkit/components/telemetry/TelemetryController.jsm#295
     await TelemetryController.promiseInitialized();
 
-    // const locale = TelemetryEnvironment.currentEnvironment.settings.locale;
-    //const locale = "notelig";
-    const locale = "en";
+    const locale = TelemetryEnvironment.currentEnvironment.settings.locale.toLowerCase();
     const profileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
     console.log("profileCreationDate", profileCreationDate);
-    // MS -> Days
     const currentDay = Math.round(Date.now() / 60 / 60 / 24 / 1000);
-    return (currentDay - profileCreationDate) <= 7 && eligableLocal;
+    const profileAgeInDays = currentDay - proflileCreationDate
+
+    const validProfileAge = profileAgeInDays >= 3 && profileAgeInDays <= 12
+    const validLocale = locales.has(locale)
+    return validProfileAge && validLocale
     */
   },
 
