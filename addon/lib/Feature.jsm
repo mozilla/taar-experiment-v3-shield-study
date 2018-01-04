@@ -216,14 +216,24 @@ class Feature {
     // log what the study variation and other info is.
     this.log.debug(`info ${JSON.stringify(studyUtils.info())}`);
 
-    const clientId = ClientID.getClientID();
+    const clientIdPromise = ClientID.getClientID();
 
-    // default
-    let aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%";
-    if (variation.name === "taar-disco-popup" || variation.name === "taar-disco") {
-      aboutAddonsDomain += "?clientId=" + clientId;
+    clientIdPromise.then((clientId) => {
+
+      let aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%";
+      aboutAddonsDomain += "?study=taarexpv2";
+      aboutAddonsDomain += "&branch=" + variation.name;
+
+      // do not supply client id for the control branch
+      if (variation.name !== "control") {
+        aboutAddonsDomain += "&clientId=" + clientId;
+      }
+
+      this.log.debug(`Study-specific add-ons domain: ${aboutAddonsDomain}`);
+
       Preferences.set("extensions.webservice.discoverURL", aboutAddonsDomain);
-    }
+
+    });
 
   }
 
