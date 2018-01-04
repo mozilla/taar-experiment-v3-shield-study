@@ -148,11 +148,11 @@ var config = {
   // Equal weighting for each of the 3 variations
   "weightedVariations": [
     {
-      "name": "linear-taar-popup",
+      "name": "linear-taar",
       "weight": 1,
     },
     {
-      "name": "ensamble-taar-popup",
+      "name": "ensamble-taar",
       "weight": 1,
     },
     {

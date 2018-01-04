@@ -37,7 +37,7 @@ const FIREFOX_PREFERENCES = {
   "shield.testing.logging.level": 10, // Trace
 
   // Force variation for testing
-  "shield.test.variation": "linear-taar-popup",
+  "shield.test.variation": "linear-taar",
 
   /** WARNING: gecko webdriver sets many additional prefs at:
     * https://dxr.mozilla.org/mozilla-central/source/testing/geckodriver/src/prefs.rs
