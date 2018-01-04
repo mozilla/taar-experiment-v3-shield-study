@@ -1,6 +1,6 @@
 {
-  "name": "WebExtension-study-BrowserActionButtonChoice",
-  "version": "0.2.0",
+  "name": "WebExtension-study-taarexpv2",
+  "version": "0.1.0",
   "manifest_version": 2,
   "permissions": [
     "storage",
