@@ -272,7 +272,7 @@ class Feature {
           "pingType": "trigger-popup",
         };
         self.telemetry(dataOut);
-        sendReply({ response: "Successfully triggered pop-up" });
+        sendReply({ response: "Triggered pop-up" });
 
 
       } else if (msg["clicked-disco-button"]) {
@@ -290,11 +290,11 @@ class Feature {
           "pingType": "button-click",
         };
         self.telemetry(dataOut);
-        sendReply(null);
+        sendReply({ response: "Clicked discovery pane button" });
       } else if (msg["clicked-close-button"]) {
         client.clickedButton = false;
         closePageAction();
-        sendReply(null);
+        sendReply({ response: "Closed pop-up" });
       }
     });
 
