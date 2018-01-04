@@ -335,7 +335,7 @@ class Feature {
       stringStringMap.srcURI = "null";
     }
     // send telemetry
-    self.telemetry(dataOut);
+    this.telemetry(stringStringMap);
   }
 
   /* good practice to have the literal 'sending' be wrapped up */
