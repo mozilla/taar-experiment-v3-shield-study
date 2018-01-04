@@ -107,7 +107,7 @@ function webNavListener_popupRelated(info) {
         hostNavigationStats: {}
       };
     }
-    const testing = false; // true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
+    const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
     const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
 
     const { hostNavigationStats } = results;
@@ -121,9 +121,9 @@ function webNavListener_popupRelated(info) {
     console.log('TotalURI: ' + totalCount);
 
     sawPopup.then(function(result) {
-      if ((!result.sawPopup && totalCount <= 3) || testing) { // client has not seen popup
+      if ((!result.sawPopup && totalCount <= 3) || forcePopup) { // client has not seen popup
         // arbitrary condition for now
-        if (totalCount > 2 || testing) {
+        if (totalCount > 2 || forcePopup) {
           browser.storage.local.set({ "PA-tabId": tabId })
           browser.pageAction.show(tabId);
           browser.pageAction.setPopup({
