@@ -32,7 +32,7 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
-const PREF_BRANCH = "extensions.taarexp2";
+const PREF_BRANCH = "extensions.taarexpv2";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
@@ -73,6 +73,10 @@ class Client {
     this.lastDisabled = null;
   }
 
+  getStatus() {
+    return this.status;
+  }
+
   setAndPersistStatus(key, value) {
     this.status[key] = value;
     this.persistStatus();
@@ -103,6 +107,13 @@ class Client {
   }
 
   static getNonSystemAddons() {
+
+    // Prevent a dangling change listener (left after add-on uninstallation) to do anything
+    if (!TelemetryEnvironment) {
+      featureInstance.log.debug("getNonSystemAddons disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      return;
+    }
+
     const activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons;
     const result = new Set();
     for (const addon in activeAddons) {
@@ -127,18 +138,24 @@ class Client {
 
   monitorAddonChanges(featureInstance) {
 
+    // Prevent a dangling change listener (left after add-on uninstallation) to do anything
+    if (!TelemetryEnvironment) {
+      featureInstance.log.debug("monitorAddonChanges disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      return;
+    }
+
     const client = this;
 
     client.activeAddons = Client.getNonSystemAddons();
     client.addonHistory = Client.getNonSystemAddons();
 
     TelemetryEnvironment.registerChangeListener("addonListener", function(change) {
-      Client.addonChangeListener(change, featureInstance);
+      Client.addonChangeListener(change, client, featureInstance);
     });
 
   }
 
-  static addonChangeListener(change, featureInstance) {
+  static addonChangeListener(change, client, featureInstance) {
     if (change === "addons-changed") {
       client.updateAddons();
       const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
@@ -263,7 +280,7 @@ class Feature {
         aboutAddonsDomain += "&clientId=" + clientId;
       }
 
-      this.log.debug(`Study-specific add-ons domain: ${aboutAddonsDomain}`);
+      log.debug(`Study-specific add-ons domain: ${aboutAddonsDomain}`);
 
       Preferences.set("extensions.webservice.discoverURL", aboutAddonsDomain);
 
@@ -282,11 +299,11 @@ class Feature {
     client.monitorAddonChanges(self);
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
-      this.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
+      self.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
 
       // event-based message handlers
       if (msg.init) {
-        this.log.debug("init received");
+        self.log.debug("init received");
         client.setAndPersistStatus("startTime", String(Date.now()));
         // send telemetry
         const dataOut = {
@@ -344,10 +361,12 @@ class Feature {
 
       // getter and setter for client status
       if (msg.getClientStatus) {
-        sendReply(client.status);
+        self.log.debug(client.status);
+        sendReply(client.getStatus());
       } else if (msg.setAndPersistClientStatus) {
         client.setAndPersistStatus(msg.key, msg.value);
-        sendReply(client.status);
+        self.log.debug(client.status);
+        sendReply(client.getStatus());
       }
 
     });
