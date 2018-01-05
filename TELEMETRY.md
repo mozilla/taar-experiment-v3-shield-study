@@ -25,7 +25,13 @@ A ping is sent from the add-on upon:
 
 ### Attributes
 
-.... todo
+**pingType** - One of init, trigger-popup, button-click, disco-pane-loaded, install, uninstall
+**startTime** - String(Date.now()) at the moment of study initialization
+**clickedButton** - "true" or "false" depending on if the popup's "Browse Add-ons" button has been clicked during the study
+**discoPaneLoaded** - "true" or "false" depending on if the disco pane has been loaded during the study
+**sawPopup** - "true" or "false" depending on if the popup has been triggered/shown during the study
+**addon_id** - The add-on id in case of a install or uninstall ping type (otherwise "null")
+**srcURI** - The add-on source URI in case of a install or uninstall ping type (otherwise "null")
 
 ## Example sequence for a 'init => trigger-popup => button-click => disco-pane-loaded => install' interaction
 
@@ -35,18 +41,31 @@ These are the `payload` fields from all pings in the `shield-study` and `shield-
 
 // common fields
 
-branch        foo        // should describe Question text
+branch        linear-taar
 study_name    TAARExperimentV2
 addon_version 0.1.0
 version       3
 
-2017-10-09T14:16:18.042Z shield-study
+
+2018-01-05T10:14:45.124Z shield-study-addon
 {
-  "study_state": "enter"
+  "attributes": {
+    "addon_id": "null",
+    "clickedButton": "false",
+    "discoPaneLoaded": "false",
+    "pingType": "init",
+    "sawPopup": "false",
+    "srcURI": "null",
+    "startTime": "1515147285120"
+  }
 }
-2017-10-09T14:16:18.055Z shield-study
+2018-01-05T10:14:44.603Z shield-study
 {
   "study_state": "installed"
+}
+2018-01-05T10:14:44.495Z shield-study
+{
+  "study_state": "enter"
 }
 ... todo
 ```

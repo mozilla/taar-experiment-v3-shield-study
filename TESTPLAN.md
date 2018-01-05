@@ -6,33 +6,35 @@
 
 * Download a Release version of Firefox (Release is required for the recommendation heuristics to work)
 
-### Install the add-on
+### Install the add-on and enroll in the study
 
-* Navigate to *about:config* and set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
-* If necessary, also set `extensions.taarexpv2.profile-age-in-days-test-override` to a value as mandated below. This permits the study run / not run depending on the eligibility requirement related to profile age.
-* Install the latest signed XPI from [here](todo-bugzilla-url)
+* Navigate to *about:config*
+* Set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
+* Set `shield.test.variation` to `ensemble-taar` or `linear-taar`.
+* Set `extensions.taarexpv2.profile-age-in-days-test-override` to a value as mandated below. This permits the study run / not run depending on the eligibility requirement related to profile age.
+* Go to [todo-bugzilla-url](todo-bugzilla-url) and install the latest signed XPI
 
 ### Do these tests
 
 **Eligibility test 1 (too old profile)**
 
-* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `30`
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `10` or higher
 * Verify that the study does not run
 
 **Eligibility test 2 (too young profile)**
 
-* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `0`
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `1` or lower
 * Verify that the study does not run
 
 **Eligibility test 3 (ineligible locale)**
 
 * Change your locale to one that is not specified in Config.jsm
-* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5`
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study does not run
 
 **Functionality test 1 (init => trigger-popup => clicked-close-button)**
 
-* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5`
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
 * Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
@@ -41,7 +43,7 @@
 
 **Functionality test 2 (init => trigger-popup => button-click => disco-pane-loaded)**
 
-* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5`
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
 * Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
@@ -51,7 +53,7 @@
 
 **Functionality test 3 (init => disco-pane-loaded)**
 
-* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5`
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
 * Navigate to `about:addons` and click on `Get Add-ons`
@@ -60,7 +62,7 @@
 
 **Functionality test 4 (init => ?disco-pane-loaded => install => uninstall => uninstall => install)**
 
-* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5`
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
 * Install any add-on from anywhere
