@@ -165,7 +165,7 @@ var config = {
       "weight": 1,
     },
     {
-      "name": "ensamble-taar",
+      "name": "ensemble-taar",
       "weight": 1,
     },
     {

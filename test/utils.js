@@ -41,7 +41,7 @@ const FIREFOX_PREFERENCES = {
   "toolkit.telemetry.initDelay": 1,
 
   // Force variation for testing
-  "shield.test.variation": "linear-taar",
+  "shield.test.variation": "ensemble-taar",
 
   // Force profile age for testing
   "extensions.taarexp.profile-age-in-days-test-override": "5",
