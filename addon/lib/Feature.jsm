@@ -52,7 +52,7 @@ function getMostRecentBrowserWindow() {
 */
 
 
-class client {
+class Client {
   constructor() {
     const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
     if (clientStatusJson) {
@@ -222,7 +222,7 @@ class Feature {
 
     this.variation = variation;
     this.studyUtils = studyUtils;
-    this.client = new client();
+    this.client = new Client();
     this.log = log;
 
     // only during INSTALL
@@ -267,7 +267,8 @@ class Feature {
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
       this.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
-      // message handers //////////////////////////////////////////
+
+      // event-based message handlers
       if (msg.init) {
         this.log.debug("init received");
         client.setAndPersistStatus("startTime", String(Date.now()));
@@ -277,6 +278,7 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply(dataOut);
+        return;
       } else if (msg["disco-pane-loaded"]) {
         client.setAndPersistStatus("discoPaneLoaded", true);
         // send telemetry
@@ -285,6 +287,7 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Disco pane loaded" });
+        return;
       } else if (msg["trigger-popup"]) {
         client.setAndPersistStatus("sawPopup", true);
         // set pref to force discovery page
@@ -297,8 +300,7 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Triggered pop-up" });
-
-
+        return;
       } else if (msg["clicked-disco-button"]) {
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
@@ -310,21 +312,22 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Clicked discovery pane button" });
+        return;
       } else if (msg["clicked-close-button"]) {
         client.setAndPersistStatus("clickedButton", false);
         closePageAction();
         sendReply({ response: "Closed pop-up" });
-      } else {
-
-        // getter and setter for client status
-        if (msg.getClientStatus) {
-          sendReply(client.status);
-        } else if (msg.setAndPersistClientStatus) {
-          client.setAndPersistStatus(msg.key, msg.value);
-          sendReply(client.status);
-        }
-
+        return;
       }
+
+      // getter and setter for client status
+      if (msg.getClientStatus) {
+        sendReply(client.status);
+      } else if (msg.setAndPersistClientStatus) {
+        client.setAndPersistStatus(msg.key, msg.value);
+        sendReply(client.status);
+      }
+
     });
 
   }
@@ -340,10 +343,10 @@ class Feature {
     stringStringMap.sawPopup = String(client.status.sawPopup);
     stringStringMap.startTime = String(client.status.startTime);
     stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
-    if (typeof stringStringMap.addon_id === 'undefined') {
+    if (typeof stringStringMap.addon_id === "undefined") {
       stringStringMap.addon_id = "null";
     }
-    if (typeof stringStringMap.srcURI === 'undefined') {
+    if (typeof stringStringMap.srcURI === "undefined") {
       stringStringMap.srcURI = "null";
     }
     // send telemetry
