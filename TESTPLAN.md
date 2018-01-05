@@ -86,5 +86,5 @@ See [TELEMETRY.md](./TELEMETRY.md) for more details.
 
 To debug installation and loading of the add-on:
 
-* Navigate to *about:config* and set `shield.testing.logging.level` to `10`. This permits shield-add-on log output in browser console
+* Navigate to *about:config* and set `shield.testing.logging.level` to `10`. This permits shield-add-on log output in browser console (If the preference does not exist, create it be right-clicking in the white area and selecting New -> Integer)
 * Open the Browser Console using Firefox's top menu at `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) and log output from the add-on.
