@@ -86,67 +86,67 @@ see [TESTPLAN](./TESTPLAN.md)
 
 
 ```
-├── .circleci/            # setup for .circle ci integration
+├── .circleci             # setup for .circle ci integration
+│   └── config.yml
 ├── .eslintignore
 ├── .eslintrc.js          # mozilla, json
-├── .git/
 ├── .gitignore
+├── LICENSE
 ├── README.md             # (this file)
 ├── TELEMETRY.md          # Telemetry examples for this addon
 ├── TESTPLAN.md           # Manual QA test plan
 ├── addon                 # Files that will go into the addon
-│   ├── Config.jsm
+│   ├── Config.jsm        # Study-specific configuration regarding branches, eligibility etc
+│   ├── LICENSE
 │   ├── StudyUtils.jsm    # (copied in during `prebuild`)
 │   ├── bootstrap.js      # LEGACY Bootstrap.js
 │   ├── chrome.manifest   # (derived from templates)
+│   ├── icon.png
 │   ├── install.rdf       # (derived from templates)
-│   │
 │   ├── lib               # JSM (Firefox modules)
-│   │   └── AddonPrefs.jsm
-│   │   └── Feature.jsm   # does `introduction`
-|   |
-│   └── webextension      # modern, embedded webextesion
+│   │   └── Feature.jsm   # contains study-specific privileged code
+│   └── webextension      # study-specific embedded webextension
 │       ├── .eslintrc.json
+│       ├── README.md
 │       ├── background.js
-│       ├── icons
-│       │   ├── Anonymous-Lizard.svg
-│       │   ├── DogHazard1.svg
-│       │   ├── Grooming-Cat-Line-Art.svg
-│       │   ├── isolatedcorndog.svg
-│       │   ├── kittens.svg
-│       │   ├── lizard.svg
-│       │   └── puppers.svg
-│       └── manifest.json
-│
+│       ├── manifest.json
+│       └── popup
+│           ├── img
+│           │   └── firefoxicon.png
+│           ├── locales
+│           │   ├── ar
+│           │   │   ├── popup.html
+│           │   │   └── raw.txt
+│           │   ├── ... # etc locales
+│           ├── popup.css
+│           └── popup.js
+├── analysis              # will contain the notebook used for the study's analysis (currently contains the notebook from the taar v1 experiment)
+│   └── TAARExperimentETL.ipynb
 ├── bin                   # Scripts / commands
 │   └── xpi.sh            # build the XPI
-│
 ├── dist                  # built xpis (addons)
-│   ├── @template-shield-study.mozilla.com-1.1.0.xpi
-│   └── linked-addon.xpi -> @template-shield-study.mozilla.com-1.1.0.xpi
-│
+│   ├── .gitignore
+│   ├── linked-addon.xpi -> taarexpv2@shield-study.mozilla.com-0.1.0.xpi
+│   └── taarexpv2@shield-study.mozilla.com-0.1.0.xpi
+├── fetch_translations.py # python script used in v1 to fetch translations used to generate the popup html
+├── generate_html.py      # python script used in v1 generate the popup html
 ├── package-lock.json
 ├── package.json
-├── run-firefox.js        # command
-├── sign/                 # "LEGACY-SIGNED" addons.  used by `npm sign`
-│
-│
+├── run-firefox.js        # used by `npm run firefox`
+├── schemas
+│   └── schema.json
 ├── templates             # mustache templates, filled from `package.json`
 │   ├── chrome.manifest.mustache
 │   └── install.rdf.mustache
-│
-│
 └── test                  # Automated tests `npm test` and circle
     ├── Dockerfile
     ├── docker_setup.sh
     ├── functional_tests.js
-    ├── test-share-study.js
     ├── test_harness.js
     ├── test_printer.py
     └── utils.js
 
-
->> tree -a -I node_modules
+>> tree -a -I 'node_modules|.git|.DS_Store|screenshot.png|pings.json'
 
 ```
 
