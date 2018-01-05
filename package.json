@@ -14,7 +14,7 @@
     "chromeResource": "taarexpv2",
     "creator": "Fredrik Wollsén <fwollsen@mozilla.com>",
     "description": "TAAR Experiment v2 Shield Study",
-    "bugzilla": "<tbd: bug to attach for signing>",
+    "bugzilla": "https://bugzilla.mozilla.org/show_bug.cgi?id=1428308",
     "iconPath": "icon.png"
   },
   "bugs": {

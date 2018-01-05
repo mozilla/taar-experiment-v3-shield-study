@@ -12,7 +12,7 @@
 * Set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
 * Set `shield.test.variation` to `ensemble-taar` or `linear-taar`.
 * Set `extensions.taarexpv2.profile-age-in-days-test-override` to a value as mandated below. This permits the study run / not run depending on the eligibility requirement related to profile age.
-* Go to [todo-bugzilla-url](todo-bugzilla-url) and install the latest signed XPI
+* Go to [https://bugzilla.mozilla.org/show_bug.cgi?id=1428308](https://bugzilla.mozilla.org/show_bug.cgi?id=1428308) and install the latest signed XPI
 
 ### Do these tests
 
