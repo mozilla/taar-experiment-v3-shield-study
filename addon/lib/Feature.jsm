@@ -55,7 +55,7 @@ function getMostRecentBrowserWindow() {
 class Client {
   constructor() {
     const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
-    if (clientStatusJson) {
+    if (clientStatusJson && clientStatusJson !== "") {
       this.status = JSON.parse(clientStatusJson);
     } else {
       this.status = {};
@@ -80,6 +80,10 @@ class Client {
 
   persistStatus() {
     Preferences.set(CLIENT_STATUS_PREF, JSON.stringify(this.status));
+  }
+
+  resetStatus() {
+    Preferences.set(CLIENT_STATUS_PREF, "");
   }
 
   updateAddons() {
@@ -189,9 +193,9 @@ class Feature {
     this.client = new Client();
     this.log = log;
 
-    // only during INSTALL
-    if (reasonName === "ADDON_INSTALL") {
-      // this.introductionNotificationBar();
+    // reset client status during INSTALL and UPGRADE = a new study period begins
+    if (reasonName === "ADDON_INSTALL" || reasonName === "ADDON_UPGRADE") {
+      this.client.resetStatus();
     }
 
     // log what the study variation and other info is.
