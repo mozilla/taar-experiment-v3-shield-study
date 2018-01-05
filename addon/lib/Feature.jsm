@@ -270,6 +270,9 @@ class Feature {
 
   afterWebExtensionStartup(browser) {
 
+    // to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
+    let currentExtensionsUiLastCategoryPreferenceValue = false;
+
     const client = this.client;
     const self = this;
 
@@ -297,11 +300,13 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Disco pane loaded" });
+        // restore preference if we changed it temporarily
+        if (currentExtensionsUiLastCategoryPreferenceValue !== false) {
+          Preferences.set("extensions.ui.lastCategory", currentExtensionsUiLastCategoryPreferenceValue);
+        }
         return;
       } else if (msg["trigger-popup"]) {
         client.setAndPersistStatus("sawPopup", true);
-        // set pref to force discovery page
-        Preferences.set("extensions.ui.lastCategory", "addons://discover/");
         const pageAction = getPageAction();
         pageAction.click();
         // send telemetry
@@ -312,6 +317,10 @@ class Feature {
         sendReply({ response: "Triggered pop-up" });
         return;
       } else if (msg["clicked-disco-button"]) {
+        // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
+        currentExtensionsUiLastCategoryPreferenceValue = Preferences.get("extensions.ui.lastCategory");
+        Preferences.set("extensions.ui.lastCategory", "addons://discover/");
+        // navigate to about:addons
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
         client.setAndPersistStatus("clickedButton", true);
