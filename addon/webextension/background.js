@@ -158,8 +158,8 @@ class TAARExperiment {
 
   async start() {
     this.info = await msgStudyUtils('info');
-    let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized'];
-    if (isFirstRun) await TAARExperiment.firstRun();
+    await clientStatus = browser.runtime.sendMessage({ "getClientStatus": true });
+    if (clientStatus.startTime === null) await TAARExperiment.firstRun();
     TAARExperiment.monitorNavigation();
   }
 
