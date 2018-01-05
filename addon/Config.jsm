@@ -14,7 +14,7 @@ Cu.import("resource://gre/modules/Console.jsm");
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
 const EXPORTED_SYMBOLS = ["config"];
 
-const PROFILE_AGE_TEST_OVERRIDE_PREF = "extensions.taarexp.profile-age-in-days-test-override";
+const PROFILE_AGE_TEST_OVERRIDE_PREF = "extensions.taarexpv2.profile-age-in-days-test-override";
 
 // const slug = "taarexpv2"; // matches chrome.manifest;
 const locales = new Set(
