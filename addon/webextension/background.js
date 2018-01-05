@@ -68,7 +68,7 @@ function telemetry(data) {
 */
 
 function handleError(error) {
-  console.log(error);
+  console.error("A study-specific message handler encountered the following error:", error);
 }
 
 /**
@@ -150,21 +150,18 @@ function webNavListener_popupRelated(info) {
 
 class TAARExperiment {
 
-  /*
-  logStorage() {
-    browser.storage.local.get().then(console.log);
-  }
-  */
-
   async start() {
     this.info = await msgStudyUtils('info');
-    let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized'];
-    if (isFirstRun) await TAARExperiment.firstRun();
-    TAARExperiment.monitorNavigation();
+    await browser.runtime.sendMessage({ "getClientStatus": true }).then(async function(clientStatus) {
+      if (clientStatus.startTime === null) {
+        await TAARExperiment.firstRun();
+      }
+      TAARExperiment.monitorNavigation();
+    }, handleError);
   }
 
   static async firstRun() {
-    return browser.runtime.sendMessage({ "init": true });
+    return browser.runtime.sendMessage({ "init": true }).then(noop, handleError);
   }
 
   static monitorNavigation() {

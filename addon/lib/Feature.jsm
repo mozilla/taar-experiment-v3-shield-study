@@ -32,7 +32,7 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
-const PREF_BRANCH = "extensions.taarexp2";
+const PREF_BRANCH = "extensions.taarexpv2";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
@@ -52,10 +52,10 @@ function getMostRecentBrowserWindow() {
 */
 
 
-class client {
+class Client {
   constructor() {
     const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
-    if (clientStatusJson) {
+    if (clientStatusJson && clientStatusJson !== "") {
       this.status = JSON.parse(clientStatusJson);
     } else {
       this.status = {};
@@ -73,6 +73,10 @@ class client {
     this.lastDisabled = null;
   }
 
+  getStatus() {
+    return this.status;
+  }
+
   setAndPersistStatus(key, value) {
     this.status[key] = value;
     this.persistStatus();
@@ -82,9 +86,13 @@ class client {
     Preferences.set(CLIENT_STATUS_PREF, JSON.stringify(this.status));
   }
 
+  resetStatus() {
+    Preferences.set(CLIENT_STATUS_PREF, "");
+  }
+
   updateAddons() {
     const prev = this.activeAddons;
-    const curr = getNonSystemAddons();
+    const curr = Client.getNonSystemAddons();
 
     const currDiff = curr.difference(prev);
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
@@ -97,65 +105,91 @@ class client {
     }
     this.activeAddons = curr;
   }
-}
 
-function getNonSystemAddons() {
-  const activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons;
-  const result = new Set();
-  for (const addon in activeAddons) {
-    const data = activeAddons[addon];
-    if (!data.isSystem && !data.foreignInstall) {
-      result.add(addon);
-    }
-  }
-  return (result);
-}
+  static getNonSystemAddons() {
 
-function bucketURI(uri) {
-  if (uri !== "about:addons") {
-    if (uri.indexOf("addons.mozilla.org") > 0) {
-      uri = "AMO";
-    } else {
-      uri = "other";
-    }
-  }
-  return uri;
-}
-
-function addonChangeListener(change, client, featureInstance) {
-  if (change === "addons-changed") {
-    client.updateAddons();
-    const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
-
-    if (client.lastInstalled) {
-      featureInstance.log.debug("Just installed", client.lastInstalled, "from", uri);
-
-      // send telemetry
-      const dataOut = {
-        "addon_id": String(client.status.lastInstalled),
-        "srcURI": String(uri),
-        "pingType": "install",
-      };
-      featureInstance.notifyViaTelemetry(dataOut);
-
-      client.lastInstalled = null;
-    } else if (client.lastDisabled) {
-      featureInstance.log.debug("Just disabled", client.lastDisabled, "from", uri);
-
-      // send telemetry
-      const dataOut = {
-        "addon_id": String(client.status.lastDisabled),
-        "srcURI": String(uri),
-        "pingType": "uninstall",
-      };
-      featureInstance.notifyViaTelemetry(dataOut);
-
-      client.lastDisabled = null;
-
+    // Prevent a dangling change listener (left after add-on uninstallation) to do anything
+    if (!TelemetryEnvironment) {
+      featureInstance.log.debug("getNonSystemAddons disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      return;
     }
 
+    const activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons;
+    const result = new Set();
+    for (const addon in activeAddons) {
+      const data = activeAddons[addon];
+      if (!data.isSystem && !data.foreignInstall) {
+        result.add(addon);
+      }
+    }
+    return (result);
+  }
+
+  static bucketURI(uri) {
+    if (uri !== "about:addons") {
+      if (uri.indexOf("addons.mozilla.org") > 0) {
+        uri = "AMO";
+      } else {
+        uri = "other";
+      }
+    }
+    return uri;
+  }
+
+  monitorAddonChanges(featureInstance) {
+
+    // Prevent a dangling change listener (left after add-on uninstallation) to do anything
+    if (!TelemetryEnvironment) {
+      featureInstance.log.debug("monitorAddonChanges disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      return;
+    }
+
+    const client = this;
+
+    client.activeAddons = Client.getNonSystemAddons();
+    client.addonHistory = Client.getNonSystemAddons();
+
+    TelemetryEnvironment.registerChangeListener("addonListener", function(change) {
+      Client.addonChangeListener(change, client, featureInstance);
+    });
 
   }
+
+  static addonChangeListener(change, client, featureInstance) {
+    if (change === "addons-changed") {
+      client.updateAddons();
+      const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
+
+      if (client.lastInstalled) {
+        featureInstance.log.debug("Just installed", client.lastInstalled, "from", uri);
+
+        // send telemetry
+        const dataOut = {
+          "addon_id": String(client.status.lastInstalled),
+          "srcURI": String(uri),
+          "pingType": "install",
+        };
+        featureInstance.notifyViaTelemetry(dataOut);
+
+        client.lastInstalled = null;
+      } else if (client.lastDisabled) {
+        featureInstance.log.debug("Just disabled", client.lastDisabled, "from", uri);
+
+        // send telemetry
+        const dataOut = {
+          "addon_id": String(client.status.lastDisabled),
+          "srcURI": String(uri),
+          "pingType": "uninstall",
+        };
+        featureInstance.notifyViaTelemetry(dataOut);
+
+        client.lastDisabled = null;
+
+      }
+
+    }
+  }
+
 }
 
 function getPageAction() {
@@ -222,12 +256,12 @@ class Feature {
 
     this.variation = variation;
     this.studyUtils = studyUtils;
-    this.client = new client();
+    this.client = new Client();
     this.log = log;
 
-    // only during INSTALL
-    if (reasonName === "ADDON_INSTALL") {
-      // this.introductionNotificationBar();
+    // reset client status during INSTALL and UPGRADE = a new study period begins
+    if (reasonName === "ADDON_INSTALL" || reasonName === "ADDON_UPGRADE") {
+      this.client.resetStatus();
     }
 
     // log what the study variation and other info is.
@@ -246,7 +280,7 @@ class Feature {
         aboutAddonsDomain += "&clientId=" + clientId;
       }
 
-      this.log.debug(`Study-specific add-ons domain: ${aboutAddonsDomain}`);
+      log.debug(`Study-specific add-ons domain: ${aboutAddonsDomain}`);
 
       Preferences.set("extensions.webservice.discoverURL", aboutAddonsDomain);
 
@@ -256,20 +290,20 @@ class Feature {
 
   afterWebExtensionStartup(browser) {
 
+    // to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
+    let currentExtensionsUiLastCategoryPreferenceValue = false;
+
     const client = this.client;
     const self = this;
 
-    client.activeAddons = getNonSystemAddons();
-    client.addonHistory = getNonSystemAddons();
-    TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
-      addonChangeListener(x, client, self);
-    });
+    client.monitorAddonChanges(self);
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
-      this.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
-      // message handers //////////////////////////////////////////
+      self.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
+
+      // event-based message handlers
       if (msg.init) {
-        this.log.debug("init received");
+        self.log.debug("init received");
         client.setAndPersistStatus("startTime", String(Date.now()));
         // send telemetry
         const dataOut = {
@@ -277,6 +311,7 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply(dataOut);
+        return;
       } else if (msg["disco-pane-loaded"]) {
         client.setAndPersistStatus("discoPaneLoaded", true);
         // send telemetry
@@ -285,10 +320,13 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Disco pane loaded" });
+        // restore preference if we changed it temporarily
+        if (currentExtensionsUiLastCategoryPreferenceValue !== false) {
+          Preferences.set("extensions.ui.lastCategory", currentExtensionsUiLastCategoryPreferenceValue);
+        }
+        return;
       } else if (msg["trigger-popup"]) {
         client.setAndPersistStatus("sawPopup", true);
-        // set pref to force discovery page
-        Preferences.set("extensions.ui.lastCategory", "addons://discover/");
         const pageAction = getPageAction();
         pageAction.click();
         // send telemetry
@@ -297,9 +335,12 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Triggered pop-up" });
-
-
+        return;
       } else if (msg["clicked-disco-button"]) {
+        // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
+        currentExtensionsUiLastCategoryPreferenceValue = Preferences.get("extensions.ui.lastCategory");
+        Preferences.set("extensions.ui.lastCategory", "addons://discover/");
+        // navigate to about:addons
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
         client.setAndPersistStatus("clickedButton", true);
@@ -310,21 +351,24 @@ class Feature {
         };
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Clicked discovery pane button" });
+        return;
       } else if (msg["clicked-close-button"]) {
         client.setAndPersistStatus("clickedButton", false);
         closePageAction();
         sendReply({ response: "Closed pop-up" });
-      } else {
-
-        // getter and setter for client status
-        if (msg.getClientStatus) {
-          sendReply(client.status);
-        } else if (msg.setAndPersistClientStatus) {
-          client.setAndPersistStatus(msg.key, msg.value);
-          sendReply(client.status);
-        }
-
+        return;
       }
+
+      // getter and setter for client status
+      if (msg.getClientStatus) {
+        self.log.debug(client.status);
+        sendReply(client.getStatus());
+      } else if (msg.setAndPersistClientStatus) {
+        client.setAndPersistStatus(msg.key, msg.value);
+        self.log.debug(client.status);
+        sendReply(client.getStatus());
+      }
+
     });
 
   }
@@ -340,10 +384,10 @@ class Feature {
     stringStringMap.sawPopup = String(client.status.sawPopup);
     stringStringMap.startTime = String(client.status.startTime);
     stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
-    if (typeof stringStringMap.addon_id === 'undefined') {
+    if (typeof stringStringMap.addon_id === "undefined") {
       stringStringMap.addon_id = "null";
     }
-    if (typeof stringStringMap.srcURI === 'undefined') {
+    if (typeof stringStringMap.srcURI === "undefined") {
       stringStringMap.srcURI = "null";
     }
     // send telemetry

@@ -9,9 +9,13 @@
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
 Cu.import("resource://gre/modules/TelemetryController.jsm");
+Cu.import("resource://gre/modules/Preferences.jsm");
 Cu.import("resource://gre/modules/Console.jsm");
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
 const EXPORTED_SYMBOLS = ["config"];
+
+const PROFILE_AGE_TEST_OVERRIDE_PREF = "extensions.taarexpv2.profile-age-in-days-test-override";
+
 // const slug = "taarexpv2"; // matches chrome.manifest;
 const locales = new Set(
   [
@@ -116,33 +120,42 @@ var config = {
   // Will run only during first install attempt
   "isEligible": async function() {
 
-    const locale = "en-us";
-    const eligibleLocale = locales.has(locale);
-
-    // tmp. TODO: figure out how to solve the issue with profileCreation not being available reliably when
-    // telemetry delayed initialization is shortened via config, then revert back to waiting for telemetry etc
-    return eligibleLocale;
-
-    /*
-    return true if 3 <= profile_age <= 12
-    and locale is among those localized
-    */
-
-    /*
-    // Ensure that we collect telemetry payloads only after it is fully initialized
-    // See http://searchfox.org/mozilla-central/rev/423b2522c48e1d654e30ffc337164d677f934ec3/toolkit/components/telemetry/TelemetryController.jsm#295
-    await TelemetryController.promiseInitialized();
+    // Ensure that profile age is available
+    console.log("awaiting telemetry environment initialization");
+    await TelemetryEnvironment.onInitialized();
+    console.log("telemetry environment initialized");
 
     const locale = TelemetryEnvironment.currentEnvironment.settings.locale.toLowerCase();
+    console.log("locale", locale);
+    const eligibleLocale = locales.has(locale);
+
+    // Represents 00:00 the date the profile was created
     const profileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
     console.log("profileCreationDate", profileCreationDate);
-    const currentDay = Math.round(Date.now() / 60 / 60 / 24 / 1000);
-    const profileAgeInDays = currentDay - proflileCreationDate
+    // Current date fraction
+    const currentDay = Math.round(Date.now() / 1000 / 60 / 60 / 24 * 100) / 100;
+    // Profile age since 00:00 the date the profile was created
+    let profileAgeInDays = currentDay - profileCreationDate;
+    console.log("profileAgeInDays", profileAgeInDays);
 
-    const validProfileAge = profileAgeInDays >= 3 && profileAgeInDays <= 12
-    const validLocale = locales.has(locale)
-    return validProfileAge && validLocale
+    const profileAgeInDaysOverride = Preferences.get(PROFILE_AGE_TEST_OVERRIDE_PREF);
+    console.log("profileAgeInDaysOverride", profileAgeInDaysOverride);
+
+    if (typeof profileAgeInDaysOverride !== "undefined") {
+      console.log("Using profileAgeInDaysOverride");
+      profileAgeInDays = parseFloat(profileAgeInDaysOverride);
+      console.log("profileAgeInDays", profileAgeInDays);
+    }
+
+    // Profile needs to have been created at least yesterday and at most ten days ago
+    const eligibleProfileAge = profileAgeInDays > 1 && profileAgeInDays < 10;
+
+    /*
+    return true if 1 < profile_age_id_days < 10
+    and locale is among those localized
     */
+    return eligibleProfileAge && eligibleLocale;
+
   },
 
   // Equal weighting for each of the 3 variations
@@ -152,7 +165,7 @@ var config = {
       "weight": 1,
     },
     {
-      "name": "ensamble-taar",
+      "name": "ensemble-taar",
       "weight": 1,
     },
     {

@@ -1,20 +1,20 @@
 {
   "name": "taarexpv2",
   "description": "TAAR Experiment v2 Shield Study",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "addon": {
     "ABOUT": "use these variables fill the moustache templates",
     "id": "taarexpv2@shield-study.mozilla.com",
     "name": "TAAR Experiment v2 Shield Study",
-    "minVersion": "56.0",
+    "minVersion": "57.0",
     "maxVersion": "*",
     "multiprocessCompatible": true,
     "hasEmbeddedWebExtension": true,
     "chromeResource": "taarexpv2",
     "creator": "Fredrik Wollsén <fwollsen@mozilla.com>",
     "description": "TAAR Experiment v2 Shield Study",
-    "bugzilla": "<tbd: bug to attach for signing>",
+    "bugzilla": "https://bugzilla.mozilla.org/show_bug.cgi?id=1428308",
     "iconPath": "icon.png"
   },
   "bugs": {

@@ -1,198 +1,90 @@
-# Test Plan for the 57-Perception-Study Addon
-
-## Automated Testing
-
-`npm test` verifies the telemetry payload as expected at firefox startup and add-on installation in a clean profile, then does **optimistic testing** of the *commonest path* though the study for a user
-
-- prove the notification bar ui opens
-- *clicking on the left-most button presented*.
-- verifying that sent Telemetry is correct.
-
-Code at [./test/functional_test.js].
+# Test plan for this add-on
 
 ## Manual / QA TEST Instructions
 
-Thank you for testing TAAR (the alternate add-ons recommender) for Webextensions 
+### Preparations
 
-++++++++++2 ways TO TEST +++++++++++++++++++++++++++++++
+* Download a Release version of Firefox (Release is required for the recommendation heuristics to work)
 
-Option 1: Quick and manual:
+### Install the add-on and enroll in the study
 
-    Find your client id in about:telemetry, under General
+* Navigate to *about:config* and set the following preferences. (If a preference does not exist, create it be right-clicking in the white area and selecting New -> String)
+* Set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
+* Set `shield.test.variation` to `ensemble-taar` or `linear-taar`.
+* Set `extensions.taarexpv2.profile-age-in-days-test-override` to a value as mandated below. This permits the study run / not run depending on the eligibility requirement related to profile age.
+* Go to [https://bugzilla.mozilla.org/show_bug.cgi?id=1428308](https://bugzilla.mozilla.org/show_bug.cgi?id=1428308) and install the latest signed XPI
 
-    Browse to https://taar.dev.mozaws.net/api/recommendations/<client id here>/
+### Do these tests
 
-    Note down (not in this pad!) the returned addon ids
+**Eligibility test 1 (too old profile)**
 
-    Get the addon name from the addon ID
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `10` or higher
+* Verify that the study does not run
 
-    Evaluate
+**Eligibility test 2 (too young profile)**
 
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `1` or lower
+* Verify that the study does not run
 
-    How would you rate the model?
+**Eligibility test 3 (ineligible locale)**
 
-    Did you receive meaningful/relevant recommendations?
+* Change your locale to one that is not specified in Config.jsm
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
+* Verify that the study does not run
 
-    If the recommendations look weird, could you post the list of query addons?
+**Functionality test 1 (init => trigger-popup => clicked-close-button)**
 
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
+* Verify that the study starts
+* Verify that no popup is shown immediately
+* Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
+* Verify that sent Telemetry is correct upon showing the popup and upon clicking the Cancel button
+* Verify that no popup is shown on consecutive web navigations
 
-Option2: Full SHIELD add-on experience
-1. Download a Release version of Firefox (Release is required for the recommendation heuristics to work)
-2. Download the Testing XPI (this guarantees enrollment and placement into the test branch) -https://github.com/benmiroglio/taar-experiment/blob/testing-taar-disco-popup/shield-integrated-addon/addons/taar-study/dist/addon.xpi
-3. In Firefox navigate to about:debugging > "Load Temporary Add-on" and select the XPI from Step 1.
-4. After 3 successful URI loads, the popup will display with the option to go to the disco-pane.
-5. Click "Browse Add-ons" and evaluate the add-ons presented.
+**Functionality test 2 (init => trigger-popup => button-click => disco-pane-loaded)**
 
-    How would you rate the model?
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
+* Verify that the study starts
+* Verify that no popup is shown immediately
+* Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
+* Verify that sent Telemetry is correct upon showing the popup and upon clicking the Browse Add-ons button
+* Verify that sent Telemetry is correct upon finished loading of the about:addons discovery pane
+* Verify that no popup is shown on consecutive web navigations
 
-    Did you receive meaningful/relevant recommendations?
+**Functionality test 3 (init => disco-pane-loaded)**
 
-    If the recommendations look weird, could you post the list of query addons?
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
+* Verify that the study starts
+* Verify that no popup is shown immediately
+* Navigate to `about:addons` and click on `Get Add-ons`
+* Verify that sent Telemetry is correct upon finished loading of the about:addons discovery pane
+* Verify that no popup is shown on consecutive web navigations
 
-Assumptions / Thoughts
+**Functionality test 4 (init => ?disco-pane-loaded => install => uninstall => uninstall => install)**
 
-1.  Please ask if you want  more command-line tools to do this testing.
+* Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
+* Verify that the study starts
+* Verify that no popup is shown immediately
+* Install any add-on from anywhere
+* Verify that sent Telemetry is correct upon installation of the add-on
+* Uninstall any installed add-on
+* Verify that sent Telemetry is correct upon uninstallation of the add-on
+* Disable any installed add-on
+* Verify that sent Telemetry is correct upon disabling of the add-on
+* Enable any installed add-on
+* Verify that sent Telemetry is correct upon enabling of the add-on
 
-### BEFORE EACH TEST: INSTALL THE ADDON to a CLEAN (NEW) PROFILE
+### Note: checking "sent Telemetry is correct"
 
-0.  (create profile:  https://developer.mozilla.org/en-US/Firefox/Multiple_profiles, or via some other method)
-1.  In your Firefox profile
-2.  `about:debugging` > `install temporary addon`
+See [TELEMETRY.md](./TELEMETRY.md) for more details. 
 
-As an alternative (command line) cli method:
+### Example of how it appears when testing in Firefox
 
-1. `git clone` the directory.
-2. `npm install` then `npm run firefox` from the Github (source) directory.
+![Example of how it appears when testing in Firefox](todo)
 
+## Debug
 
-### Note: checking "Correct Pings"
+To debug installation and loading of the add-on:
 
-All interactions with the UI create sequences of Telemetry Pings.
-
-All UI `shield-study` `study_state` sequences look like this:
-
-- `enter => install => (one of: "voted" | "notification-x" |  "window-or-fx-closed") => exit`.
-
-(Note: this is complicated to explain, so please ask questions and I will try to write it up better!, see `TELMETRY.md` and EXAMPLE SEQUENCE below.)
-
-### Do these tests.
-
-1.  UI APPEARANCE.  OBSERVE a notification bar with these traits:
-
-    *  Icon is 'heartbeat'
-    *  Text is one of 8 selected "questions", such as:  "Do you like Firefox?".  These are listed in [./addon/Config.jsm] as the variable `weightedVariations`.
-    *  clickable buttons with labels 'yes | not sure | no'  OR 'no | not sure | yes' (50/50 chance of each)
-    *  an `x` button at the right that closes the notice.
-
-    Test fails IF:
-
-    - there is no bar.
-    - elements are not correct or are not displayed
-
-
-2.  UI functionality: VOTE
-
-    Expect:  Click on a 'vote' button (any of: `yes | not sure | no`) has all these effects
-
-    - notice closes
-    - addon uninstalls
-    - no additional tabs open
-    - telemetry pings are 'correct' with this SPECIFIC `study_state` as the ending
-
-        - ending is `voted`
-        - 'vote' is correct.
-
-3.  UI functionality: 'X' button
-
-    Click on the 'x' button.
-
-    - notice closes
-    - addon uninstalls
-    - no additional tabs open
-    - telemetry pings are 'correct' with this SPECIFIC ending
-
-      - ending is `notification-x`
-
-4.  UI functionality  'close window'
-
-    1.  Open a 2nd firefox window.
-    2.  Close the initial window.
-
-    Then observe:
-
-    - notice closes
-    - addon uninstalls
-    - no additional tabs open
-    - telemetry pings are 'correct' with this SPECIFIC ending
-
-      - ending is `window-or-fx-closed`
-
-
----
-## Helper code and tips
-
-### ***To open a Chrome privileged console***
-
-1.  `about:addons`
-2.  `Tools > web developer console`
-
-Or use other methods, like Scratchpad.
-
-
-### **Telemetry Ping Printing Helper Code**
-
-```javascript
-async function printPings() {
-  async function getTelemetryPings (options) {
-    // type is String or Array
-    const {type, n, timestamp, headersOnly} = options;
-    Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
-    // {type, id, timestampCreated}
-    let pings = await TelemetryArchive.promiseArchivedPingList();
-    if (type) {
-      if (!(type instanceof Array)) {
-        type = [type];  // Array-ify if it's a string
-      }
-    }
-    if (type) pings = pings.filter(p => type.includes(p.type));
-    if (timestamp) pings = pings.filter(p => p.timestampCreated > timestamp);
-
-    pings.sort((a, b) => b.timestampCreated - a.timestampCreated);
-    if (n) pings = pings.slice(0, n);
-    const pingData = headersOnly ? pings : pings.map(ping => TelemetryArchive.promiseArchivedPingById(ping.id));
-    return Promise.all(pingData)
-  }
-  async function getPings() {
-    const ar = ["shield-study", "shield-study-addon"];
-    return getTelemetryPings({type: ["shield-study", "shield-study-addon"]});
-  }
-
-  const pings = (await getPings()).reverse();
-  const p0 = pings[0].payload;
-  // print common fields
-  console.log(
-    `
-// common fields
-
-branch        ${p0.branch}        // should describe Question text
-study_name    ${p0.study_name}
-addon_version ${p0.addon_version}
-version       ${p0.version}
-
-    `
-  )
-
-  pings.forEach(p=>{
-    console.log(p.creationDate, p.payload.type);
-    console.log(JSON.stringify(p.payload.data,null,2))
-  })
-}
-
-printPings()
-
-```
-
-
-### Example sequence for a 'voted => not sure' interaction
-
-See [TELEMETRY.md](./TELEMETRY.md), EXAMPLE SEQUENCE section at the bottom.
+* Navigate to *about:config* and set `shield.testing.logging.level` to `10`. This permits shield-add-on log output in browser console (If the preference does not exist, create it be right-clicking in the white area and selecting New -> Integer)
+* Open the Browser Console using Firefox's top menu at `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) and log output from the add-on.
