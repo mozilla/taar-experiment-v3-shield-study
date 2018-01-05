@@ -1,7 +1,10 @@
-# Shield Study Embedded Web Extension Template
+# TAAR Experiment v2 Shield Study
 
-**Note**:  This is toy / demonstration [Shield Study](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) Legacy Addon.  Use this as a template for yours
+Tests the new [Telemetry-Aware Add-on Recommender](https://github.com/mozilla/taar) (TAAR).
 
+The previous experiment is found [here](https://github.com/benmiroglio/taar-experiment).
+
+For more information, see [https://docs.google.com/document/d/1ZrfxNfBiEiAkqz4ZW9wmWfJF5sdfQg-Xq6_2mY1EXtI/edit#]()
 
 ## Getting started
 
@@ -10,7 +13,7 @@
 npm install
 
 ## build
-npm run eslint 
+npm run eslint
 npm run build
 
 ## build and run
@@ -48,8 +51,8 @@ During INSTALL ONLY users see:
 
 - a notification bar
 
-    -  introducing the feature. 
-    -  allowing them to opt out 
+    -  introducing the feature.
+    -  allowing them to opt out
 
 During FIRST INSTALL and EVERY OTHER STARTUP, users see:
 
@@ -99,7 +102,7 @@ see [TESTPLAN](./TESTPLAN.md)
 │   ├── install.rdf       # (derived from templates)
 │   │
 │   ├── lib               # JSM (Firefox modules)
-│   │   └── AddonPrefs.jsm 
+│   │   └── AddonPrefs.jsm
 │   │   └── Feature.jsm   # does `introduction`
 |   |
 │   └── webextension      # modern, embedded webextesion
@@ -161,7 +164,7 @@ For more information, see [./about.md]
 ### Similar repositories
 
 [https://github.com/benmiroglio/shield-study-embedded-webextension-hello-world-example]() - A repository that was created this week specifically to help new Shield/Pioneer engineers to quickly get up and running with a Shield add-on. It was however built upon an older and much more verbose addon template, which makes it's file structure hard to follow.
-[https://github.com/gregglind/template-shield-study]() - The incubation repo for the updated structure and contents of this repo. Use this repo instead.   
+[https://github.com/gregglind/template-shield-study]() - The incubation repo for the updated structure and contents of this repo. Use this repo instead.
 
 
 ### Loading the Web Extension in Firefox

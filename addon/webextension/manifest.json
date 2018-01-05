@@ -1,12 +1,19 @@
 {
-  "name": "WebExtension-study-BrowserActionButtonChoice",
-  "version": "0.2.0",
+  "name": "WebExtension-study-taarexpv2",
+  "version": "0.1.0",
   "manifest_version": 2,
-  "background": {
-    "scripts": ["background.js"]
+  "permissions": [
+    "storage",
+    "webNavigation",
+    "tabs",
+    "management"
+  ],
+  "page_action": {
+    "browser_style": true
   },
-  "browser_action": {
-    "browser_style": true,
-    "default_title": "button label"
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
   }
 }

@@ -6,47 +6,80 @@
 - Cu.import in this file will work for any 'general firefox things' (Services,etc)
   but NOT for addon-specific libs
 */
-
+const { utils: Cu } = Components;
+Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
+Cu.import("resource://gre/modules/TelemetryController.jsm");
+Cu.import("resource://gre/modules/Console.jsm");
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
-var EXPORTED_SYMBOLS = ["config"];
+const EXPORTED_SYMBOLS = ["config"];
+// const slug = "taarexpv2"; // matches chrome.manifest;
+const locales = new Set(
+  [
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en-gb",
+    "en-us",
+    "es-es",
+    "es-la",
+    "fi",
+    "fr",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "ms",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "pt-br",
+    "ro",
+    "ru",
+    "sk",
+    "sr",
+    "sv",
+    "tl",
+    "tr",
+    "uk",
+    "vi",
+    "zh-tw",
+  ]);
 
 var config = {
   // required STUDY key
   "study": {
     /** Required for studyUtils.setup():
-      *
-      * - studyName
-      * - endings:
-      *   - map of endingName: configuration
-      * - telemetry
-      *   - boolean send
-      *   - boolean removeTestingFlag
-      *
-      * All other keys are optional.
-      */
+     *
+     * - studyName
+     * - endings:
+     *   - map of endingName: configuration
+     * - telemetry
+     *   - boolean send
+     *   - boolean removeTestingFlag
+     *
+     * All other keys are optional.
+     */
 
     // required keys: studyName, endings, telemetry
 
     // will be used activeExperiments tagging
-    "studyName": "buttonFeatureExperiment",
-
+    "studyName": "TAARExperimentV2",
     /** **endings**
-      * - keys indicate the 'endStudy' even that opens these.
-      * - urls should be static (data) or external, because they have to
-      *   survive uninstall
-      * - If there is no key for an endStudy reason, no url will open.
-      * - usually surveys, orientations, explanations
-      */
+     * - keys indicate the 'endStudy' even that opens these.
+     * - urls should be static (data) or external, because they have to
+     *   survive uninstall
+     * - If there is no key for an endStudy reason, no url will open.
+     * - usually surveys, orientations, explanations
+     */
     "endings": {
       /** standard endings */
-      "user-disable": {
-        "baseUrl": "http://www.example.com/?reason=user-disable",
-      },
-      "ineligible": {
-        "baseUrl": "http://www.example.com/?reason=ineligible",
-      },
-      "expired": {
-        "baseUrl": "http://www.example.com/?reason=expired",
+      "no-endings": {
+        "url": "null",
       },
       /** User defined endings */
       "used-often": {
@@ -55,7 +88,7 @@ var config = {
       },
       "a-non-url-opening-ending": {
         "study_state": "ended-neutral",
-        "baseUrl":  null,
+        "baseUrl": null,
       },
       "introduction-leave-study": {
         "study_state": "ended-negative",
@@ -64,7 +97,7 @@ var config = {
     },
     "telemetry": {
       "send": true, // assumed false. Actually send pings?
-      "removeTestingFlag": false,  // Marks pings as testing, set true for actual release
+      "removeTestingFlag": true,  // Marks pings as testing, set true for actual release
       // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
     },
   },
@@ -72,10 +105,7 @@ var config = {
   // required LOG key
   "log": {
     // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
-    "bootstrap":  {
-      "level": "Debug",
-    },
-    "studyUtils":  {
+    "studyUtils": {
       "level": "Trace",
     },
   },
@@ -85,25 +115,51 @@ var config = {
   // a place to put an 'isEligible' function
   // Will run only during first install attempt
   "isEligible": async function() {
-    // get whatever prefs, addons, telemetry, anything!
-    // Cu.import can see 'firefox things', but not package things.
-    return true;
+
+    const locale = "en-us";
+    const eligibleLocale = locales.has(locale);
+
+    // tmp. TODO: figure out how to solve the issue with profileCreation not being available reliably when
+    // telemetry delayed initialization is shortened via config, then revert back to waiting for telemetry etc
+    return eligibleLocale;
+
+    /*
+    return true if 3 <= profile_age <= 12
+    and locale is among those localized
+    */
+
+    /*
+    // Ensure that we collect telemetry payloads only after it is fully initialized
+    // See http://searchfox.org/mozilla-central/rev/423b2522c48e1d654e30ffc337164d677f934ec3/toolkit/components/telemetry/TelemetryController.jsm#295
+    await TelemetryController.promiseInitialized();
+
+    const locale = TelemetryEnvironment.currentEnvironment.settings.locale.toLowerCase();
+    const profileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
+    console.log("profileCreationDate", profileCreationDate);
+    const currentDay = Math.round(Date.now() / 60 / 60 / 24 / 1000);
+    const profileAgeInDays = currentDay - proflileCreationDate
+
+    const validProfileAge = profileAgeInDays >= 3 && profileAgeInDays <= 12
+    const validLocale = locales.has(locale)
+    return validProfileAge && validLocale
+    */
   },
 
-  /* Button study branches and sample weights
-     - test kittens vs. puppies if we can only have one.
-       - downweight lizards.  Lizards is a 'poison' branch, meant to
-         help control for novelty effect
-  */
+  // Equal weighting for each of the 3 variations
   "weightedVariations": [
-    {"name": "kittens",
-      "weight": 1.5},
-    {"name": "puppers",
-      "weight": 1.5},
-    {"name": "lizard",
-      "weight": 1},  // we want more puppers in our sample
+    {
+      "name": "linear-taar",
+      "weight": 1,
+    },
+    {
+      "name": "ensamble-taar",
+      "weight": 1,
+    },
+    {
+      "name": "control",
+      "weight": 1,
+    },
   ],
-
 
   // Optional: relative to bootstrap.js in the xpi
   "studyUtilsPath": `./StudyUtils.jsm`,
