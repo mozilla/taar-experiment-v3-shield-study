@@ -5,15 +5,12 @@
 ### Preparations
 
 * Download a Release version of Firefox (Release is required for the recommendation heuristics to work)
-* Download the latest signed XPI from [here](todo-bugzilla-url)
 
 ### Install the add-on
 
 * Navigate to *about:config* and set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
 * If necessary, also set `extensions.taarexpv2.profile-age-in-days-test-override` to a value as mandated below. This permits the study run / not run depending on the eligibility requirement related to profile age.
-* Navigate to *about:debugging* in your URL bar
-* Select "Load Temporary Add-on"
-* Find and select the `dist/linked-addon.xpi` file.
+* Install the latest signed XPI from [here](todo-bugzilla-url)
 
 ### Do these tests
 

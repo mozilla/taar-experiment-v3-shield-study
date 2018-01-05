@@ -61,7 +61,10 @@ To load the extension manually instead, open (preferably) the [Developer Edition
 
 ## Seeing the add-on in action
 
-To debug installation and loading of extensions loaded in this manner, use the Browser Console which can be open from Firefox's top toolbar in `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) and `console.log()` output from the extensions that we build.
+To debug installation and loading of the add-on:
+
+* Navigate to *about:config* and set `shield.testing.logging.level` to `10`. This permits shield-add-on log output in browser console
+* Open the Browser Console using Firefox's top menu at `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) and log output from the add-on.
 
 See [TESTPLAN.md](./TESTPLAN.md) for more details on how to see this add-on in action and hot it is expected to behave.
 
@@ -152,7 +155,7 @@ Note: This is currently only useful if you load the extension manually - it has 
 
 ```
 
-### Description of what goes on when this addon is started
+### Description of what goes on when this add-on is started
 
 During `bootstrap.js:startup(data, reason)`:
 
@@ -160,7 +163,7 @@ During `bootstrap.js:startup(data, reason)`:
     b. `bootstrap.js:chooseVariation` explicitly and deterministically chooses a variation from `studyConfig.weightedVariations`
     c.  the WebExtension starts up
     d.  `bootstrap.js` listens for messages from the `webExtension` that are study related
-    e.  `webExtension` (`background.js`) asks for `info` from `studyUtils` using `askShield` function.
-    f.  The study-specific logic starts using the `variation` from that info.
+    e.  `webExtension` (`background.js`) asks for `info` from `studyUtils` using `askShield` function
+    f.  The study-specific logic starts using the `variation` from that info, including adapting the about:addons discovery pane source url and starting web navigation listeners to be able to track relevant user interactions
 
 Tip: For more insight on what is study-specific, compare the source code of previously deployed shield studies with this template (and each other) to get an idea of what is actually relevant to change between studies vs what is mostly untouched boilerplate.
