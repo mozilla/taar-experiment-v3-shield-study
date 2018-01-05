@@ -32,6 +32,9 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
+const PREF_BRANCH = "extensions.taarexp2";
+const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
+
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
   "resource:///modules/RecentWindow.jsm");
 
@@ -49,15 +52,34 @@ function getMostRecentBrowserWindow() {
 */
 
 
-class clientStatus {
+class client {
   constructor() {
-    this.clickedButton = false;
-    this.sawPopup = false;
+    const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
+    if (clientStatusJson) {
+      this.status = JSON.parse(clientStatusJson);
+    } else {
+      this.status = {};
+      this.status.discoPaneLoaded = false;
+      this.status.clickedButton = false;
+      this.status.sawPopup = false;
+      this.status.startTime = null;
+      this.status.totalWebNav = 0;
+      this.persistStatus();
+    }
+    // Temporary class variables for extension tracking logic
     this.activeAddons = new Set();
     this.addonHistory = new Set();
     this.lastInstalled = null;
     this.lastDisabled = null;
-    this.startTime = null;
+  }
+
+  setAndPersistStatus(key, value) {
+    this.status[key] = value;
+    this.persistStatus();
+  }
+
+  persistStatus() {
+    Preferences.set(CLIENT_STATUS_PREF, JSON.stringify(this.status));
   }
 
   updateAddons() {
@@ -100,38 +122,33 @@ function bucketURI(uri) {
   return uri;
 }
 
-function addonChangeListener(change, client, studyUtils) {
+function addonChangeListener(change, client, featureInstance) {
   if (change === "addons-changed") {
     client.updateAddons();
     const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
     if (client.lastInstalled) {
+      featureInstance.log.debug("Just installed", client.lastInstalled, "from", uri);
+
       // send telemetry
       const dataOut = {
-        "clickedButton": String(client.clickedButton),
-        "sawPopup": String(client.sawPopup),
-        "startTime": String(client.startTime),
-        "addon_id": String(client.lastInstalled),
+        "addon_id": String(client.status.lastInstalled),
         "srcURI": String(uri),
         "pingType": "install",
       };
-      console.log("Just installed", client.lastInstalled, "from", uri);
-      studyUtils.telemetry(dataOut);
+      featureInstance.notifyViaTelemetry(dataOut);
 
       client.lastInstalled = null;
     } else if (client.lastDisabled) {
-      console.log("Just disabled", client.lastDisabled, "from", uri);
+      featureInstance.log.debug("Just disabled", client.lastDisabled, "from", uri);
 
       // send telemetry
       const dataOut = {
-        "clickedButton": String(client.clickedButton),
-        "sawPopup": String(client.sawPopup),
-        "startTime": String(client.startTime),
-        "addon_id": String(client.lastDisabled),
+        "addon_id": String(client.status.lastDisabled),
         "srcURI": String(uri),
         "pingType": "uninstall",
       };
-      studyUtils.telemetry(dataOut);
+      featureInstance.notifyViaTelemetry(dataOut);
 
       client.lastDisabled = null;
 
@@ -151,7 +168,7 @@ function getPageAction() {
     pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield-study_mozilla_com");
   }
   if (!pageAction) {
-    throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll('.urlbar-page-action')]);
+    throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll(".urlbar-page-action")]);
   }
   return pageAction;
 
@@ -202,10 +219,10 @@ class Feature {
    *
    */
   constructor({ variation, studyUtils, reasonName, log }) {
-    // unused.  Some other UI might use the specific variation info for things.
+
     this.variation = variation;
     this.studyUtils = studyUtils;
-    this.client = new clientStatus();
+    this.client = new client();
     this.log = log;
 
     // only during INSTALL
@@ -216,14 +233,24 @@ class Feature {
     // log what the study variation and other info is.
     this.log.debug(`info ${JSON.stringify(studyUtils.info())}`);
 
-    const clientId = ClientID.getClientID();
+    const clientIdPromise = ClientID.getClientID();
 
-    // default
-    let aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%";
-    if (variation.name === "taar-disco-popup" || variation.name === "taar-disco") {
-      aboutAddonsDomain += "?clientId=" + clientId;
+    clientIdPromise.then((clientId) => {
+
+      let aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%";
+      aboutAddonsDomain += "?study=taarexpv2";
+      aboutAddonsDomain += "&branch=" + variation.name;
+
+      // do not supply client id for the control branch
+      if (variation.name !== "control") {
+        aboutAddonsDomain += "&clientId=" + clientId;
+      }
+
+      this.log.debug(`Study-specific add-ons domain: ${aboutAddonsDomain}`);
+
       Preferences.set("extensions.webservice.discoverURL", aboutAddonsDomain);
-    }
+
+    });
 
   }
 
@@ -235,7 +262,7 @@ class Feature {
     client.activeAddons = getNonSystemAddons();
     client.addonHistory = getNonSystemAddons();
     TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
-      addonChangeListener(x, client, self.studyUtils);
+      addonChangeListener(x, client, self);
     });
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
@@ -243,60 +270,84 @@ class Feature {
       // message handers //////////////////////////////////////////
       if (msg.init) {
         this.log.debug("init received");
-        client.startTime = Date.now();
+        client.setAndPersistStatus("startTime", String(Date.now()));
+        // send telemetry
         const dataOut = {
-          "clickedButton": String(client.clickedButton),
-          "sawPopup": String(client.sawPopup),
-          "startTime": String(client.startTime),
-          "addon_id": String(client.lastInstalled),
-          "srcURI": "null",
           "pingType": "init",
         };
-        this.telemetry(dataOut);
-        this.log.debug(dataOut);
+        self.notifyViaTelemetry(dataOut);
         sendReply(dataOut);
+      } else if (msg["disco-pane-loaded"]) {
+        client.setAndPersistStatus("discoPaneLoaded", true);
+        // send telemetry
+        const dataOut = {
+          "pingType": "disco-pane-loaded",
+        };
+        self.notifyViaTelemetry(dataOut);
+        sendReply({ response: "Disco pane loaded" });
       } else if (msg["trigger-popup"]) {
-        client.sawPopup = true;
+        client.setAndPersistStatus("sawPopup", true);
         // set pref to force discovery page
-        Preferences.set("extensions.ui.lastCategory", "addons://discover/")
+        Preferences.set("extensions.ui.lastCategory", "addons://discover/");
         const pageAction = getPageAction();
         pageAction.click();
         // send telemetry
-        var dataOut = {
-          "clickedButton": "false",
-          "sawPopup": "true",
-          "startTime": String(client.startTime),
-          "addon_id": "null",
-          "srcURI": "null",
-          "pingType": "trigger-popup"
-        }
-        studyUtils.telemetry(dataOut)
-        sendReply({ response: "Successfully triggered pop-up" });
+        const dataOut = {
+          "pingType": "trigger-popup",
+        };
+        self.notifyViaTelemetry(dataOut);
+        sendReply({ response: "Triggered pop-up" });
 
 
       } else if (msg["clicked-disco-button"]) {
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
-        client.clickedButton = true;
+        client.setAndPersistStatus("clickedButton", true);
         closePageAction();
         // send telemetry
-        var dataOut = {
-          "clickedButton": "true",
-          "sawPopup": "true",
-          "startTime": String(client.startTime),
-          "addon_id": "null",
-          "srcURI": "null",
-          "pingType": "button-click"
-        }
-        studyUtils.telemetry(dataOut)
-        sendReply(null);
+        const dataOut = {
+          "pingType": "button-click",
+        };
+        self.notifyViaTelemetry(dataOut);
+        sendReply({ response: "Clicked discovery pane button" });
       } else if (msg["clicked-close-button"]) {
-        client.clickedButton = false;
+        client.setAndPersistStatus("clickedButton", false);
         closePageAction();
-        sendReply(null);
+        sendReply({ response: "Closed pop-up" });
+      } else {
+
+        // getter and setter for client status
+        if (msg.getClientStatus) {
+          sendReply(client.status);
+        } else if (msg.setAndPersistClientStatus) {
+          client.setAndPersistStatus(msg.key, msg.value);
+          sendReply(client.status);
+        }
+
       }
     });
 
+  }
+
+  /**
+   * Wrapper that ensures that telemetry gets sent in the expected format for the study
+   * @param stringStringMap
+   */
+  notifyViaTelemetry(stringStringMap) {
+    const client = this.client;
+    stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    stringStringMap.clickedButton = String(client.status.clickedButton);
+    stringStringMap.sawPopup = String(client.status.sawPopup);
+    stringStringMap.startTime = String(client.status.startTime);
+    stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    if (typeof stringStringMap.addon_id === 'undefined') {
+      stringStringMap.addon_id = "null";
+    }
+    if (typeof stringStringMap.srcURI === 'undefined') {
+      stringStringMap.srcURI = "null";
+    }
+    // send telemetry
+    this.telemetry(stringStringMap);
   }
 
   /* good practice to have the literal 'sending' be wrapped up */
@@ -304,8 +355,10 @@ class Feature {
     this.studyUtils.telemetry(stringStringMap);
   }
 
-  /* no-op shutdown */
+  /* remove artifacts of this study */
   shutdown() {
+    var defaultBranch = Services.prefs.getDefaultBranch(null);
+    defaultBranch.deleteBranch(PREF_BRANCH);
   }
 }
 

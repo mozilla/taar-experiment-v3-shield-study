@@ -31,7 +31,7 @@ async function msgStudyUtils(msg, data) {
     return await browser.runtime.sendMessage({ shield: true, msg, data });
   } catch (e) {
     console.error("ERROR msgStudyUtils", msg, data, e);
-    throw e
+    throw e;
   }
 }
 
@@ -67,80 +67,88 @@ function telemetry(data) {
 }
 */
 
+function handleError(error) {
+  console.log(error);
+}
+
+/**
+ * To use as response handler when no response is necessary - to workaround the apparent bug that messages sent without a response handler yields an error
+ */
+function noop() {
+}
+
 function triggerPopup() {
-
-  function handleResponse(message) {
-    console.log(`Message from the privileged script: ${message.response}`);
-    browser.storage.local.set({ sawPopup: true });
-  }
-
-  function handleError(error) {
-    console.log(`Error: ${error}`);
-  }
-
-  const sending = browser.runtime.sendMessage({ "trigger-popup": true });
-  sending.then(handleResponse, handleError);
+  browser.runtime.sendMessage({ "trigger-popup": true }).then(noop, handleError);
 }
 
 function webNavListener(info) {
   console.log('webNavListener info', info);
+  webNavListener_trackDiscoPaneLoading(info);
+  webNavListener_popupRelated(info);
+}
+
+function webNavListener_trackDiscoPaneLoading(info) {
+  if (info.frameId > 0 && info.url.indexOf('https://discovery.addons.mozilla.org/') > -1 && info.parentFrameId === 0) {
+    browser.runtime.sendMessage({ "disco-pane-loaded": true }).then(noop, handleError);
+  }
+}
+
+function webNavListener_popupRelated(info) {
   // Filter out any sub-frame related navigation event
   if (info.frameId !== 0) {
     return;
   }
-  browser.storage.local.get("hostNavigationStats").then(results => {
-    console.log('hostNavigationStats results', results);
-    // Initialize the saved stats if not yet initialized.
-    if (!results.hostNavigationStats) {
-      results = {
-        hostNavigationStats: {}
-      };
-    }
-    const testing = false; // true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
-    const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
 
-    const { hostNavigationStats } = results;
-    hostNavigationStats["totalWebNav"] = hostNavigationStats["totalWebNav"] || 0;
-    hostNavigationStats['totalWebNav']++;
+  // get up to date client status
+  browser.runtime.sendMessage({ "getClientStatus": true }).then(
+    function(clientStatus) {
 
-    const totalCount = hostNavigationStats['totalWebNav'];
-    const tabId = info.tabId;
-    const sawPopup = browser.storage.local.get("sawPopup");
+      const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
+      const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
+      const tabId = info.tabId;
 
-    console.log('TotalURI: ' + totalCount);
+      clientStatus.totalWebNav++;
 
-    sawPopup.then(function(result) {
-      if ((!result.sawPopup && totalCount <= 3) || testing) { // client has not seen popup
-        // arbitrary condition for now
-        if (totalCount > 2 || testing) {
-          browser.storage.local.set({ "PA-tabId": tabId })
-          browser.pageAction.show(tabId)
-          browser.pageAction.setPopup({
-            tabId,
-            popup: "/popup/locales/" + locale + "/popup.html"
-          });
-          // wait 500ms second to make sure pageAction exists in chrome
-          // so we can pageAction.show() from bootsrap.js
-          setTimeout(triggerPopup, 500);
-        }
-      } else { //client has seen the popup
-        browser.storage.local.get("PA-tabId").then(function(result2) {
-          browser.pageAction.hide(result2["PA-tabId"])
-        });
-        browser.webNavigation.onCompleted.removeListener(webNavListener);
-      }
-    })
-    // Persist the updated webNav stats.
-    browser.storage.local.set(results);
-  })
+      browser.runtime.sendMessage({
+        "setAndPersistClientStatus": true,
+        "key": "totalWebNav",
+        "value": clientStatus.totalWebNav
+      }).then(
+        function(clientStatus) {
+
+          console.log('TotalURI: ' + clientStatus.totalWebNav);
+
+          if ((!clientStatus.sawPopup && clientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
+            // arbitrary condition for now
+            if (clientStatus.totalWebNav > 2 || forcePopup) {
+              browser.storage.local.set({ "PA-tabId": tabId });
+              browser.pageAction.show(tabId);
+              browser.pageAction.setPopup({
+                tabId,
+                popup: "/popup/locales/" + locale + "/popup.html"
+              });
+              // wait 500ms second to make sure pageAction exists in chrome
+              // so we can pageAction.show() from bootstrap.js
+              setTimeout(triggerPopup, 500);
+            }
+          } else { //client has seen the popup
+            browser.storage.local.get("PA-tabId").then(function(result2) {
+              browser.pageAction.hide(result2["PA-tabId"]);
+            });
+          }
+
+        },
+        handleError
+      );
+
+    },
+    handleError
+  );
+
 }
 
 
 class TAARExperiment {
-
-  constructor() {
-    this.popUpVariations = new Set(["vanilla-disco-popup", "taar-disco-popup"]);
-  }
 
   /*
   logStorage() {
@@ -152,25 +160,15 @@ class TAARExperiment {
     this.info = await msgStudyUtils('info');
     let isFirstRun = !(await browser.storage.local.get('initialized'))['initialized'];
     if (isFirstRun) await TAARExperiment.firstRun();
-
-    this.branch = (await browser.storage.local.get('branch'))['branch'];
-
-    // only montior navigation for branches qualified to
-    // receive the pop-up.
-    console.log('this.popUpVariations', this.popUpVariations);
-    console.log('this.info.variation.name', this.info.variation.name);
-    if (this.popUpVariations.has(this.info.variation.name)) {
-      TAARExperiment.monitorNavigation()
-    }
+    TAARExperiment.monitorNavigation();
   }
 
   static async firstRun() {
-    await browser.storage.local.set({ sawPopup: false });
-    browser.runtime.sendMessage({ "init": true });
+    return browser.runtime.sendMessage({ "init": true });
   }
 
   static monitorNavigation() {
-    console.log('monitorNavigation');
+    console.log('Monitoring navigation to be able to show popup after 3 page visits');
     browser.webNavigation.onCompleted.addListener(webNavListener,
       { url: [{ schemes: ["http", "https"] }] });
   }

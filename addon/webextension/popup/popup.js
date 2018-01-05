@@ -6,7 +6,7 @@ document.addEventListener("click", (e) => {
   }
 
   function handleError(error) {
-    console.log(`Error: ${error}`);
+    console.log(error);
   }
 
   let message = null;
