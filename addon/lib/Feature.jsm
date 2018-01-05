@@ -122,42 +122,6 @@ function bucketURI(uri) {
   return uri;
 }
 
-function addonChangeListener(change, client, featureInstance) {
-  if (change === "addons-changed") {
-    client.updateAddons();
-    const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
-
-    if (client.lastInstalled) {
-      featureInstance.log.debug("Just installed", client.lastInstalled, "from", uri);
-
-      // send telemetry
-      const dataOut = {
-        "addon_id": String(client.status.lastInstalled),
-        "srcURI": String(uri),
-        "pingType": "install",
-      };
-      featureInstance.notifyViaTelemetry(dataOut);
-
-      client.lastInstalled = null;
-    } else if (client.lastDisabled) {
-      featureInstance.log.debug("Just disabled", client.lastDisabled, "from", uri);
-
-      // send telemetry
-      const dataOut = {
-        "addon_id": String(client.status.lastDisabled),
-        "srcURI": String(uri),
-        "pingType": "uninstall",
-      };
-      featureInstance.notifyViaTelemetry(dataOut);
-
-      client.lastDisabled = null;
-
-    }
-
-
-  }
-}
-
 function getPageAction() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
@@ -261,9 +225,42 @@ class Feature {
 
     client.activeAddons = getNonSystemAddons();
     client.addonHistory = getNonSystemAddons();
-    TelemetryEnvironment.registerChangeListener("addonListener", function(x) {
-      addonChangeListener(x, client, self);
-    });
+
+    function addonChangeListener(change) {
+      if (change === "addons-changed") {
+        client.updateAddons();
+        const uri = bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
+
+        if (client.lastInstalled) {
+          self.log.debug("Just installed", client.lastInstalled, "from", uri);
+
+          // send telemetry
+          const dataOut = {
+            "addon_id": String(client.status.lastInstalled),
+            "srcURI": String(uri),
+            "pingType": "install",
+          };
+          self.notifyViaTelemetry(dataOut);
+
+          client.lastInstalled = null;
+        } else if (client.lastDisabled) {
+          self.log.debug("Just disabled", client.lastDisabled, "from", uri);
+
+          // send telemetry
+          const dataOut = {
+            "addon_id": String(client.status.lastDisabled),
+            "srcURI": String(uri),
+            "pingType": "uninstall",
+          };
+          self.notifyViaTelemetry(dataOut);
+
+          client.lastDisabled = null;
+
+        }
+
+      }
+    }
+    TelemetryEnvironment.registerChangeListener("addonListener", addonChangeListener);
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
       this.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
