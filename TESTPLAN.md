@@ -12,6 +12,43 @@ Code at [./test/functional_test.js].
 
 ## Manual / QA TEST Instructions
 
+Thank you for testing TAAR (the alternate add-ons recommender) for Webextensions 
+
+++++++++++2 ways TO TEST +++++++++++++++++++++++++++++++
+
+Option 1: Quick and manual:
+
+    Find your client id in about:telemetry, under General
+
+    Browse to https://taar.dev.mozaws.net/api/recommendations/<client id here>/
+
+    Note down (not in this pad!) the returned addon ids
+
+    Get the addon name from the addon ID
+
+    Evaluate
+
+
+    How would you rate the model?
+
+    Did you receive meaningful/relevant recommendations?
+
+    If the recommendations look weird, could you post the list of query addons?
+
+
+Option2: Full SHIELD add-on experience
+1. Download a Release version of Firefox (Release is required for the recommendation heuristics to work)
+2. Download the Testing XPI (this guarantees enrollment and placement into the test branch) -https://github.com/benmiroglio/taar-experiment/blob/testing-taar-disco-popup/shield-integrated-addon/addons/taar-study/dist/addon.xpi
+3. In Firefox navigate to about:debugging > "Load Temporary Add-on" and select the XPI from Step 1.
+4. After 3 successful URI loads, the popup will display with the option to go to the disco-pane.
+5. Click "Browse Add-ons" and evaluate the add-ons presented.
+
+    How would you rate the model?
+
+    Did you receive meaningful/relevant recommendations?
+
+    If the recommendations look weird, could you post the list of query addons?
+
 Assumptions / Thoughts
 
 1.  Please ask if you want  more command-line tools to do this testing.

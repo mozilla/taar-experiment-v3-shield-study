@@ -33,6 +33,12 @@ const FIREFOX_PREFERENCES = {
   // NECESSARY for all 57+ builds
   "extensions.legacy.enabled": true,
 
+  // Include log output in browser console
+  "shield.testing.logging.level": 10, // Trace
+
+  // Force variation for testing
+  "shield.test.variation": "vanilla-disco-popup",
+
   /** WARNING: gecko webdriver sets many additional prefs at:
     * https://dxr.mozilla.org/mozilla-central/source/testing/geckodriver/src/prefs.rs
     *
@@ -45,7 +51,8 @@ const FIREFOX_PREFERENCES = {
 // useful if we need to test on a specific version of Firefox
 async function promiseActualBinary(binary) {
   try {
-    const normalizedBinary = await FxRunnerUtils.normalizeBinary(binary);
+    let normalizedBinary = await FxRunnerUtils.normalizeBinary(binary);
+    normalizedBinary = path.resolve(normalizedBinary);
     await Fs.stat(normalizedBinary);
     return normalizedBinary;
   } catch (ex) {
@@ -56,9 +63,10 @@ async function promiseActualBinary(binary) {
   }
 }
 
-
-
-
+/**
+  * Uses process.env.FIREFOX_BINARY
+  *
+  */
 module.exports.promiseSetupDriver = async() => {
   const profile = new firefox.Profile();
 
@@ -75,8 +83,10 @@ module.exports.promiseSetupDriver = async() => {
     .forBrowser("firefox")
     .setFirefoxOptions(options);
 
+  //
   const binaryLocation = await promiseActualBinary(process.env.FIREFOX_BINARY || "nightly");
-  //console.log(binaryLocation);
+
+  // console.log(binaryLocation);
   await options.setBinary(new firefox.Binary(binaryLocation));
   const driver = await builder.build();
   // Firefox will be started up by now
@@ -87,12 +97,13 @@ module.exports.promiseSetupDriver = async() => {
 
 
 /* let's actually just make this a constant */
-const MODIFIER = (function getModifierKey() {
+const MODIFIER_KEY = (function getModifierKey() {
   const modifierKey = process.platform === "darwin" ?
     webdriver.Key.COMMAND : webdriver.Key.CONTROL;
   return modifierKey;
 })();
 
+module.exports.MODIFIER_KEY = MODIFIER_KEY;
 
 
 // TODO glind general wrapper for 'async with callback'?
@@ -166,19 +177,27 @@ module.exports.allAddons = async(driver) => {
 };
 */
 
-// Returns array of pings of type `type` in sorted order by timestamp
-// first element is most recent ping
-// as seen in shield-study-addon-util's `utils.jsm`
-module.exports.getTelemetryPings = async(driver, options) => {
+/** Returns array of pings of type `type` in reverse sorted order by timestamp
+  * first element is most recent ping
+  *
+  * as seen in shield-study-addon-util's `utils.jsm`
+  * options
+  * - type:  string or array of ping types
+  * - n:  positive integer. at most n pings.
+  * - timestamp:  only pings after this timestamp.
+  * - headersOnly: boolean, just the 'headers' for the pings, not the full bodies.
+  */
+module.exports.getTelemetryPings = async(driver, passedOptions) => {
   // callback is how you get the return back from the script
   return driver.executeAsyncScript(async(options, callback) => {
-    let {type, n, timestamp, headersOnly} = options;
+    let {type} = options;
+    const { n, timestamp, headersOnly} = options;
     Components.utils.import("resource://gre/modules/TelemetryArchive.jsm");
     // {type, id, timestampCreated}
     let pings = await TelemetryArchive.promiseArchivedPingList();
     if (type) {
       if (!(type instanceof Array)) {
-        type = [type];  // Array-ify if it's a string
+        type = [type]; // Array-ify if it's a string
       }
     }
     if (type) pings = pings.filter(p => type.includes(p.type));
@@ -190,10 +209,45 @@ module.exports.getTelemetryPings = async(driver, options) => {
     const pingData = headersOnly ? pings : pings.map(ping => TelemetryArchive.promiseArchivedPingById(ping.id));
 
     callback(await Promise.all(pingData));
-  }, options);
+  }, passedOptions);
 };
 
+module.exports.printPings = async(pings) => {
 
+  if (pings.length === 0) {
+    console.log("No pings");
+    return;
+  }
+
+  const p0 = pings[0].payload;
+  // print common fields
+  console.log(
+    `
+// common fields
+
+branch        ${p0.branch}
+study_name    ${p0.study_name}
+addon_version ${p0.addon_version}
+version       ${p0.version}
+
+    `
+  );
+
+  pings.forEach(p => {
+    console.log(p.creationDate, p.payload.type);
+    console.log(JSON.stringify(p.payload.data, null, 2));
+  });
+
+};
+
+module.exports.writePingsJson = async(pings, filepath = "./pings.json") => {
+  try {
+    return await Fs.outputFile(filepath,
+      JSON.stringify(pings, null, "\t"));
+  } catch (error) {
+    throw error;
+  }
+};
 
 
 // TODO glind, this interface feels janky
@@ -207,7 +261,7 @@ class getChromeElementBy {
         By[method](selector)), 1000);
     } catch (e) {
       // if there an error, the button was not found
-      console.log(e);
+      console.error(e);
       return null;
     }
   }
@@ -219,6 +273,11 @@ class getChromeElementBy {
 }
 module.exports.getChromeElementBy = getChromeElementBy;
 
+module.exports.promiseUrlBar = (driver) => {
+  driver.setContext(Context.CHROME);
+  return driver.wait(until.elementLocated(
+    By.id("urlbar")), 1000);
+};
 
 module.exports.takeScreenshot = async(driver, filepath = "./screenshot.png") => {
   try {
@@ -256,16 +315,14 @@ module.exports.searchTelemetry = (conditionArray, telemetryArray) => {
   return resultingPings;
 };
 
-
-
 // TODO glind, specific to share-button-study but useful to demo patterns.
 // TODO glind, generalize, document, or destroy
 
 // module.exports.copyUrlBar = async(driver) => {
 //   const urlBar = await getChromeElementBy.id(driver,'urlbar');
 //   const urlBar = await module.exports.promiseUrlBar(driver);
-//   await urlBar.sendKeys(webdriver.Key.chord(MODIFIER, "A"));
-//   await urlBar.sendKeys(webdriver.Key.chord(MODIFIER, "C"));
+//   await urlBar.sendKeys(webdriver.Key.chord(MODIFIER_KEY, "A"));
+//   await urlBar.sendKeys(webdriver.Key.chord(MODIFIER_KEY, "C"));
 // };
 
 // module.exports.testAnimation = async(driver) => {

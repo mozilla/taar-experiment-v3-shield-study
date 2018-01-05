@@ -1,9 +1,9 @@
 "use strict";
 
 /** An Example JSM, implementing "addon-specific prefs"
-  *
-  *  Note:  This is an example JSM, not acutally used by this particular study.
-  */
+ *
+ *  Note:  This is an example JSM, not acutally used by this particular study.
+ */
 
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(EXPORTED_SYMBOLS|AddonPrefs)" }]*/
 var EXPORTED_SYMBOLS = ["AddonPrefs"];

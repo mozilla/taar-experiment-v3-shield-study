@@ -6,6 +6,7 @@
 
 const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Console.jsm");
+Cu.import("resource://gre/modules/Log.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
@@ -17,23 +18,26 @@ const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
 
 const REASONS = studyUtils.REASONS;
 
-// QA NOTE: Study Specific Modules - package.json:addon.chromeResouce
-const BASE = `template-shield-study-button-study`;
+// logging for bootstrap.js, pref sets how verbose
+const PREF_LOGGING_LEVEL = "shield.testing.logging.level";
+const BOOTSTRAP_LOGGER_NAME = `shield-study-${config.study.studyName}`;
+const log = Log.repository.getLogger(BOOTSTRAP_LOGGER_NAME);
+log.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
+log.level = Services.prefs.getIntPref(PREF_LOGGING_LEVEL, Log.Level.Warn);
+
+
+// QA NOTE: Study Specific Modules - package.json:addon.chromeResource
+const BASE = `taarexpv2`;
 XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Feature.jsm`);
 
 
-// var log = createLog(studyConfig.study.studyName, config.log.bootstrap.level);  // defined below.
-// log("LOG started!");
-
-/* Example addon-specific module imports.  Remember to Unload during shutdown!
+/* Example addon-specific module imports.  Remember to Unload during shutdown() below.
 
   // https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Using
-
 
    Ideally, put ALL your feature code in a Feature.jsm file,
    NOT in this bootstrap.js.
 
-  const BASE=`template-shield-study`;
   XPCOMUtils.defineLazyModuleGetter(this, "SomeExportedSymbol",
     `resource://${BASE}/SomeModule.jsm");
 
@@ -43,7 +47,7 @@ XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Featu
 
 async function startup(addonData, reason) {
   // `addonData`: Array [ "id", "version", "installPath", "resourceURI", "instanceID", "webExtension" ]  bootstrap.js:48
-  console.log("startup", REASONS[reason] || reason);
+  log.debug("startup", REASONS[reason] || reason);
 
   /* Configuration of Study Utils*/
   studyUtils.setup({
@@ -56,13 +60,13 @@ async function startup(addonData, reason) {
       config.weightedVariations
     );
   studyUtils.setVariation(variation);
-  console.log(`studyUtils has config and variation.name: ${variation.name}.  Ready to send telemetry`);
+  log.debug(`studyUtils has config and variation.name: ${variation.name}.  Ready to send telemetry`);
 
 
   /** addon_install ONLY:
-    * - note first seen,
-    * - check eligible
-    */
+   * - note first seen,
+   * - check eligible
+   */
   if ((REASONS[reason]) === "ADDON_INSTALL") {
     //  telemetry "enter" ONCE
     studyUtils.firstSeen();
@@ -71,7 +75,7 @@ async function startup(addonData, reason) {
       // 1. uses config.endings.ineligible.url if any,
       // 2. sends UT for "ineligible"
       // 3. then uninstalls addon
-      await studyUtils.endStudy({reason: "ineligible"});
+      await studyUtils.endStudy({ reason: "ineligible" });
       return;
     }
   }
@@ -79,52 +83,57 @@ async function startup(addonData, reason) {
   // startup for eligible users.
   // 1. sends `install` ping IFF ADDON_INSTALL.
   // 2. sets activeExperiments in telemetry environment.
-  await studyUtils.startup({reason});
+  await studyUtils.startup({ reason });
 
   // if you have code to handle expiration / long-timers, it could go here
   (function fakeTrackExpiration() {})();
+
+  // initiate the chrome-privileged part of the study add-on
+  this.feature = new Feature({ variation, studyUtils, reasonName: REASONS[reason], log });
 
   // IFF your study has an embedded webExtension, start it.
   const { webExtension } = addonData;
   if (webExtension) {
     webExtension.startup().then(api => {
-      const {browser} = api;
+      const { browser } = api;
       /** spec for messages intended for Shield =>
-        * {shield:true,msg=[info|endStudy|telemetry],data=data}
-        */
+       * {shield:true,msg=[info|endStudy|telemetry],data=data}
+       */
       browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
       // other browser.runtime.onMessage handlers for your addon, if any
+      this.feature.afterWebExtensionStartup(browser);
+
     });
   }
 
   // log what the study variation and other info is.
-  console.log(`info ${JSON.stringify(studyUtils.info())}`);
+  log.debug(`info ${JSON.stringify(studyUtils.info())}`);
 
-  // Actually Start up your feature
-  new Feature({variation, studyUtils, reasonName: REASONS[reason]});
+  // start up the chrome-privileged part of the study
+  // this.feature.privilegedStartup();
 }
 
 /** Shutdown needs to distinguish between USER-DISABLE and other
-  * times that `endStudy` is called.
-  *
-  * studyUtils._isEnding means this is a '2nd shutdown'.
-  */
+ * times that `endStudy` is called.
+ *
+ * studyUtils._isEnding means this is a '2nd shutdown'.
+ */
 function shutdown(addonData, reason) {
-  console.log("shutdown", REASONS[reason] || reason);
+  log.debug("shutdown", REASONS[reason] || reason);
   // FRAGILE: handle uninstalls initiated by USER or by addon
   if (reason === REASONS.ADDON_UNINSTALL || reason === REASONS.ADDON_DISABLE) {
-    console.log("uninstall or disable");
+    log.debug("uninstall or disable");
     if (!studyUtils._isEnding) {
       // we are the first 'uninstall' requestor => must be user action.
-      console.log("probably: user requested shutdown");
-      studyUtils.endStudy({reason: "user-disable"});
+      log.debug("probably: user requested shutdown");
+      studyUtils.endStudy({ reason: "user-disable" });
       return;
     }
     // normal shutdown, or 2nd uninstall request
 
     // QA NOTE:  unload addon specific modules here.
-    Cu.unload();
-
+    Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
+    this.feature.shutdown();
 
     // clean up our modules.
     Cu.unload(CONFIGPATH);
@@ -133,14 +142,13 @@ function shutdown(addonData, reason) {
 }
 
 function uninstall(addonData, reason) {
-  console.log("uninstall", REASONS[reason] || reason);
+  log.debug("uninstall", REASONS[reason] || reason);
 }
 
 function install(addonData, reason) {
-  console.log("install", REASONS[reason] || reason);
+  log.debug("install", REASONS[reason] || reason);
   // handle ADDON_UPGRADE (if needful) here
 }
-
 
 
 // helper to let Dev or QA set the variation name
@@ -156,14 +164,3 @@ function getVariationFromPref(weightedVariations) {
   }
   return name; // undefined
 }
-
-
-// logging, unfinished
-// function createLog(name, levelWord) {
-//  Cu.import("resource://gre/modules/Log.jsm");
-//  var L = Log.repository.getLogger(name);
-//  L.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
-//  L.level = Log.Level[levelWord] || Log.Level.Debug; // should be a config / pref
-//  return L;
-// }
-
