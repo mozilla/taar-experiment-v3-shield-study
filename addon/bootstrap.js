@@ -86,7 +86,8 @@ async function startup(addonData, reason) {
   await studyUtils.startup({ reason });
 
   // if you have code to handle expiration / long-timers, it could go here
-  (function fakeTrackExpiration() {})();
+  (function fakeTrackExpiration() {
+  })();
 
   // initiate the chrome-privileged part of the study add-on
   this.feature = new Feature({ variation, studyUtils, reasonName: REASONS[reason], log });
