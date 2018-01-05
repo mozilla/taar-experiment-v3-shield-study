@@ -62,12 +62,11 @@ async function startup(addonData, reason) {
   studyUtils.setVariation(variation);
   log.debug(`studyUtils has config and variation.name: ${variation.name}.  Ready to send telemetry`);
 
-
-  /** addon_install ONLY:
+  /** addon_install and addon_upgrade ONLY:
    * - note first seen,
    * - check eligible
    */
-  if ((REASONS[reason]) === "ADDON_INSTALL") {
+  if (reason === REASONS.ADDON_INSTALL || reason === REASONS.ADDON_UPGRADE) {
     //  telemetry "enter" ONCE
     studyUtils.firstSeen();
     const eligible = await config.isEligible(); // addon-specific
@@ -78,6 +77,8 @@ async function startup(addonData, reason) {
       await studyUtils.endStudy({ reason: "ineligible" });
       return;
     }
+  } else {
+    return;
   }
 
   // startup for eligible users.
@@ -134,7 +135,9 @@ function shutdown(addonData, reason) {
 
     // QA NOTE:  unload addon specific modules here.
     Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
-    this.feature.shutdown();
+    if (this.feature) {
+      this.feature.shutdown();
+    }
 
     // clean up our modules.
     Cu.unload(CONFIGPATH);
