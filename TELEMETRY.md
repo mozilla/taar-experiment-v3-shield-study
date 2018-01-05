@@ -41,9 +41,9 @@ These are the `payload` fields from all pings in the `shield-study` and `shield-
 
 // common fields
 
-branch        linear-taar
+branch        ensemble-taar
 study_name    TAARExperimentV2
-addon_version 0.1.0
+addon_version 0.2.0
 version       3
 
 
