@@ -7,7 +7,7 @@
     "ABOUT": "use these variables fill the moustache templates",
     "id": "taarexpv2@shield-study.mozilla.com",
     "name": "TAAR Experiment v2 Shield Study",
-    "minVersion": "56.0",
+    "minVersion": "57.0",
     "maxVersion": "*",
     "multiprocessCompatible": true,
     "hasEmbeddedWebExtension": true,
