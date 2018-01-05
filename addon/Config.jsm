@@ -143,7 +143,7 @@ var config = {
 
     if (typeof profileAgeInDaysOverride !== "undefined") {
       console.log("Using profileAgeInDaysOverride");
-      profileAgeInDays = parseInt(profileAgeInDaysOverride);
+      profileAgeInDays = parseFloat(profileAgeInDaysOverride);
       console.log("profileAgeInDays", profileAgeInDays);
     }
 
