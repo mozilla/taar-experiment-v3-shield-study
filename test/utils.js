@@ -36,8 +36,15 @@ const FIREFOX_PREFERENCES = {
   // Include log output in browser console
   "shield.testing.logging.level": 10, // Trace
 
+  // Set telemetry to initiate earlier than 60 seconds so that development with `npm run firefox` does not lead to endless frustration
+  // TODO: figure out why setting this preference leads to profile_creation_date not being set
+  "toolkit.telemetry.initDelay": 1,
+
   // Force variation for testing
   "shield.test.variation": "linear-taar",
+
+  // Force profile age for testing
+  "extensions.taarexp.profile-age-in-days-test-override": "5",
 
   /** WARNING: gecko webdriver sets many additional prefs at:
     * https://dxr.mozilla.org/mozilla-central/source/testing/geckodriver/src/prefs.rs
