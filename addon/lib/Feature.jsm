@@ -165,7 +165,7 @@ class Client {
 
         // send telemetry
         const dataOut = {
-          "addon_id": String(client.status.lastInstalled),
+          "addon_id": String(client.lastInstalled),
           "srcURI": String(uri),
           "pingType": "install",
         };
@@ -177,7 +177,7 @@ class Client {
 
         // send telemetry
         const dataOut = {
-          "addon_id": String(client.status.lastDisabled),
+          "addon_id": String(client.lastDisabled),
           "srcURI": String(uri),
           "pingType": "uninstall",
         };
