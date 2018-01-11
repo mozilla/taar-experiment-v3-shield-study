@@ -8,7 +8,7 @@
     "id": "taarexpv2@shield-study.mozilla.com",
     "name": "TAAR Experiment v2 Shield Study",
     "minVersion": "57.0.1",
-    "maxVersion": "*",
+    "maxVersion": "58.99.0",
     "multiprocessCompatible": true,
     "hasEmbeddedWebExtension": true,
     "chromeResource": "taarexpv2",
