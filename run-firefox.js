@@ -86,8 +86,8 @@ const minimistHandler = {
     console.log("The addon should now be loaded and you should be able to interact with the addon in the newly opened Firefox instance.");
 
     // allow our shield study addon some time to start
-    console.log("Waiting 2 seconds to allow for initial telemetry to be sent");
-    await driver.sleep(2000);
+    console.log("Waiting 60 seconds to allow for telemetry to be triggered");
+    await driver.sleep(60*1000);
 
     await takeScreenshot(driver);
     console.log("Screenshot dumped");

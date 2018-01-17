@@ -8,7 +8,7 @@
 
 ### Install the add-on and enroll in the study
 
-* Navigate to *about:config* and set the following preferences. (If a preference does not exist, create it be right-clicking in the white area and selecting New -> String)
+* Navigate to *about:config* and set the following preferences. (If a preference does not exist, create it be right-clicking in the white area and selecting New -> String or Integer depending on the type of preference)
 * Set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
 * Set `shield.test.variation` to `ensemble-taar` or `linear-taar`.
 * Set `extensions.taarexpv2.profile-age-in-days-test-override` to a value as mandated below. This permits the study run / not run depending on the eligibility requirement related to profile age. This preference must be of `integer` type and can be created by right-clicking in the white area and selecting New -> Integer.
@@ -28,7 +28,7 @@
 
 **Eligibility test 3 (ineligible locale)**
 
-* Change your locale to one that is not specified in Config.jsm
+* Change your locale to one that is not specified in Config.jsm (for instance: Afrikaans `af`)
 * Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study does not run
 
@@ -60,7 +60,7 @@
 * Verify that sent Telemetry is correct upon finished loading of the about:addons discovery pane
 * Verify that no popup is shown on consecutive web navigations
 
-**Functionality test 4 (init => ?disco-pane-loaded => install => uninstall => uninstall => install)**
+**Functionality test 4 (init => ?disco-pane-loaded => (addon-)install => (addon-)uninstall)**
 
 * Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
@@ -69,18 +69,20 @@
 * Verify that sent Telemetry is correct upon installation of the add-on
 * Uninstall any installed add-on
 * Verify that sent Telemetry is correct upon uninstallation of the add-on
-* Disable any installed add-on
-* Verify that sent Telemetry is correct upon disabling of the add-on
-* Enable any installed add-on
-* Verify that sent Telemetry is correct upon enabling of the add-on
+
+### Bonus
+
+If you happen to have a profile age between 1 and 10 lying around, verify that the study starts without any use of the override preference.
 
 ### Note: checking "sent Telemetry is correct"
 
-See [TELEMETRY.md](./TELEMETRY.md) for more details. 
+* Open the Browser Console using Firefox's top menu at `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) log output from the add-on.
 
-### Example of how it appears when testing in Firefox
+See [TELEMETRY.md](./TELEMETRY.md) for more details on what pings are sent by this add-on.
 
-![Example of how it appears when testing in Firefox](todo)
+### Example of how the popup appears when testing in Firefox
+
+![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/35058120-a9ae973e-fbbf-11e7-8e96-cbd643f69d53.png)
 
 ## Debug
 
