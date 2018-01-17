@@ -293,7 +293,7 @@ class Feature {
     const client = this.client;
     const self = this;
 
-    client.monitorAddonChanges(self);
+    client.monitorAddonChanges();
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
       self.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
