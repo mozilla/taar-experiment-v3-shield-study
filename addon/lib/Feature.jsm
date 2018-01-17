@@ -53,7 +53,8 @@ function getMostRecentBrowserWindow() {
 
 
 class Client {
-  constructor() {
+  constructor(feature) {
+    this.feature = feature;
     const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
     if (clientStatusJson && clientStatusJson !== "") {
       this.status = JSON.parse(clientStatusJson);
@@ -92,7 +93,7 @@ class Client {
 
   updateAddons() {
     const prev = this.activeAddons;
-    const curr = Client.getNonSystemAddons();
+    const curr = this.getNonSystemAddons();
 
     const currDiff = curr.difference(prev);
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
@@ -106,11 +107,11 @@ class Client {
     this.activeAddons = curr;
   }
 
-  static getNonSystemAddons() {
+  getNonSystemAddons() {
 
     // Prevent a dangling change listener (left after add-on uninstallation) to do anything
     if (!TelemetryEnvironment) {
-      featureInstance.log.debug("getNonSystemAddons disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      this.feature.log.debug("getNonSystemAddons disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
       return;
     }
 
@@ -136,32 +137,28 @@ class Client {
     return uri;
   }
 
-  monitorAddonChanges(featureInstance) {
+  monitorAddonChanges() {
 
     // Prevent a dangling change listener (left after add-on uninstallation) to do anything
     if (!TelemetryEnvironment) {
-      featureInstance.log.debug("monitorAddonChanges disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      this.feature.log.debug("monitorAddonChanges disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
       return;
     }
 
-    const client = this;
+    this.activeAddons = this.getNonSystemAddons();
+    this.addonHistory = this.getNonSystemAddons();
 
-    client.activeAddons = Client.getNonSystemAddons();
-    client.addonHistory = Client.getNonSystemAddons();
-
-    TelemetryEnvironment.registerChangeListener("addonListener", function(change) {
-      Client.addonChangeListener(change, client, featureInstance);
-    });
+    TelemetryEnvironment.registerChangeListener("addonListener", (change) => Client.addonChangeListener(change, this, this.feature));
 
   }
 
-  static addonChangeListener(change, client, featureInstance) {
+  static addonChangeListener(change, client, feature) {
     if (change === "addons-changed") {
       client.updateAddons();
       const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
       if (client.lastInstalled) {
-        featureInstance.log.debug("Just installed", client.lastInstalled, "from", uri);
+        feature.log.debug("Just installed", client.lastInstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
@@ -169,11 +166,11 @@ class Client {
           "srcURI": String(uri),
           "pingType": "install",
         };
-        featureInstance.notifyViaTelemetry(dataOut);
+        feature.notifyViaTelemetry(dataOut);
 
         client.lastInstalled = null;
       } else if (client.lastDisabled) {
-        featureInstance.log.debug("Just disabled", client.lastDisabled, "from", uri);
+        feature.log.debug("Just disabled", client.lastDisabled, "from", uri);
 
         // send telemetry
         const dataOut = {
@@ -181,7 +178,7 @@ class Client {
           "srcURI": String(uri),
           "pingType": "uninstall",
         };
-        featureInstance.notifyViaTelemetry(dataOut);
+        feature.notifyViaTelemetry(dataOut);
 
         client.lastDisabled = null;
 
@@ -256,7 +253,7 @@ class Feature {
 
     this.variation = variation;
     this.studyUtils = studyUtils;
-    this.client = new Client();
+    this.client = new Client(this);
     this.log = log;
 
     // reset client status during INSTALL and UPGRADE = a new study period begins
