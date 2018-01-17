@@ -318,7 +318,7 @@ class Feature {
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Disco pane loaded" });
         // restore preference if we changed it temporarily
-        if (currentExtensionsUiLastCategoryPreferenceValue !== false) {
+        if (typeof currentExtensionsUiLastCategoryPreferenceValue !== "undefined" && currentExtensionsUiLastCategoryPreferenceValue !== false) {
           Preferences.set("extensions.ui.lastCategory", currentExtensionsUiLastCategoryPreferenceValue);
         }
         return;
