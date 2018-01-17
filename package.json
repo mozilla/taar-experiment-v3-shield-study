@@ -1,14 +1,14 @@
 {
   "name": "taarexpv2",
   "description": "TAAR Experiment v2 Shield Study",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "addon": {
     "ABOUT": "use these variables fill the moustache templates",
     "id": "taarexpv2@shield-study.mozilla.com",
     "name": "TAAR Experiment v2 Shield Study",
-    "minVersion": "57.0",
-    "maxVersion": "*",
+    "minVersion": "57.0.1",
+    "maxVersion": "58.99.0",
     "multiprocessCompatible": true,
     "hasEmbeddedWebExtension": true,
     "chromeResource": "taarexpv2",

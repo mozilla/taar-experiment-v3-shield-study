@@ -4,15 +4,33 @@
   "definitions": {
     "attributes": {
       "properties": {
-        "pingType": {"type": "string"},
-        "addon_id": {"type": "string"},
-        "srcURI": {"type": "string"},
-        "startTime": {"type": "string"},
-        "sawPopup": {"type": "string"},
-        "clickedButton": {"type": "string"}},
-        "discoPaneLoaded": {"type": "string"}
+        "pingType": {
+          "type": "string"
+        },
+        "addon_id": {
+          "type": "string"
+        },
+        "srcURI": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "sawPopup": {
+          "type": "string"
+        },
+        "clickedButton": {
+          "type": "string"
+        },
+        "discoPaneLoaded": {
+          "type": "string"
+        },
+        "aboutAddonsActiveTabSeconds": {
+          "type": "string"
+        }
       },
       "additionalProperties": false,
-      "minProperties": 7
+      "minProperties": 8
     }
+  }
 }

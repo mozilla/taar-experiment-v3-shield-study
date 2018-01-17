@@ -138,9 +138,9 @@ var config = {
     let profileAgeInDays = currentDay - profileCreationDate;
     console.log("profileAgeInDays", profileAgeInDays);
 
+    // Note: This check and thus the ability to overrie the profile age will be commented out after the add-on has passed QA
     const profileAgeInDaysOverride = Preferences.get(PROFILE_AGE_TEST_OVERRIDE_PREF);
     console.log("profileAgeInDaysOverride", profileAgeInDaysOverride);
-
     if (typeof profileAgeInDaysOverride !== "undefined") {
       console.log("Using profileAgeInDaysOverride");
       profileAgeInDays = parseFloat(profileAgeInDaysOverride);

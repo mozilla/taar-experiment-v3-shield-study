@@ -53,7 +53,8 @@ function getMostRecentBrowserWindow() {
 
 
 class Client {
-  constructor() {
+  constructor(feature) {
+    this.feature = feature;
     const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
     if (clientStatusJson && clientStatusJson !== "") {
       this.status = JSON.parse(clientStatusJson);
@@ -64,6 +65,7 @@ class Client {
       this.status.sawPopup = false;
       this.status.startTime = null;
       this.status.totalWebNav = 0;
+      this.status.aboutAddonsActiveTabSeconds = 0;
       this.persistStatus();
     }
     // Temporary class variables for extension tracking logic
@@ -82,6 +84,11 @@ class Client {
     this.persistStatus();
   }
 
+  incrementAndPersistClientStatusAboutAddonsActiveTabSeconds() {
+    this.status.aboutAddonsActiveTabSeconds++;
+    this.persistStatus();
+  }
+
   persistStatus() {
     Preferences.set(CLIENT_STATUS_PREF, JSON.stringify(this.status));
   }
@@ -92,7 +99,7 @@ class Client {
 
   updateAddons() {
     const prev = this.activeAddons;
-    const curr = Client.getNonSystemAddons();
+    const curr = this.getNonSystemAddons();
 
     const currDiff = curr.difference(prev);
     if (currDiff.size > 0) { // an add-on was installed or re-enabled
@@ -106,12 +113,12 @@ class Client {
     this.activeAddons = curr;
   }
 
-  static getNonSystemAddons() {
+  getNonSystemAddons() {
 
     // Prevent a dangling change listener (left after add-on uninstallation) to do anything
     if (!TelemetryEnvironment) {
-      featureInstance.log.debug("getNonSystemAddons disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
-      return;
+      this.feature.log.debug("getNonSystemAddons disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      return null;
     }
 
     const activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons;
@@ -136,52 +143,48 @@ class Client {
     return uri;
   }
 
-  monitorAddonChanges(featureInstance) {
+  monitorAddonChanges() {
 
     // Prevent a dangling change listener (left after add-on uninstallation) to do anything
     if (!TelemetryEnvironment) {
-      featureInstance.log.debug("monitorAddonChanges disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      this.feature.log.debug("monitorAddonChanges disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
       return;
     }
 
-    const client = this;
+    this.activeAddons = this.getNonSystemAddons();
+    this.addonHistory = this.getNonSystemAddons();
 
-    client.activeAddons = Client.getNonSystemAddons();
-    client.addonHistory = Client.getNonSystemAddons();
-
-    TelemetryEnvironment.registerChangeListener("addonListener", function(change) {
-      Client.addonChangeListener(change, client, featureInstance);
-    });
+    TelemetryEnvironment.registerChangeListener("addonListener", (change) => Client.addonChangeListener(change, this, this.feature));
 
   }
 
-  static addonChangeListener(change, client, featureInstance) {
+  static addonChangeListener(change, client, feature) {
     if (change === "addons-changed") {
       client.updateAddons();
       const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
       if (client.lastInstalled) {
-        featureInstance.log.debug("Just installed", client.lastInstalled, "from", uri);
+        feature.log.debug("Just installed", client.lastInstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
-          "addon_id": String(client.status.lastInstalled),
+          "addon_id": String(client.lastInstalled),
           "srcURI": String(uri),
           "pingType": "install",
         };
-        featureInstance.notifyViaTelemetry(dataOut);
+        feature.notifyViaTelemetry(dataOut);
 
         client.lastInstalled = null;
       } else if (client.lastDisabled) {
-        featureInstance.log.debug("Just disabled", client.lastDisabled, "from", uri);
+        feature.log.debug("Just disabled", client.lastDisabled, "from", uri);
 
         // send telemetry
         const dataOut = {
-          "addon_id": String(client.status.lastDisabled),
+          "addon_id": String(client.lastDisabled),
           "srcURI": String(uri),
           "pingType": "uninstall",
         };
-        featureInstance.notifyViaTelemetry(dataOut);
+        feature.notifyViaTelemetry(dataOut);
 
         client.lastDisabled = null;
 
@@ -256,7 +259,7 @@ class Feature {
 
     this.variation = variation;
     this.studyUtils = studyUtils;
-    this.client = new Client();
+    this.client = new Client(this);
     this.log = log;
 
     // reset client status during INSTALL and UPGRADE = a new study period begins
@@ -296,7 +299,7 @@ class Feature {
     const client = this.client;
     const self = this;
 
-    client.monitorAddonChanges(self);
+    client.monitorAddonChanges();
 
     browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
       self.log.debug("Feature.jsm message handler - msg, sender, sendReply", msg, sender, sendReply);
@@ -321,11 +324,15 @@ class Feature {
         self.notifyViaTelemetry(dataOut);
         sendReply({ response: "Disco pane loaded" });
         // restore preference if we changed it temporarily
-        if (currentExtensionsUiLastCategoryPreferenceValue !== false) {
+        if (typeof currentExtensionsUiLastCategoryPreferenceValue !== "undefined" && currentExtensionsUiLastCategoryPreferenceValue !== false) {
           Preferences.set("extensions.ui.lastCategory", currentExtensionsUiLastCategoryPreferenceValue);
         }
         return;
       } else if (msg["trigger-popup"]) {
+        if (client.getStatus().discoPaneLoaded === true) {
+          self.log.debug("Not triggering popup since disco pane has already been loaded");
+          return;
+        }
         client.setAndPersistStatus("sawPopup", true);
         const pageAction = getPageAction();
         pageAction.click();
@@ -367,6 +374,10 @@ class Feature {
         client.setAndPersistStatus(msg.key, msg.value);
         self.log.debug(client.status);
         sendReply(client.getStatus());
+      } else if (msg.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds) {
+        client.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds();
+        self.log.debug(client.status);
+        sendReply(client.getStatus());
       }
 
     });
@@ -384,6 +395,7 @@ class Feature {
     stringStringMap.sawPopup = String(client.status.sawPopup);
     stringStringMap.startTime = String(client.status.startTime);
     stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    stringStringMap.aboutAddonsActiveTabSeconds = String(client.status.aboutAddonsActiveTabSeconds);
     if (typeof stringStringMap.addon_id === "undefined") {
       stringStringMap.addon_id = "null";
     }
@@ -399,8 +411,14 @@ class Feature {
     this.studyUtils.telemetry(stringStringMap);
   }
 
-  /* remove artifacts of this study */
+  /* called at end of study */
   shutdown() {
+    // send final telemetry
+    const dataOut = {
+      "pingType": "shutdown",
+    };
+    this.notifyViaTelemetry(dataOut);
+    // remove artifacts of this study
     var defaultBranch = Services.prefs.getDefaultBranch(null);
     defaultBranch.deleteBranch(PREF_BRANCH);
   }

@@ -68,7 +68,7 @@ function telemetry(data) {
 */
 
 function handleError(error) {
-  console.error("A study-specific message handler encountered the following error:", error);
+  console.error("A study-specific callback handler encountered the following error:", error);
 }
 
 /**
@@ -157,6 +157,7 @@ class TAARExperiment {
         await TAARExperiment.firstRun();
       }
       TAARExperiment.monitorNavigation();
+      TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
     }, handleError);
   }
 
@@ -169,6 +170,44 @@ class TAARExperiment {
     browser.webNavigation.onCompleted.addListener(webNavListener,
       { url: [{ schemes: ["http", "https"] }] });
   }
+
+  static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
+    console.log("Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds");
+
+    let interval = 1000;
+
+    const notifyStudyThatAboutAddonsIsTheActiveTabUrlThisSecond = function() {
+      console.log("timer callback");
+    };
+
+    setInterval(function() {
+
+      var querying = browser.tabs.query({ currentWindow: true, active: true });
+      querying.then(function(tabs) {
+
+        if (tabs.length > 0) {
+          var gettingInfo = browser.tabs.get(tabs[0].id);
+          gettingInfo.then(function(tabInfo) {
+
+            if (tabInfo.url === "about:addons" && tabInfo.status === "complete") {
+
+              browser.runtime.sendMessage({
+                "incrementAndPersistClientStatusAboutAddonsActiveTabSeconds": true
+              }).then(function(clientStatus) {
+                //console.log('aboutAddonsActiveTabSeconds increased to: ' + clientStatus.aboutAddonsActiveTabSeconds);
+              }, handleError);
+
+            }
+
+          }, handleError);
+        }
+
+      }, handleError);
+
+    }, interval);
+
+  }
+
 }
 
 let experiment = new TAARExperiment();
