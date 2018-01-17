@@ -65,6 +65,7 @@ class Client {
       this.status.sawPopup = false;
       this.status.startTime = null;
       this.status.totalWebNav = 0;
+      this.status.aboutAddonsActiveTabSeconds = 0;
       this.persistStatus();
     }
     // Temporary class variables for extension tracking logic
@@ -80,6 +81,11 @@ class Client {
 
   setAndPersistStatus(key, value) {
     this.status[key] = value;
+    this.persistStatus();
+  }
+
+  incrementAndPersistClientStatusAboutAddonsActiveTabSeconds() {
+    this.status.aboutAddonsActiveTabSeconds++;
     this.persistStatus();
   }
 
@@ -368,6 +374,10 @@ class Feature {
         client.setAndPersistStatus(msg.key, msg.value);
         self.log.debug(client.status);
         sendReply(client.getStatus());
+      } else if (msg.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds) {
+        client.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds();
+        self.log.debug(client.status);
+        sendReply(client.getStatus());
       }
 
     });
@@ -385,6 +395,7 @@ class Feature {
     stringStringMap.sawPopup = String(client.status.sawPopup);
     stringStringMap.startTime = String(client.status.startTime);
     stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    stringStringMap.aboutAddonsActiveTabSeconds = String(client.status.aboutAddonsActiveTabSeconds);
     if (typeof stringStringMap.addon_id === "undefined") {
       stringStringMap.addon_id = "null";
     }
