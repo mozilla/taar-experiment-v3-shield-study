@@ -326,6 +326,10 @@ class Feature {
         }
         return;
       } else if (msg["trigger-popup"]) {
+        if (client.getStatus().discoPaneLoaded === true) {
+          self.log.debug("Not triggering popup since disco pane has already been loaded");
+          return;
+        }
         client.setAndPersistStatus("sawPopup", true);
         const pageAction = getPageAction();
         pageAction.click();
