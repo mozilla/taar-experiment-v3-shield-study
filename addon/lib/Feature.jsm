@@ -411,8 +411,14 @@ class Feature {
     this.studyUtils.telemetry(stringStringMap);
   }
 
-  /* remove artifacts of this study */
+  /* called at end of study */
   shutdown() {
+    // send final telemetry
+    const dataOut = {
+      "pingType": "shutdown",
+    };
+    this.notifyViaTelemetry(dataOut);
+    // remove artifacts of this study
     var defaultBranch = Services.prefs.getDefaultBranch(null);
     defaultBranch.deleteBranch(PREF_BRANCH);
   }
