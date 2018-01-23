@@ -37,7 +37,7 @@
 * Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
-* Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
+* Verify that after exactly 3 successful web navigations that have completed in the currently active tab, the popup will display with the option to go to the disco-pane
 * Verify that sent Telemetry is correct upon showing the popup and upon clicking the Cancel button
 * Verify that no popup is shown on consecutive web navigations
 
@@ -46,7 +46,7 @@
 * Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
-* Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
+* Verify that after exactly 3 successful web navigations that have completed in the currently active tab, the popup will display with the option to go to the disco-pane
 * Verify that sent Telemetry is correct upon showing the popup and upon clicking the Browse Add-ons button
 * Verify that sent Telemetry is correct upon finished loading of the about:addons discovery pane
 * Verify that no popup is shown on consecutive web navigations

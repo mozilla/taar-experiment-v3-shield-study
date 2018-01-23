@@ -81,69 +81,87 @@ function triggerPopup() {
   browser.runtime.sendMessage({ "trigger-popup": true }).then(noop, handleError);
 }
 
-function webNavListener(info) {
-  console.log("webNavListener info", info);
-  webNavListener_trackDiscoPaneLoading(info);
-  webNavListener_popupRelated(info);
+function webNavListener(webNavInfo) {
+  console.log("webNavListener - webNavInfo:", webNavInfo);
+  webNavListener_trackDiscoPaneLoading(webNavInfo);
+  webNavListener_popupRelated(webNavInfo);
 }
 
-function webNavListener_trackDiscoPaneLoading(info) {
-  if (info.frameId > 0 && info.url.indexOf("https://discovery.addons.mozilla.org/") > -1 && info.parentFrameId === 0) {
+function webNavListener_trackDiscoPaneLoading(webNavInfo) {
+  if (webNavInfo.frameId > 0 && webNavInfo.url.indexOf("https://discovery.addons.mozilla.org/") > -1 && webNavInfo.parentFrameId === 0) {
     browser.runtime.sendMessage({ "disco-pane-loaded": true }).then(noop, handleError);
   }
 }
 
-function webNavListener_popupRelated(info) {
+function webNavListener_popupRelated(webNavInfo) {
   // Filter out any sub-frame related navigation event
-  if (info.frameId !== 0) {
+  if (webNavInfo.frameId !== 0) {
     return;
   }
 
-  // get up to date client status
-  browser.runtime.sendMessage({ "getClientStatus": true }).then(
-    function(clientStatus) {
+  // Increment total navigations and trigger popup when relevant
+  const onCompletedWebNavigationInAnActiveTab = function(currentActiveTabInfo) {
 
-      const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
-      const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
-      const tabId = info.tabId;
+    // get up to date client status
+    browser.runtime.sendMessage({ "getClientStatus": true }).then(
+      function(clientStatus) {
 
-      clientStatus.totalWebNav++;
+        const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
+        const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
+        const tabId = webNavInfo.tabId;
 
-      browser.runtime.sendMessage({
-        "setAndPersistClientStatus": true,
-        "key": "totalWebNav",
-        "value": clientStatus.totalWebNav,
-      }).then(
-        function(updatedClientStatus) {
+        clientStatus.totalWebNav++;
 
-          console.log("TotalURI: " + updatedClientStatus.totalWebNav);
+        browser.runtime.sendMessage({
+          "setAndPersistClientStatus": true,
+          "key": "totalWebNav",
+          "value": clientStatus.totalWebNav,
+        }).then(
+          function(updatedClientStatus) {
 
-          if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
-            // arbitrary condition for now
-            if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
-              browser.storage.local.set({ "PA-tabId": tabId });
-              browser.pageAction.show(tabId);
-              browser.pageAction.setPopup({
-                tabId,
-                popup: "/popup/locales/" + locale + "/popup.html",
+            console.log("TotalURI: " + updatedClientStatus.totalWebNav);
+
+            if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
+              // arbitrary condition for now
+              if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
+                browser.storage.local.set({ "PA-tabId": tabId });
+                browser.pageAction.show(tabId);
+                browser.pageAction.setPopup({
+                  tabId,
+                  popup: "/popup/locales/" + locale + "/popup.html",
+                });
+                // wait 500ms second to make sure pageAction exists in chrome
+                // so we can pageAction.show() from bootstrap.js
+                setTimeout(triggerPopup, 500);
+              }
+            } else { // client has seen the popup
+              browser.storage.local.get("PA-tabId").then(function(result2) {
+                browser.pageAction.hide(result2["PA-tabId"]);
               });
-              // wait 500ms second to make sure pageAction exists in chrome
-              // so we can pageAction.show() from bootstrap.js
-              setTimeout(triggerPopup, 500);
             }
-          } else { // client has seen the popup
-            browser.storage.local.get("PA-tabId").then(function(result2) {
-              browser.pageAction.hide(result2["PA-tabId"]);
-            });
-          }
 
-        },
-        handleError
-      );
+          },
+          handleError
+        );
 
-    },
-    handleError
-  );
+      },
+      handleError
+    );
+
+  };
+
+  // Only consider web navigations that has completed in the currently active tab
+  const querying = browser.tabs.query({ currentWindow: true, active: true });
+  querying.then(function(tabs) {
+    if (tabs.length > 0) {
+      const gettingInfo = browser.tabs.get(tabs[0].id);
+      gettingInfo.then(function(currentActiveTabInfo) {
+        if (currentActiveTabInfo.status === "complete" && webNavInfo.tabId === currentActiveTabInfo.id) {
+          onCompletedWebNavigationInAnActiveTab(currentActiveTabInfo);
+        }
+      });
+    }
+  });
 
 }
 
