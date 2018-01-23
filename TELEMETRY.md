@@ -18,7 +18,7 @@ This study has no surveys and as such has NO SPECIFIC ENDINGS.
 A ping is sent from the add-on upon:
 
 * study initialization
-* upon discovery pane load
+* upon discovery pane load (every time, not only the first)
 * upon popup display
 * upon popup discovery pane button click
 * every time the user installs/uninstalls/disables an add-on 
