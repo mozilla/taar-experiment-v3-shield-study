@@ -51,6 +51,10 @@ function getMostRecentBrowserWindow() {
 }
 */
 
+// unit-tested study helpers
+XPCOMUtils.defineLazyModuleGetter(
+  this, "Helpers", "resource://taarexpv2/lib/Helpers.jsm"
+);
 
 class Client {
   constructor(feature) {
@@ -97,19 +101,12 @@ class Client {
     Preferences.set(CLIENT_STATUS_PREF, "");
   }
 
-  updateAddons() {
+  updateLastInstalledAndLastUpdatedAddons() {
     const prev = this.activeAddons;
     const curr = this.getNonSystemAddons();
-
-    const currDiff = curr.difference(prev);
-    if (currDiff.size > 0) { // an add-on was installed or re-enabled
-      const newInstalls = curr.difference(this.addonHistory);
-      if (newInstalls.size > 0) { // new install, not a re-enable
-        this.lastInstalled = newInstalls.values().next().value;
-      }
-    } else { // an add-on was disabled or uninstalled
-      this.lastDisabled = prev.difference(curr).values().next().value;
-    }
+    const addonChanges = Helpers.analyzeAddonChanges(prev, curr, this.addonHistory);
+    this.lastInstalled = addonChanges.lastInstalled;
+    this.lastDisabled = addonChanges.lastDisabled;
     this.activeAddons = curr;
   }
 
@@ -129,7 +126,7 @@ class Client {
         result.add(addon);
       }
     }
-    return (result);
+    return result;
   }
 
   static bucketURI(uri) {
@@ -160,7 +157,7 @@ class Client {
 
   static addonChangeListener(change, client, feature) {
     if (change === "addons-changed") {
-      client.updateAddons();
+      client.updateLastInstalledAndLastUpdatedAddons();
       const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
 
       if (client.lastInstalled) {
@@ -230,22 +227,6 @@ function closePageAction() {
     }
   }
 }
-
-Set.prototype.difference = function(setB) {
-  const difference = new Set(this);
-  for (const elem of setB) {
-    difference.delete(elem);
-  }
-  return difference;
-};
-
-Set.prototype.union = function(setB) {
-  const union = new Set(this);
-  for (const elem of setB) {
-    union.add(elem);
-  }
-  return union;
-};
 
 class Feature {
   /** A Demonstration feature.
