@@ -11,14 +11,14 @@ This study has no surveys and as such has NO SPECIFIC ENDINGS.
 
 ## `shield-study` pings (common to all shield-studies)
 
-`shield-studies-addon-utils` sends the usual packets.
+[shield-studies-addon-utils](https://github.com/mozilla/shield-studies-addon-utils) sends the usual packets.
 
 ## `shield-study-addon` pings, specific to THIS study.
 
 A ping is sent from the add-on upon:
 
 * study initialization
-* upon discovery pane load
+* upon discovery pane load (every time, not only the first)
 * upon popup display
 * upon popup discovery pane button click
 * every time the user installs/uninstalls/disables an add-on 

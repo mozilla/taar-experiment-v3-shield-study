@@ -31,13 +31,15 @@ module.exports = {
     "mozilla"
   ],
 
+  root: true,
+
   rules: {
     "babel/new-cap": "off",
     "comma-dangle": ["error", "always-multiline"],
     "eqeqeq": "error",
     "indent": ["warn", 2, {SwitchCase: 1}],
     "mozilla/no-aArgs": "warn",
-    "mozilla/balanced-listeners": 0,
+    "mozilla/balanced-listeners": "off",
     "no-console": "warn",
     "no-shadow": ["error"],
     "no-unused-vars": "error",

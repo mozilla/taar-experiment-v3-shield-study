@@ -37,7 +37,7 @@
 * Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
-* Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
+* Verify that after exactly 3 successful web navigations that have completed in the currently active tab, the popup will display with the option to go to the disco-pane
 * Verify that sent Telemetry is correct upon showing the popup and upon clicking the Cancel button
 * Verify that no popup is shown on consecutive web navigations
 
@@ -46,7 +46,7 @@
 * Install the add-on as per above, with `extensions.taarexpv2.profile-age-in-days-test-override` set to `5` (or anything higher than 1 but lower than 10)
 * Verify that the study starts
 * Verify that no popup is shown immediately
-* Verify that after exactly 3 successful web navigations, the popup will display with the option to go to the disco-pane
+* Verify that after exactly 3 successful web navigations that have completed in the currently active tab, the popup will display with the option to go to the disco-pane
 * Verify that sent Telemetry is correct upon showing the popup and upon clicking the Browse Add-ons button
 * Verify that sent Telemetry is correct upon finished loading of the about:addons discovery pane
 * Verify that no popup is shown on consecutive web navigations
@@ -82,7 +82,7 @@ See [TELEMETRY.md](./TELEMETRY.md) for more details on what pings are sent by th
 
 ### Example of how the popup appears when testing in Firefox
 
-![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/35058120-a9ae973e-fbbf-11e7-8e96-cbd643f69d53.png)
+![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/35304654-fa9b6116-009e-11e8-8057-7b2f7152b825.png)
 
 ## Debug
 

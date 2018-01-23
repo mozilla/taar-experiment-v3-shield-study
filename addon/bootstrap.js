@@ -62,13 +62,14 @@ async function startup(addonData, reason) {
   studyUtils.setVariation(variation);
   log.debug(`studyUtils has config and variation.name: ${variation.name}.  Ready to send telemetry`);
 
-  /** addon_install and addon_upgrade ONLY:
+  /** addon_install and addon_upgrade (which is considered a new study) ONLY:
    * - note first seen,
    * - check eligible
    */
   if (reason === REASONS.ADDON_INSTALL || reason === REASONS.ADDON_UPGRADE) {
     //  telemetry "enter" ONCE
     studyUtils.firstSeen();
+    // check user eligibility ONCE
     const eligible = await config.isEligible(); // addon-specific
     if (!eligible) {
       // 1. uses config.endings.ineligible.url if any,
@@ -77,8 +78,6 @@ async function startup(addonData, reason) {
       await studyUtils.endStudy({ reason: "ineligible" });
       return;
     }
-  } else {
-    return;
   }
 
   // startup for eligible users.
@@ -134,7 +133,9 @@ function shutdown(addonData, reason) {
     // normal shutdown, or 2nd uninstall request
 
     // QA NOTE:  unload addon specific modules here.
+    Cu.unload(`resource://${BASE}/Config.jsm`);
     Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
+    Cu.unload(`resource://${BASE}/lib/Helpers.jsm`);
     if (this.feature) {
       this.feature.shutdown();
     }

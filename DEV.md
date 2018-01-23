@@ -68,15 +68,13 @@ To debug installation and loading of the add-on:
 
 See [TESTPLAN.md](./TESTPLAN.md) for more details on how to see this add-on in action and hot it is expected to behave.
 
-## Automated Testing
+## Automation and tests
 
 `$ npm run firefox` starts Firefox and automatically installs the add-on in a new profile and opens the browser console automatically.
 
-`$ npm test` verifies the telemetry payload as expected at firefox startup and add-on installation in a clean profile, then does **optimistic testing** of the *commonest paths* though the study for a user, as documented in [TESTPLAN.md](./TESTPLAN.md).
+Note: This runs in a recently created profile. To have the study run despite the eligibility requirement of having at least 1 day old profiles, a config override is set in place to force the study to run.
 
-Code at [./test/functional_test.js](./test/functional_test.js).
-
-Note: Both of these run in recently created profiles. To have the study run despite the eligibility requirement of having at least 1 day old profiles, a config override is set in place to force the study to run.
+`$ node test/unit_tests.js` runs some study-specific unit tests.
 
 ## Watch
 
@@ -154,6 +152,8 @@ Note: This is currently only useful if you load the extension manually - it has 
 >> tree -a -I 'node_modules|.git|.DS_Store|screenshot.png|pings.json'
 
 ```
+
+This structure is set forth in [shield-studies-addon-template](https://github.com/mozilla/shield-studies-addon-template), with study-specific changes found mostly in `addon/lib`, `addon/webextension` and `addon/Config.jsm`.
 
 ### Description of what goes on when this add-on is started
 
