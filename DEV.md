@@ -155,6 +155,8 @@ Note: This is currently only useful if you load the extension manually - it has 
 
 ```
 
+This structure is set forth in [shield-studies-addon-template](https://github.com/mozilla/shield-studies-addon-template), with study-specific changes found mostly in `addon/lib`, `addon/webextension` and `addon/Config.jsm`.
+
 ### Description of what goes on when this add-on is started
 
 During `bootstrap.js:startup(data, reason)`:

@@ -11,7 +11,7 @@ This study has no surveys and as such has NO SPECIFIC ENDINGS.
 
 ## `shield-study` pings (common to all shield-studies)
 
-`shield-studies-addon-utils` sends the usual packets.
+[shield-studies-addon-utils](https://github.com/mozilla/shield-studies-addon-utils) sends the usual packets.
 
 ## `shield-study-addon` pings, specific to THIS study.
 
