@@ -69,15 +69,15 @@ async function startup(addonData, reason) {
   if (reason === REASONS.ADDON_INSTALL || reason === REASONS.ADDON_UPGRADE) {
     //  telemetry "enter" ONCE
     studyUtils.firstSeen();
-    const eligible = await config.isEligible(); // addon-specific
-    if (!eligible) {
-      // 1. uses config.endings.ineligible.url if any,
-      // 2. sends UT for "ineligible"
-      // 3. then uninstalls addon
-      await studyUtils.endStudy({ reason: "ineligible" });
-      return;
-    }
-  } else {
+  }
+
+  // ensure that the user is still eligible
+  const eligible = await config.isEligible(); // addon-specific
+  if (!eligible) {
+    // 1. uses config.endings.ineligible.url if any,
+    // 2. sends UT for "ineligible"
+    // 3. then uninstalls addon
+    await studyUtils.endStudy({ reason: "ineligible" });
     return;
   }
 
