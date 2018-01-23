@@ -8,7 +8,7 @@
  *
  *   - all communication to the Legacy Addon is via `browser.runtime.sendMessage`
  *
- *   - Only the webExtension can initiate messages.  see `msgStudyUtils('info')` below.
+ *   - Only the webExtension can initiate messages.  see `msgStudyUtils("info")` below.
  */
 
 
@@ -27,7 +27,7 @@ async function msgStudyUtils(msg, data) {
   const allowed = ["endStudy", "telemetry", "info"];
   if (!allowed.includes(msg)) throw new Error(`shieldUtils doesn't know ${msg}, only knows ${allowed}`);
   try {
-    // the 'shield' key is how the Host listener knows it's for shield.
+    // the "shield" key is how the Host listener knows it's for shield.
     return await browser.runtime.sendMessage({ shield: true, msg, data });
   } catch (e) {
     console.error("ERROR msgStudyUtils", msg, data, e);
@@ -37,7 +37,7 @@ async function msgStudyUtils(msg, data) {
 
 /** `telemetry`
  *
- * - check all pings for validity as 'shield-study-addon' pings
+ * - check all pings for validity as "shield-study-addon" pings
  * - tell Legacy Addon to send
  *
  * Good practice: send all Telemetry from one function for easier
@@ -56,8 +56,8 @@ function telemetry(data) {
   function throwIfInvalid(obj) {
     // Check: all keys and values must be strings,
     for (const k in obj) {
-      if (typeof k !== 'string') throw new Error(`key ${k} not a string`);
-      if (typeof obj[k] !== 'string') throw new Error(`value ${k} ${obj[k]} not a string`);
+      if (typeof k !== "string") throw new Error(`key ${k} not a string`);
+      if (typeof obj[k] !== "string") throw new Error(`value ${k} ${obj[k]} not a string`);
     }
     return true
   }
@@ -82,13 +82,13 @@ function triggerPopup() {
 }
 
 function webNavListener(info) {
-  console.log('webNavListener info', info);
+  console.log("webNavListener info", info);
   webNavListener_trackDiscoPaneLoading(info);
   webNavListener_popupRelated(info);
 }
 
 function webNavListener_trackDiscoPaneLoading(info) {
-  if (info.frameId > 0 && info.url.indexOf('https://discovery.addons.mozilla.org/') > -1 && info.parentFrameId === 0) {
+  if (info.frameId > 0 && info.url.indexOf("https://discovery.addons.mozilla.org/") > -1 && info.parentFrameId === 0) {
     browser.runtime.sendMessage({ "disco-pane-loaded": true }).then(noop, handleError);
   }
 }
@@ -112,26 +112,26 @@ function webNavListener_popupRelated(info) {
       browser.runtime.sendMessage({
         "setAndPersistClientStatus": true,
         "key": "totalWebNav",
-        "value": clientStatus.totalWebNav
+        "value": clientStatus.totalWebNav,
       }).then(
-        function(clientStatus) {
+        function(updatedClientStatus) {
 
-          console.log('TotalURI: ' + clientStatus.totalWebNav);
+          console.log("TotalURI: " + updatedClientStatus.totalWebNav);
 
-          if ((!clientStatus.sawPopup && clientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
+          if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
             // arbitrary condition for now
-            if (clientStatus.totalWebNav > 2 || forcePopup) {
+            if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
               browser.storage.local.set({ "PA-tabId": tabId });
               browser.pageAction.show(tabId);
               browser.pageAction.setPopup({
                 tabId,
-                popup: "/popup/locales/" + locale + "/popup.html"
+                popup: "/popup/locales/" + locale + "/popup.html",
               });
               // wait 500ms second to make sure pageAction exists in chrome
               // so we can pageAction.show() from bootstrap.js
               setTimeout(triggerPopup, 500);
             }
-          } else { //client has seen the popup
+          } else { // client has seen the popup
             browser.storage.local.get("PA-tabId").then(function(result2) {
               browser.pageAction.hide(result2["PA-tabId"]);
             });
@@ -151,7 +151,7 @@ function webNavListener_popupRelated(info) {
 class TAARExperiment {
 
   async start() {
-    this.info = await msgStudyUtils('info');
+    this.info = await msgStudyUtils("info");
     await browser.runtime.sendMessage({ "getClientStatus": true }).then(async function(clientStatus) {
       if (clientStatus.startTime === null) {
         await TAARExperiment.firstRun();
@@ -166,7 +166,7 @@ class TAARExperiment {
   }
 
   static monitorNavigation() {
-    console.log('Monitoring navigation to be able to show popup after 3 page visits');
+    console.log("Monitoring navigation to be able to show popup after 3 page visits");
     browser.webNavigation.onCompleted.addListener(webNavListener,
       { url: [{ schemes: ["http", "https"] }] });
   }
@@ -174,27 +174,23 @@ class TAARExperiment {
   static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
     console.log("Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds");
 
-    let interval = 1000;
-
-    const notifyStudyThatAboutAddonsIsTheActiveTabUrlThisSecond = function() {
-      console.log("timer callback");
-    };
+    const interval = 1000;
 
     setInterval(function() {
 
-      var querying = browser.tabs.query({ currentWindow: true, active: true });
+      const querying = browser.tabs.query({ currentWindow: true, active: true });
       querying.then(function(tabs) {
 
         if (tabs.length > 0) {
-          var gettingInfo = browser.tabs.get(tabs[0].id);
+          const gettingInfo = browser.tabs.get(tabs[0].id);
           gettingInfo.then(function(tabInfo) {
 
             if (tabInfo.url === "about:addons" && tabInfo.status === "complete") {
 
               browser.runtime.sendMessage({
-                "incrementAndPersistClientStatusAboutAddonsActiveTabSeconds": true
+                "incrementAndPersistClientStatusAboutAddonsActiveTabSeconds": true,
               }).then(function(clientStatus) {
-                //console.log('aboutAddonsActiveTabSeconds increased to: ' + clientStatus.aboutAddonsActiveTabSeconds);
+                // console.log("aboutAddonsActiveTabSeconds increased to: " + clientStatus.aboutAddonsActiveTabSeconds);
               }, handleError);
 
             }
@@ -210,6 +206,6 @@ class TAARExperiment {
 
 }
 
-let experiment = new TAARExperiment();
+const experiment = new TAARExperiment();
 experiment.start();
 

@@ -11,10 +11,10 @@ document.addEventListener("click", (e) => {
 
   let message = null;
 
-  if (e.target.id == "browse-addons-button") {
-    console.log("routing to about:addons...")
+  if (e.target.id === "browse-addons-button") {
+    console.log("routing to about:addons...");
     message = { "clicked-disco-button": true };
-  } else if (e.target.id == "close-button") {
+  } else if (e.target.id === "close-button") {
     message = { "clicked-close-button": true };
   }
 
