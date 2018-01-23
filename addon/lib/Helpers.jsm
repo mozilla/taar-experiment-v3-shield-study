@@ -4,34 +4,23 @@ const EXPORTED_SYMBOLS = this.EXPORTED_SYMBOLS = ["Helpers"];
 
 this.Helpers = {
 
-  setDifference: (setA, setB) => {
-    const difference = new Set(setA);
-    for (const elem of setB) {
+  addedItemsDifference: (prev, curr) => {
+    const difference = new Set(curr);
+    for (const elem of prev) {
       difference.delete(elem);
     }
     return difference;
   },
 
-  /*
-  setUnion: (setA, setB) => {
-    const union = new Set(setA);
-    for (const elem of setB) {
-      union.add(elem);
-    }
-    return union;
-  },
-  */
-
-  analyzeAddonChanges: (prev, curr, addonHistory) => {
+  analyzeAddonChanges: (prev, curr) => {
     const addonChanges = {};
-    const currDiff = this.Helpers.setDifference(curr, prev);
-    if (currDiff.size > 0) { // an add-on was installed or re-enabled
-      const newInstalls = this.Helpers.setDifference(curr, addonHistory);
-      if (newInstalls.size > 0) { // new install, not a re-enable
-        addonChanges.lastInstalled = newInstalls.values().next().value;
-      }
-    } else { // an add-on was disabled or uninstalled
-      addonChanges.lastDisabled = this.Helpers.setDifference(prev, curr).values().next().value;
+    const addedAddons = this.Helpers.addedItemsDifference(prev, curr);
+    const removedAddons = this.Helpers.addedItemsDifference(curr, prev);
+    if (addedAddons.size > 0) { // an add-on was installed or re-enabled
+      addonChanges.lastInstalled = addedAddons.values().next().value;
+    }
+    if (removedAddons.size > 0) { // an add-on was disabled or uninstalled
+      addonChanges.lastDisabledOrUninstalled = removedAddons.values().next().value;
     }
     return addonChanges;
   },

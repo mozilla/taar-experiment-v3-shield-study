@@ -33,6 +33,7 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 const EXPORTED_SYMBOLS = ["Feature"];
 
 const PREF_BRANCH = "extensions.taarexpv2";
+const SHIELD_STUDY_ADDON_ID = "taarexpv2@shield-study.mozilla.com";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
@@ -72,11 +73,6 @@ class Client {
       this.status.aboutAddonsActiveTabSeconds = 0;
       this.persistStatus();
     }
-    // Temporary class variables for extension tracking logic
-    this.activeAddons = new Set();
-    this.addonHistory = new Set();
-    this.lastInstalled = null;
-    this.lastDisabled = null;
   }
 
   getStatus() {
@@ -101,31 +97,30 @@ class Client {
     Preferences.set(CLIENT_STATUS_PREF, "");
   }
 
-  updateLastInstalledAndLastUpdatedAddons() {
-    const prev = this.activeAddons;
-    const curr = this.getNonSystemAddons();
-    const addonChanges = Helpers.analyzeAddonChanges(prev, curr, this.addonHistory);
-    this.lastInstalled = addonChanges.lastInstalled;
-    this.lastDisabled = addonChanges.lastDisabled;
-    this.activeAddons = curr;
+  static analyzeAddonChangesBetweenEnvironments(oldEnvironment, currentEnvironment) {
+
+    const prev = Client.activeNonSystemAddonIdsInEnvironment(oldEnvironment);
+    const curr = Client.activeNonSystemAddonIdsInEnvironment(currentEnvironment);
+    return Helpers.analyzeAddonChanges(prev, curr);
+
   }
 
-  getNonSystemAddons() {
+  static activeNonSystemAddonIdsInEnvironment(environment) {
 
-    // Prevent a dangling change listener (left after add-on uninstallation) to do anything
-    if (!TelemetryEnvironment) {
-      this.feature.log.debug("getNonSystemAddons disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
-      return null;
-    }
-
-    const activeAddons = TelemetryEnvironment.currentEnvironment.addons.activeAddons;
+    const activeAddons = environment.addons.activeAddons;
+    console.log('activeAddons', activeAddons);
     const result = new Set();
-    for (const addon in activeAddons) {
-      const data = activeAddons[addon];
+    for (const addonId in activeAddons) {
+      // Do not count this extension
+      if (addonId === SHIELD_STUDY_ADDON_ID) {
+        continue;
+      }
+      const data = activeAddons[addonId];
       if (!data.isSystem && !data.foreignInstall) {
-        result.add(addon);
+        result.add(addonId);
       }
     }
+    console.log("activeNonSystemAddonIdsInEnvironment", result, JSON.stringify(Array.from(result)));
     return result;
   }
 
@@ -148,42 +143,42 @@ class Client {
       return;
     }
 
-    this.activeAddons = this.getNonSystemAddons();
-    this.addonHistory = this.getNonSystemAddons();
-
-    TelemetryEnvironment.registerChangeListener("addonListener", (change) => Client.addonChangeListener(change, this, this.feature));
+    TelemetryEnvironment.registerChangeListener("addonListener", (change, oldEnvironment) => Client.addonChangeListener(change, oldEnvironment, this, this.feature));
 
   }
 
-  static addonChangeListener(change, client, feature) {
-    if (change === "addons-changed") {
-      client.updateLastInstalledAndLastUpdatedAddons();
-      const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
+  static addonChangeListener(change, oldEnvironment, client, feature) {
 
-      if (client.lastInstalled) {
+    // Prevent a dangling change listener (left after add-on uninstallation) to do anything
+    if (!TelemetryEnvironment) {
+      this.feature.log.debug("addonChangeListener disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      return null;
+    }
+
+    if (change === "addons-changed") {
+      const addonChanges = Client.analyzeAddonChangesBetweenEnvironments(oldEnvironment, TelemetryEnvironment.currentEnvironment);
+      const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
+      if (addonChanges.lastInstalled) {
         feature.log.debug("Just installed", client.lastInstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
-          "addon_id": String(client.lastInstalled),
+          "addon_id": String(addonChanges.lastInstalled),
           "srcURI": String(uri),
           "pingType": "install",
         };
         feature.notifyViaTelemetry(dataOut);
 
-        client.lastInstalled = null;
-      } else if (client.lastDisabled) {
-        feature.log.debug("Just disabled", client.lastDisabled, "from", uri);
+      } else if (addonChanges.lastDisabledOrUninstalled) {
+        feature.log.debug("Just disabled", client.lastDisabledOrUninstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
-          "addon_id": String(client.lastDisabled),
+          "addon_id": String(addonChanges.lastDisabledOrUninstalled),
           "srcURI": String(uri),
           "pingType": "uninstall",
         };
         feature.notifyViaTelemetry(dataOut);
-
-        client.lastDisabled = null;
 
       }
 
