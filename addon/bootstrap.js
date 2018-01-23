@@ -134,6 +134,7 @@ function shutdown(addonData, reason) {
     // normal shutdown, or 2nd uninstall request
 
     // QA NOTE:  unload addon specific modules here.
+    Cu.unload(`resource://${BASE}/Config.jsm`);
     Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
     if (this.feature) {
       this.feature.shutdown();
