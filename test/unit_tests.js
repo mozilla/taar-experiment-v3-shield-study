@@ -6,7 +6,7 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 
   const fixtures = {
     previousNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net"])
+    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net"]),
   };
 
   const expected = new Set(["uBlock0@raymondhill.net"]);

@@ -98,17 +98,13 @@ class Client {
   }
 
   static analyzeAddonChangesBetweenEnvironments(oldEnvironment, currentEnvironment) {
-
     const prev = Client.activeNonSystemAddonIdsInEnvironment(oldEnvironment);
     const curr = Client.activeNonSystemAddonIdsInEnvironment(currentEnvironment);
     return Helpers.analyzeAddonChanges(prev, curr);
-
   }
 
   static activeNonSystemAddonIdsInEnvironment(environment) {
-
     const activeAddons = environment.addons.activeAddons;
-    console.log('activeAddons', activeAddons);
     const result = new Set();
     for (const addonId in activeAddons) {
       // Do not count this extension
@@ -120,7 +116,6 @@ class Client {
         result.add(addonId);
       }
     }
-    console.log("activeNonSystemAddonIdsInEnvironment", result, JSON.stringify(Array.from(result)));
     return result;
   }
 
@@ -183,6 +178,10 @@ class Client {
       }
 
     }
+
+    // eslint
+    return null;
+
   }
 
 }
