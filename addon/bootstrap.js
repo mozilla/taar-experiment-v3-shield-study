@@ -124,13 +124,6 @@ function shutdown(addonData, reason) {
   // FRAGILE: handle uninstalls initiated by USER or by addon
   if (reason === REASONS.ADDON_UNINSTALL || reason === REASONS.ADDON_DISABLE) {
     log.debug("uninstall or disable");
-    if (!studyUtils._isEnding) {
-      // we are the first 'uninstall' requestor => must be user action.
-      log.debug("probably: user requested shutdown");
-      studyUtils.endStudy({ reason: "user-disable" });
-      return;
-    }
-    // normal shutdown, or 2nd uninstall request
 
     // QA NOTE:  unload addon specific modules here.
     Cu.unload(`resource://${BASE}/Config.jsm`);
@@ -143,6 +136,15 @@ function shutdown(addonData, reason) {
     // clean up our modules.
     Cu.unload(CONFIGPATH);
     Cu.unload(STUDYUTILSPATH);
+
+    if (!studyUtils._isEnding) {
+      // we are the first 'uninstall' requestor => must be user action.
+      log.debug("probably: user requested shutdown");
+      studyUtils.endStudy({ reason: "user-disable" });
+      return;
+    }
+    // normal shutdown, or 2nd uninstall request
+
   }
 }
 
