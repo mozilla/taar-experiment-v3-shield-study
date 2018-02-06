@@ -82,7 +82,7 @@ function triggerPopup() {
 }
 
 function webNavListener(webNavInfo) {
-  console.log("webNavListener - webNavInfo:", webNavInfo);
+  // console.log("webNavListener - webNavInfo:", webNavInfo);
   webNavListener_trackDiscoPaneLoading(webNavInfo);
   webNavListener_popupRelated(webNavInfo);
 }
@@ -119,7 +119,7 @@ function webNavListener_popupRelated(webNavInfo) {
         }).then(
           function(updatedClientStatus) {
 
-            console.log("TotalURI: " + updatedClientStatus.totalWebNav);
+            // console.log("TotalURI: " + updatedClientStatus.totalWebNav);
 
             if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
               // arbitrary condition for now
@@ -184,13 +184,13 @@ class TAARExperiment {
   }
 
   static monitorNavigation() {
-    console.log("Monitoring navigation to be able to show popup after 3 page visits");
+    // console.log("Monitoring navigation to be able to show popup after 3 page visits");
     browser.webNavigation.onCompleted.addListener(webNavListener,
       { url: [{ schemes: ["http", "https"] }] });
   }
 
   static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
-    console.log("Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds");
+    // console.log("Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds");
 
     const interval = 1000;
 
