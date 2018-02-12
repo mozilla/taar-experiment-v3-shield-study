@@ -105,45 +105,44 @@ function webNavListener_popupRelated(webNavInfo) {
     // get up to date client status
     browser.runtime.sendMessage({ "getClientStatus": true }).then(
       function(clientStatus) {
+        if (!currentActiveTabInfo.incognito) {
+          const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
+          const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
+          const tabId = webNavInfo.tabId;
 
-        const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
-        const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
-        const tabId = webNavInfo.tabId;
 
-        clientStatus.totalWebNav++;
+          clientStatus.totalWebNav++;
 
-        browser.runtime.sendMessage({
-          "setAndPersistClientStatus": true,
-          "key": "totalWebNav",
-          "value": clientStatus.totalWebNav,
-        }).then(
-          function(updatedClientStatus) {
-
-            console.log("TotalURI: " + updatedClientStatus.totalWebNav);
-
-            if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
-              // arbitrary condition for now
-              if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
-                browser.storage.local.set({ "PA-tabId": tabId });
-                browser.pageAction.show(tabId);
-                browser.pageAction.setPopup({
-                  tabId,
-                  popup: "/popup/locales/" + locale + "/popup.html",
+          browser.runtime.sendMessage({
+            "setAndPersistClientStatus": true,
+            "key": "totalWebNav",
+            "value": clientStatus.totalWebNav,
+          }).then(
+            function(updatedClientStatus) {
+              console.log("TotalURI: " + updatedClientStatus.totalWebNav);
+              if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
+                // arbitrary condition for now
+                if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
+                  browser.storage.local.set({ "PA-tabId": tabId });
+                  browser.pageAction.show(tabId);
+                  browser.pageAction.setPopup({
+                    tabId,
+                    popup: "/popup/locales/" + locale + "/popup.html",
+                  });
+                  // wait 500ms second to make sure pageAction exists in chrome
+                  // so we can pageAction.show() from bootstrap.js
+                  setTimeout(triggerPopup, 500);
+                }
+              } else { // client has seen the popup
+                browser.storage.local.get("PA-tabId").then(function(result2) {
+                  browser.pageAction.hide(result2["PA-tabId"]);
                 });
-                // wait 500ms second to make sure pageAction exists in chrome
-                // so we can pageAction.show() from bootstrap.js
-                setTimeout(triggerPopup, 500);
               }
-            } else { // client has seen the popup
-              browser.storage.local.get("PA-tabId").then(function(result2) {
-                browser.pageAction.hide(result2["PA-tabId"]);
-              });
-            }
 
-          },
-          handleError
-        );
-
+            },
+            handleError
+          );
+        }
       },
       handleError
     );
