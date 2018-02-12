@@ -174,4 +174,6 @@ var config = {
     },
   ],
 
+  // Optional: relative to bootstrap.js in the xpi
+  "studyUtilsPath": `./StudyUtils.jsm`,
 };
