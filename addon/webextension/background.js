@@ -132,9 +132,7 @@ function webNavListener_popupRelated(webNavInfo) {
           "value": clientStatus.totalWebNav,
         }).then(
           function(updatedClientStatus) {
-
             // console.log("TotalURI: " + updatedClientStatus.totalWebNav);
-
             if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
               // arbitrary condition for now
               if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
