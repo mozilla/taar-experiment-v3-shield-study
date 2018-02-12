@@ -81,7 +81,7 @@ version       3
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "9",
-    "addon_id": "taarexpv2@shield-study.mozilla.com",
+    "addon_id": "taarexpv2@shield.mozilla.org",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "install",

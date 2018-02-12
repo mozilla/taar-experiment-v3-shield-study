@@ -129,8 +129,8 @@ Note: This is currently only useful if you load the extension manually - it has 
 │   └── xpi.sh            # build the XPI
 ├── dist                  # built xpis (addons)
 │   ├── .gitignore
-│   ├── linked-addon.xpi -> taarexpv2@shield-study.mozilla.com-0.1.0.xpi
-│   └── taarexpv2@shield-study.mozilla.com-0.1.0.xpi
+│   ├── linked-addon.xpi -> taarexpv2@shield.mozilla.org-0.1.0.xpi
+│   └── taarexpv2@shield.mozilla.org-0.1.0.xpi
 ├── fetch_translations.py # python script used in v1 to fetch translations used to generate the popup html
 ├── generate_html.py      # python script used in v1 generate the popup html
 ├── package-lock.json

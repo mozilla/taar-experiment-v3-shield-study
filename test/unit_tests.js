@@ -5,8 +5,8 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 {
 
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net"]),
+    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org"]),
+    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
   };
 
   const expected = new Set(["uBlock0@raymondhill.net"]);
@@ -23,8 +23,8 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 {
 
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net", "support@lastpass.com"]),
+    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
+    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
   };
 
   const expected = new Set(["support@lastpass.com"]);
@@ -41,8 +41,8 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 {
 
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net"]),
+    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org"]),
+    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
   };
 
   const expected = {
@@ -61,8 +61,8 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 {
 
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net", "support@lastpass.com"]),
+    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
+    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
   };
 
   const expected = {
@@ -81,8 +81,8 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 {
 
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net", "support@lastpass.com"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "support@lastpass.com"]),
+    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
+    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "support@lastpass.com"]),
   };
 
   const expected = {
@@ -101,8 +101,8 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 {
 
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "uBlock0@raymondhill.net", "support@lastpass.com"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield-study.mozilla.com", "support@lastpass.com", "new@foo.com"]),
+    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
+    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "support@lastpass.com", "new@foo.com"]),
   };
 
   const expected = {

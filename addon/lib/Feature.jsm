@@ -33,7 +33,7 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 const EXPORTED_SYMBOLS = ["Feature"];
 
 const PREF_BRANCH = "extensions.taarexpv2";
-const SHIELD_STUDY_ADDON_ID = "taarexpv2@shield-study.mozilla.com";
+const SHIELD_STUDY_ADDON_ID = "taarexpv2@shield.mozilla.org";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
