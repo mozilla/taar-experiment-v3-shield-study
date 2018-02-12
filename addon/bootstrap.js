@@ -125,27 +125,26 @@ function shutdown(addonData, reason) {
   if (reason === REASONS.ADDON_UNINSTALL || reason === REASONS.ADDON_DISABLE) {
     log.debug("uninstall or disable");
 
-    // QA NOTE:  unload addon specific modules here.
-    Cu.unload(`resource://${BASE}/Config.jsm`);
-    Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
-    Cu.unload(`resource://${BASE}/lib/Helpers.jsm`);
     if (this.feature) {
       this.feature.shutdown();
     }
-
-    // clean up our modules.
-    Cu.unload(CONFIGPATH);
-    Cu.unload(STUDYUTILSPATH);
 
     if (!studyUtils._isEnding) {
       // we are the first 'uninstall' requestor => must be user action.
       log.debug("probably: user requested shutdown");
       studyUtils.endStudy({ reason: "user-disable" });
-      return;
     }
-    // normal shutdown, or 2nd uninstall request
-
   }
+
+  // normal shutdown, or 2nd uninstall request
+
+  // QA NOTE:  unload addon specific modules here.
+  Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
+  Cu.unload(`resource://${BASE}/lib/Helpers.jsm`);
+
+  // clean up our modules.
+  Cu.unload(CONFIGPATH);
+  Cu.unload(STUDYUTILSPATH);
 }
 
 function uninstall(addonData, reason) {
