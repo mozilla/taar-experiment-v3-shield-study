@@ -8,7 +8,7 @@
     "tabs",
     "management"
   ],
-  "incognito": "not_allowed",
+  "incognito": "spanning",
   "page_action": {
     "browser_style": true
   },

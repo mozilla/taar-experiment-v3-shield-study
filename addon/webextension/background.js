@@ -88,9 +88,23 @@ function webNavListener(webNavInfo) {
 }
 
 function webNavListener_trackDiscoPaneLoading(webNavInfo) {
+
   if (webNavInfo.frameId > 0 && webNavInfo.url.indexOf("https://discovery.addons.mozilla.org/") > -1 && webNavInfo.parentFrameId === 0) {
-    browser.runtime.sendMessage({ "disco-pane-loaded": true }).then(noop, handleError);
+    // Only send message if not in incognito tab
+    const gettingInfo = browser.tabs.get(webNavInfo.tabId);
+    gettingInfo.then(function(tabInfo) {
+
+      // Do not track anything in private browsing mode
+      if (tabInfo.incognito) {
+        // console.log("Do not track anything in private browsing mode", tabInfo);
+        return;
+      }
+
+      browser.runtime.sendMessage({ "disco-pane-loaded": true }).then(noop, handleError);
+
+    });
   }
+
 }
 
 function webNavListener_popupRelated(webNavInfo) {
@@ -100,7 +114,7 @@ function webNavListener_popupRelated(webNavInfo) {
   }
 
   // Increment total navigations and trigger popup when relevant
-  const onCompletedWebNavigationInAnActiveTab = function(currentActiveTabInfo) {
+  const onCompletedWebNavigationInAnActiveNonIncognitoTab = function(currentActiveTabInfo) {
 
     // get up to date client status
     browser.runtime.sendMessage({ "getClientStatus": true }).then(
@@ -155,7 +169,14 @@ function webNavListener_popupRelated(webNavInfo) {
       const gettingInfo = browser.tabs.get(tabs[0].id);
       gettingInfo.then(function(currentActiveTabInfo) {
         if (currentActiveTabInfo.status === "complete" && webNavInfo.tabId === currentActiveTabInfo.id) {
-          onCompletedWebNavigationInAnActiveTab(currentActiveTabInfo);
+
+          // Do not track anything in private browsing mode
+          if (currentActiveTabInfo.incognito) {
+            // console.log("Do not track anything in private browsing mode");
+            return;
+          }
+
+          onCompletedWebNavigationInAnActiveNonIncognitoTab(currentActiveTabInfo);
         }
       });
     }
@@ -199,9 +220,15 @@ class TAARExperiment {
 
         if (tabs.length > 0) {
           const gettingInfo = browser.tabs.get(tabs[0].id);
-          gettingInfo.then(function(tabInfo) {
+          gettingInfo.then(function(currentActiveTabInfo) {
 
-            if (tabInfo.url === "about:addons" && tabInfo.status === "complete") {
+            if (currentActiveTabInfo.url === "about:addons" && currentActiveTabInfo.status === "complete") {
+
+              // Do not track anything in private browsing mode
+              if (currentActiveTabInfo.incognito) {
+                // console.log("Do not track anything in private browsing mode");
+                return;
+              }
 
               browser.runtime.sendMessage({
                 "incrementAndPersistClientStatusAboutAddonsActiveTabSeconds": true,
