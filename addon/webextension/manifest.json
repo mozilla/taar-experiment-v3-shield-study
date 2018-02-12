@@ -1,6 +1,6 @@
 {
-  "name": "WebExtension-taarexpv2",
-  "version": "1.0.1",
+  "name": "Active Shield Study: TAAR Experiment V2",
+  "version": "1.0.6",
   "manifest_version": 2,
   "permissions": [
     "storage",
@@ -8,6 +8,7 @@
     "tabs",
     "management"
   ],
+  "incognito": "spanning",
   "page_action": {
     "browser_style": true
   },
