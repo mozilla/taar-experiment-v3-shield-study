@@ -10,11 +10,10 @@ Cu.import("resource://gre/modules/Log.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
-const CONFIGPATH = `${__SCRIPT_URI_SPEC__}/../Config.jsm`;
-const { config } = Cu.import(CONFIGPATH, {});
+const BASE = `taarexpv2`;
 
-const STUDYUTILSPATH = `${__SCRIPT_URI_SPEC__}/../${config.studyUtilsPath}`;
-const { studyUtils } = Cu.import(STUDYUTILSPATH, {});
+const { config } = Cu.import(`resource://${BASE}/Config.jsm`);
+const { studyUtils } = Cu.import(`resource://${BASE}/StudyUtils.jsm`);
 
 const REASONS = studyUtils.REASONS;
 
@@ -27,7 +26,6 @@ log.level = Services.prefs.getIntPref(PREF_LOGGING_LEVEL, Log.Level.Warn);
 
 
 // QA NOTE: Study Specific Modules - package.json:addon.chromeResource
-const BASE = `taarexpv2`;
 XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Feature.jsm`);
 
 
@@ -138,13 +136,12 @@ function shutdown(addonData, reason) {
 
   // normal shutdown, or 2nd uninstall request
 
-  // QA NOTE:  unload addon specific modules here.
+  // clean up our modules.
   Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
   Cu.unload(`resource://${BASE}/lib/Helpers.jsm`);
+  Cu.unload(`resource://${BASE}/StudyUtils.jsm`);
+  Cu.unload(`resource://${BASE}/Config.jsm`);
 
-  // clean up our modules.
-  Cu.unload(CONFIGPATH);
-  Cu.unload(STUDYUTILSPATH);
 }
 
 function uninstall(addonData, reason) {
