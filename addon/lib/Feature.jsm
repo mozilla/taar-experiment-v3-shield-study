@@ -190,10 +190,10 @@ function getPageAction() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
   // Id reference style as was working in taar v1
-  let pageAction = window.document.getElementById("taarexpv2_shield_mozilla_com-page-action");
+  let pageAction = window.document.getElementById("taarexpv2_shield_mozilla_org-page-action");
   // Firefox 57+
   if (!pageAction) {
-    pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield_mozilla_com");
+    pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield_mozilla_org");
   }
   if (!pageAction) {
     throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll(".urlbar-page-action")]);
