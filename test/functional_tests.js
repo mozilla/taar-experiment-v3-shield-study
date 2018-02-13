@@ -149,6 +149,21 @@ describe("basic functional tests", function() {
     const observed = summarizePings(pings);
     const expected = [
       [
+        "shield-study-addon",
+        {
+          "attributes": {
+            "aboutAddonsActiveTabSeconds": "0",
+            "addon_id": "null",
+            "clickedButton": "false",
+            "discoPaneLoaded": "false",
+            "pingType": "init",
+            "sawPopup": "false",
+            "srcURI": "null",
+            "startTime": "***",
+          },
+        },
+      ],
+      [
         "shield-study",
         {
           "study_state": "installed",
@@ -158,19 +173,6 @@ describe("basic functional tests", function() {
         "shield-study",
         {
           "study_state": "enter",
-        },
-      ],
-      [
-        "shield-study-addon",
-        {
-          "attributes": {
-            "addon_id": "null",
-            "clickedButton": "null",
-            "pingType": "init",
-            "sawPopup": "undefined",
-            "srcURI": "null",
-            "startTime": "***",
-          },
         },
       ],
     ];
