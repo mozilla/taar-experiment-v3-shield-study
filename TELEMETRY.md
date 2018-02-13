@@ -47,11 +47,11 @@ These are the `payload` fields from all pings in the `shield-study` and `shield-
 
 branch        ensemble-taar
 study_name    TAARExperimentV2
-addon_version 1.0.0
+addon_version 1.0.7
 version       3
 
 
-2018-01-17T17:52:31.625Z shield-study-addon
+2018-02-13T07:03:47.849Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "16",
@@ -61,49 +61,49 @@ version       3
     "pingType": "disco-pane-loaded",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1516211518090"
+    "startTime": "1518505392083"
   }
 }
-2018-01-17T17:52:20.568Z shield-study-addon
+2018-02-13T07:03:44.074Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "12",
-    "addon_id": "support@lastpass.com",
+    "addon_id": "uBlock0@raymondhill.net",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "uninstall",
     "sawPopup": "true",
     "srcURI": "about:addons",
-    "startTime": "1516211518090"
+    "startTime": "1518505392083"
   }
 }
-2018-01-17T17:52:16.978Z shield-study-addon
+2018-02-13T07:03:38.233Z shield-study-addon
 {
   "attributes": {
-    "aboutAddonsActiveTabSeconds": "9",
-    "addon_id": "taarexpv2@shield.mozilla.org",
+    "aboutAddonsActiveTabSeconds": "7",
+    "addon_id": "uBlock0@raymondhill.net",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "install",
     "sawPopup": "true",
     "srcURI": "about:addons",
-    "startTime": "1516211518090"
+    "startTime": "1518505392083"
   }
 }
-2018-01-17T17:52:11.022Z shield-study-addon
+2018-02-13T07:03:33.858Z shield-study-addon
 {
   "attributes": {
-    "aboutAddonsActiveTabSeconds": "3",
+    "aboutAddonsActiveTabSeconds": "2",
     "addon_id": "null",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "disco-pane-loaded",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1516211518090"
+    "startTime": "1518505392083"
   }
 }
-2018-01-17T17:52:08.236Z shield-study-addon
+2018-02-13T07:03:30.922Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "0",
@@ -113,10 +113,10 @@ version       3
     "pingType": "button-click",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1516211518090"
+    "startTime": "1518505392083"
   }
 }
-2018-01-17T17:52:07.121Z shield-study-addon
+2018-02-13T07:03:29.655Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "0",
@@ -126,10 +126,10 @@ version       3
     "pingType": "trigger-popup",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1516211518090"
+    "startTime": "1518505392083"
   }
 }
-2018-01-17T17:51:58.094Z shield-study-addon
+2018-02-13T07:03:12.089Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "0",
@@ -139,14 +139,14 @@ version       3
     "pingType": "init",
     "sawPopup": "false",
     "srcURI": "null",
-    "startTime": "1516211518090"
+    "startTime": "1518505392083"
   }
 }
-2018-01-17T17:51:57.985Z shield-study
+2018-02-13T07:03:11.926Z shield-study
 {
   "study_state": "installed"
 }
-2018-01-17T17:51:56.174Z shield-study
+2018-02-13T07:03:10.282Z shield-study
 {
   "study_state": "enter"
 }
