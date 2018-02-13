@@ -33,7 +33,7 @@ Cu.import("resource://gre/modules/AddonManager.jsm");
 const EXPORTED_SYMBOLS = ["Feature"];
 
 const PREF_BRANCH = "extensions.taarexpv2";
-const SHIELD_STUDY_ADDON_ID = "taarexpv2@shield-study.mozilla.com";
+const SHIELD_STUDY_ADDON_ID = "taarexpv2@shield.mozilla.org";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
@@ -190,10 +190,10 @@ function getPageAction() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
   // Id reference style as was working in taar v1
-  let pageAction = window.document.getElementById("taarexpv2_shield-study_mozilla_com-page-action");
+  let pageAction = window.document.getElementById("taarexpv2_shield_mozilla_org-page-action");
   // Firefox 57+
   if (!pageAction) {
-    pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield-study_mozilla_com");
+    pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield_mozilla_org");
   }
   if (!pageAction) {
     throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll(".urlbar-page-action")]);
@@ -207,6 +207,7 @@ class PageActionElementNotFoundError extends Error {
     const message = `"Error: TAAR V2 study add-on page action element not found. Debug content: window.document, pageAction, all urlbar page action classed elements: ${debugInfo.toString()}`;
     super(message);
     this.message = message;
+    this.debugInfo = debugInfo;
     this.name = "PageActionElementNotFoundError";
   }
 }
@@ -309,14 +310,20 @@ class Feature {
           return;
         }
         client.setAndPersistStatus("sawPopup", true);
-        const pageAction = getPageAction();
-        pageAction.click();
-        // send telemetry
-        const dataOut = {
-          "pingType": "trigger-popup",
-        };
-        self.notifyViaTelemetry(dataOut);
-        sendReply({ response: "Triggered pop-up" });
+        try {
+          const pageAction = getPageAction();
+          pageAction.click();
+          // send telemetry
+          const dataOut = {
+            "pingType": "trigger-popup",
+          };
+          self.notifyViaTelemetry(dataOut);
+          sendReply({ response: "Triggered pop-up" });
+        } catch (e) {
+          if (e.name === "PageActionElementNotFoundError") {
+            console.error(e);
+          }
+        }
         return;
       } else if (msg["clicked-disco-button"]) {
         // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
