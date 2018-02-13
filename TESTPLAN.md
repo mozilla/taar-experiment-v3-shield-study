@@ -90,3 +90,9 @@ To debug installation and loading of the add-on:
 
 * Navigate to *about:config* and set `shield.testing.logging.level` to `10`. This permits shield-add-on log output in browser console (If the preference does not exist, create it be right-clicking in the white area and selecting New -> Integer)
 * Open the Browser Console using Firefox's top menu at `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) and log output from the add-on.
+
+## Peculiarities
+
+* If Discopane is loaded whilst offline and a page reload is made after getting online, the discopane loading event is not always triggered (the webnavigation listener receives no event)
+* When querying for the current active tab in the current non-private-browsing window and a private browsing window is opened (but not in focus), the query result will only include the active tab in the opened private browsing window, despite that window not being active. This affects the behavior of this add-on to not track neither web navigations or  about:addon active tab open seconds since those actions are restricted to work in the currently active tab and will not register anything when the result of the current active tab and the event's tab id are different.
+* About:addon seconds are counting up even when the Firefox window is out of focus (it is still considered the active tab - no check on the active app in the system is done)
