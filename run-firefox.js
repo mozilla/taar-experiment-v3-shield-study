@@ -48,7 +48,7 @@ Future will clean up this interface a bit!
 `;
 
 const minimistHandler = {
-  boolean: [ "help" ],
+  boolean: ["help"],
   alias: { h: "help", v: "version" },
   "--": true,
 };
@@ -88,13 +88,13 @@ const minimistHandler = {
 
     // allow our shield study addon some time to start
     console.log("Waiting 60 seconds to allow for telemetry to be triggered");
-    await driver.sleep(60*1000);
+    await driver.sleep(60 * 1000);
 
     await takeScreenshot(driver);
     console.log("Screenshot dumped");
 
     const telemetryPingsFilterOptions = {
-      type: [ "shield-study", "shield-study-addon" ],
+      type: ["shield-study", "shield-study-addon"],
       headersOnly: false,
     };
     const pings = await getTelemetryPings(driver, telemetryPingsFilterOptions);

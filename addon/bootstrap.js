@@ -67,9 +67,9 @@ async function startup(addonData, reason) {
    * - check eligible
    */
   if (reason === REASONS.ADDON_INSTALL || reason === REASONS.ADDON_UPGRADE) {
-    //  telemetry "enter" ONCE
+    //  telemetry "enter" ONCE per new study period
     studyUtils.firstSeen();
-    // check user eligibility ONCE
+    // check user eligibility ONCE per new study period
     const eligible = await config.isEligible(); // addon-specific
     if (!eligible) {
       // 1. uses config.endings.ineligible.url if any,

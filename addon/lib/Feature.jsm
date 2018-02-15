@@ -1,23 +1,5 @@
 "use strict";
 
-
-/**  Example Feature module for a Shield Study.
- *
- *  UI:
- *  - during INSTALL only, show a notification bar with 2 buttons:
- *    - "Thanks".  Accepts the study (optional)
- *    - "I don't want this".  Uninstalls the study.
- *
- *  Firefox code:
- *  - Implements the 'introduction' to the 'button choice' study, via notification bar.
- *
- *  Demonstrates `studyUtils` API:
- *
- *  - `telemetry` to instrument "shown", "accept", and "leave-study" events.
- *  - `endStudy` to send a custom study ending.
- *
- **/
-
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(EXPORTED_SYMBOLS|Feature)" }]*/
 
 const { utils: Cu } = Components;
