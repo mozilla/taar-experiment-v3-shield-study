@@ -23,4 +23,7 @@ document.addEventListener("click", (e) => {
     sending.then(handleResponse, handleError);
   }
 
+  // Ensure that the popup closes after button click
+  window.close();
+
 });
