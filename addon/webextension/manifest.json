@@ -1,6 +1,6 @@
 {
   "name": "Active Shield Study: TAAR Experiment V2",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "manifest_version": 2,
   "permissions": [
     "storage",
