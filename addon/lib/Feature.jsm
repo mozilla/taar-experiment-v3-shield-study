@@ -194,7 +194,11 @@ class PageActionUrlbarIconElementNotFoundError extends Error {
   }
 }
 
-function closePageAction() {
+/**
+ * Note: The page action popup should already be closed via it's own javascript's window.close() after any button is called
+ * but it will also close when we hide the page action urlbar icon via this method
+ */
+function hidePageActionUrlbarIcon() {
   try {
     const pageActionUrlbarIcon = getPageActionUrlbarIcon();
     pageActionUrlbarIcon.remove();
@@ -315,7 +319,7 @@ class Feature {
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
         client.setAndPersistStatus("clickedButton", true);
-        closePageAction();
+        hidePageActionUrlbarIcon();
         // send telemetry
         const dataOut = {
           "pingType": "button-click",
@@ -325,7 +329,7 @@ class Feature {
         return;
       } else if (msg["clicked-close-button"]) {
         client.setAndPersistStatus("clickedButton", false);
-        closePageAction();
+        hidePageActionUrlbarIcon();
         sendReply({ response: "Closed pop-up" });
         return;
       }
