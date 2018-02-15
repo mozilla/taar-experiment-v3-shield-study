@@ -1,1 +1,4 @@
 addon/StudyUtils.jsm
+dist
+package-lock.json
+!.eslintrc.js
