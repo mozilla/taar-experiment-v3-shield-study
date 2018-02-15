@@ -10,17 +10,6 @@ process.on("unhandledRejection", r => console.log(r)); // eslint-disable-line no
 
 const assert = require("assert");
 const utils = require("./utils");
-// const clipboardy = require("clipboardy");
-// const webdriver = require("selenium-webdriver");
-// const firefox = require("selenium-webdriver/firefox");
-
-/*
-const By = webdriver.By;
-const Context = firefox.Context;
-const until = webdriver.until;
-const MAX_TIMES_TO_SHOW = 5; // this must match MAX_TIMES_TO_SHOW in bootstrap.js
-const MOZILLA_ORG = "http://mozilla.org";
-*/
 
 // TODO create new profile per test?
 // then we can test with a clean profile every time
@@ -43,31 +32,6 @@ function summarizePings(pings) {
 
   });
 }
-
-/*
-async function postTestReset(driver) {
-  // wait for the animation to end before running subsequent tests
-  await utils.waitForAnimationEnd(driver);
-  // close the popup
-  await utils.closePanel(driver);
-  // reset the counter pref to 0 so that the treatment is always shown
-  // reset the addedBool pref
-  await driver.executeAsyncScript((...args) => {
-    const callback = args[args.length - 1];
-    Components.utils.import("resource://gre/modules/Preferences.jsm");
-    const COUNTER_PREF = "extensions.sharebuttonstudy.counter";
-    const ADDED_BOOL_PREF = "extensions.sharebuttonstudy.addedBool";
-    if (Preferences.has(COUNTER_PREF)) {
-      Preferences.set(COUNTER_PREF, 0);
-    }
-    if (Preferences.has(ADDED_BOOL_PREF)) {
-      Preferences.set(ADDED_BOOL_PREF, false);
-    }
-    callback();
-  });
-}
-*/
-
 
 /* Part 2:  The Tests */
 
@@ -100,23 +64,10 @@ describe("basic functional tests", function() {
     driver.quit();
   });
 
-  /*
-  async function getNotification(driver) {
-    return utils.getChromeElementBy.tagName(driver, "notification");
-  }
-
-  async function getFirstButton(driver) {
-    return utils.getChromeElementBy.className(driver, "notification-button");
-    // console.log(await nb.getLocation(), await nb.getAttribute("label"));
-    // return nb;
-  }
-  */
-
   beforeEach(async() => {
   });
   afterEach(async() => {
   });
-  // afterEach(async() => postTestReset(driver));
 
   /* Expected behaviour:
 
@@ -149,6 +100,21 @@ describe("basic functional tests", function() {
     const observed = summarizePings(pings);
     const expected = [
       [
+        "shield-study-addon",
+        {
+          "attributes": {
+            "aboutAddonsActiveTabSeconds": "0",
+            "addon_id": "null",
+            "clickedButton": "false",
+            "discoPaneLoaded": "false",
+            "pingType": "init",
+            "sawPopup": "false",
+            "srcURI": "null",
+            "startTime": "***",
+          },
+        },
+      ],
+      [
         "shield-study",
         {
           "study_state": "installed",
@@ -158,19 +124,6 @@ describe("basic functional tests", function() {
         "shield-study",
         {
           "study_state": "enter",
-        },
-      ],
-      [
-        "shield-study-addon",
-        {
-          "attributes": {
-            "addon_id": "null",
-            "clickedButton": "null",
-            "pingType": "init",
-            "sawPopup": "undefined",
-            "srcURI": "null",
-            "startTime": "***",
-          },
         },
       ],
     ];

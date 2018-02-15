@@ -1,4 +1,5 @@
 /* eslint-env node */
+/* eslint no-console:off */
 
 /* This file is a helper script that will install the extension from the .xpi
  * file and setup useful preferences for debugging. This is the same setup
@@ -24,7 +25,7 @@ const {
   takeScreenshot,
   writePingsJson,
   promiseUrlBar,
-  MODIFIER_KEY
+  MODIFIER_KEY,
 } = require("./test/utils");
 
 
@@ -47,9 +48,9 @@ Future will clean up this interface a bit!
 `;
 
 const minimistHandler = {
-  boolean: [ 'help' ],
-  alias: { h: 'help', v: 'version' },
-  '--': true,
+  boolean: ["help"],
+  alias: { h: "help", v: "version" },
+  "--": true,
 };
 
 
@@ -63,12 +64,12 @@ const minimistHandler = {
 
   try {
     const driver = await promiseSetupDriver();
-    console.log("Firefox started");
+    console.log("Starting up firefox");
 
     // install the addon
     if (process.env.XPI) {
       const fileLocation = path.join(process.cwd(), process.env.XPI);
-      console.log(fileLocation)
+      console.log(fileLocation);
       await installAddon(driver, fileLocation);
       console.log("Load temporary addon.");
     }
@@ -87,13 +88,13 @@ const minimistHandler = {
 
     // allow our shield study addon some time to start
     console.log("Waiting 60 seconds to allow for telemetry to be triggered");
-    await driver.sleep(60*1000);
+    await driver.sleep(60 * 1000);
 
     await takeScreenshot(driver);
     console.log("Screenshot dumped");
 
     const telemetryPingsFilterOptions = {
-      type: [ "shield-study", "shield-study-addon" ],
+      type: ["shield-study", "shield-study-addon"],
       headersOnly: false,
     };
     const pings = await getTelemetryPings(driver, telemetryPingsFilterOptions);
@@ -104,6 +105,6 @@ const minimistHandler = {
     console.log("Shield study telemetry pings written to pings.json");
 
   } catch (e) {
-    console.error(e); // eslint-disable-line no-console
+    console.error(e);
   }
 })();

@@ -1,4 +1,5 @@
 /* eslint-env node */
+/* eslint no-console:off */
 
 const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 

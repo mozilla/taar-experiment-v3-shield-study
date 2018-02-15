@@ -1,4 +1,6 @@
 /* eslint-env node */
+/* eslint no-console:off */
+
 // The geckodriver package downloads and installs geckodriver for us.
 // We use it by requiring it.
 require("geckodriver");
