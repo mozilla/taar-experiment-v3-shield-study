@@ -128,7 +128,7 @@ class Client {
 
     // Prevent a dangling change listener (left after add-on uninstallation) to do anything
     if (!TelemetryEnvironment) {
-      this.feature.log.debug("addonChangeListener disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
+      feature.log.debug("addonChangeListener disabled since TelemetryEnvironment is not available - a dangling change listener to do unclean add-on uninstallation?");
       return null;
     }
 
