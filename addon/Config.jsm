@@ -122,8 +122,8 @@ var config = {
 
     // Users with private browsing on autostart are not eligible
     const privateBrowsingAutostart = Preferences.get("browser.privatebrowsing.autostart");
-    console.log("privateBrowsingAutostart", privateBrowsingAutostart);
     if (privateBrowsingAutostart !== false) {
+      console.log("Private browsing autostart, not enrolling in study");
       return false;
     }
 
