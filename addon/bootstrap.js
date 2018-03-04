@@ -8,6 +8,7 @@ const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Console.jsm");
 Cu.import("resource://gre/modules/Log.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/Preferences.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
 const CONFIGPATH = `${__SCRIPT_URI_SPEC__}/../Config.jsm`;
@@ -66,11 +67,12 @@ async function startup(addonData, reason) {
    * - note first seen,
    * - check eligible
    */
-  if (reason === REASONS.ADDON_INSTALL || reason === REASONS.ADDON_UPGRADE) {
+  if (reason === REASONS.ADDON_INSTALL || reason === REASONS.ADDON_UPGRADE || reason === REASONS.ADDON_DOWNGRADE) {
     //  telemetry "enter" ONCE per new study period
     studyUtils.firstSeen();
     // check user eligibility ONCE per new study period
     const eligible = await config.isEligible(); // addon-specific
+    console.log("Eligible: ", eligible);
     if (!eligible) {
       // 1. uses config.endings.ineligible.url if any,
       // 2. sends UT for "ineligible"
@@ -78,6 +80,14 @@ async function startup(addonData, reason) {
       await studyUtils.endStudy({ reason: "ineligible" });
       return;
     }
+  }
+
+  // Users with private browsing on autostart should not continue being in the study
+  const privateBrowsingAutostart = Preferences.get("browser.privatebrowsing.autostart");
+  if (privateBrowsingAutostart !== false) {
+    console.log("Private browsing autostart, exiting study");
+    await studyUtils.endStudy({ reason: "ineligible" });
+    return false;
   }
 
   // startup for eligible users.

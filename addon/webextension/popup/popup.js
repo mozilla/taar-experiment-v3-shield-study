@@ -17,11 +17,12 @@ document.addEventListener("click", (e) => {
   if (e.target.id === "browse-addons-button") {
     console.log("routing to about:addons...");
     tellBackground({ "clicked-disco-button": true });
+    // Ensure that the popup closes only after button click
+    window.close();
   } else if (e.target.id === "close-button") {
     tellBackground({ "clicked-close-button": true });
+    // Ensure that the popup closes only after button click
+    window.close();
   }
-
-  // Ensure that the popup closes after button click
-  window.close();
 
 });

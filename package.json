@@ -1,7 +1,7 @@
 {
   "name": "taarexpv2",
   "description": "Shield Study: TAAR Experiment V2",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "addon": {
     "ABOUT": "use these variables fill the moustache templates",
