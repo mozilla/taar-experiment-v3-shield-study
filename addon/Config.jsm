@@ -120,6 +120,13 @@ var config = {
   // Will run only during first install attempt
   "isEligible": async function() {
 
+    // Users with private browsing on autostart are not eligible
+    const privateBrowsingAutostart = Preferences.get("browser.privatebrowsing.autostart");
+    if (privateBrowsingAutostart !== false) {
+      console.log("Private browsing autostart, not enrolling in study");
+      return false;
+    }
+
     // Ensure that profile age is available
     console.log("awaiting telemetry environment initialization");
     await TelemetryEnvironment.onInitialized();

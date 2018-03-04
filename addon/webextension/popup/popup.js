@@ -21,9 +21,8 @@ document.addEventListener("click", (e) => {
   if (message) {
     const sending = browser.runtime.sendMessage(message);
     sending.then(handleResponse, handleError);
+    // Ensure that the popup closes only after button click
+    window.close();
   }
-
-  // Ensure that the popup closes after button click
-  window.close();
 
 });
