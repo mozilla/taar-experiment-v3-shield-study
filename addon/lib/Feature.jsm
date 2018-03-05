@@ -137,7 +137,7 @@ class Client {
       const addonChanges = Client.analyzeAddonChangesBetweenEnvironments(oldEnvironment, TelemetryEnvironment.currentEnvironment);
       const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
       if (addonChanges.lastInstalled) {
-        feature.log.debug("Just installed", client.lastInstalled, "from", uri);
+        //feature.log.debug("Just installed", client.lastInstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
@@ -148,7 +148,7 @@ class Client {
         feature.notifyViaTelemetry(dataOut);
 
       } else if (addonChanges.lastDisabledOrUninstalled) {
-        feature.log.debug("Just disabled", client.lastDisabledOrUninstalled, "from", uri);
+        //feature.log.debug("Just disabled", client.lastDisabledOrUninstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
