@@ -137,7 +137,7 @@ class Client {
       const addonChanges = Client.analyzeAddonChangesBetweenEnvironments(oldEnvironment, TelemetryEnvironment.currentEnvironment);
       const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
       if (addonChanges.lastInstalled) {
-        //feature.log.debug("Just installed", client.lastInstalled, "from", uri);
+        // feature.log.debug("Just installed", client.lastInstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
@@ -148,7 +148,7 @@ class Client {
         feature.notifyViaTelemetry(dataOut);
 
       } else if (addonChanges.lastDisabledOrUninstalled) {
-        //feature.log.debug("Just disabled", client.lastDisabledOrUninstalled, "from", uri);
+        // feature.log.debug("Just disabled", client.lastDisabledOrUninstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
@@ -375,14 +375,12 @@ class Feature {
     if (PrivateBrowsingUtils.permanentPrivateBrowsing) {
       return true;
     }
-    let win = null;
-    let windowList = Services.wm.getEnumerator("navigator:browser");
+    const windowList = Services.wm.getEnumerator("navigator:browser");
     while (windowList.hasMoreElements()) {
-      let nextWin = windowList.getNext();
+      const nextWin = windowList.getNext();
       if (PrivateBrowsingUtils.isWindowPrivate(nextWin)) {
         return true;
       }
-      win = nextWin;
     }
     return false;
   }
