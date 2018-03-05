@@ -11,6 +11,7 @@ Cu.import("resource://gre/modules/ClientID.jsm");
 Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
 Cu.import("resource://gre/modules/TelemetryController.jsm");
 Cu.import("resource://gre/modules/AddonManager.jsm");
+Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
@@ -370,8 +371,27 @@ class Feature {
     this.telemetry(stringStringMap);
   }
 
-  /* good practice to have the literal 'sending' be wrapped up */
+  aPrivateBrowserWindowIsOpen() {
+    if (PrivateBrowsingUtils.permanentPrivateBrowsing) {
+      return true;
+    }
+    let win = null;
+    let windowList = Services.wm.getEnumerator("navigator:browser");
+    while (windowList.hasMoreElements()) {
+      let nextWin = windowList.getNext();
+      if (PrivateBrowsingUtils.isWindowPrivate(nextWin)) {
+        return true;
+      }
+      win = nextWin;
+    }
+    return false;
+  }
+
   telemetry(stringStringMap) {
+    if (this.aPrivateBrowserWindowIsOpen()) {
+      // drop the ping - do not send any telemetry
+      return;
+    }
     this.studyUtils.telemetry(stringStringMap);
   }
 
