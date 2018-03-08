@@ -14,8 +14,6 @@ Cu.import("resource://gre/modules/Console.jsm");
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(config|EXPORTED_SYMBOLS)" }]*/
 const EXPORTED_SYMBOLS = ["config"];
 
-const PROFILE_AGE_TEST_OVERRIDE_PREF = "extensions.taarexpv2.profile-age-in-days-test-override";
-
 // const slug = "taarexpv2"; // matches chrome.manifest;
 const locales = new Set(
   [
@@ -126,7 +124,6 @@ var config = {
       return false;
     }
 
-    // Ensure that profile age is available
     console.log("awaiting telemetry environment initialization");
     await TelemetryEnvironment.onInitialized();
     console.log("telemetry environment initialized");
@@ -135,32 +132,12 @@ var config = {
     console.log("locale", locale);
     const eligibleLocale = locales.has(locale);
 
-    // Represents 00:00 the date the profile was created
-    const profileCreationDate = TelemetryEnvironment.currentEnvironment.profile.creationDate;
-    console.log("profileCreationDate", profileCreationDate);
-    // Current date fraction
-    const currentDay = Math.round(Date.now() / 1000 / 60 / 60 / 24 * 100) / 100;
-    // Profile age since 00:00 the date the profile was created
-    let profileAgeInDays = currentDay - profileCreationDate;
-    console.log("profileAgeInDays", profileAgeInDays);
-
-    // Ability to override the profile age - necessary for testing purposes
-    const profileAgeInDaysOverride = Preferences.get(PROFILE_AGE_TEST_OVERRIDE_PREF);
-    console.log("profileAgeInDaysOverride", profileAgeInDaysOverride);
-    if (typeof profileAgeInDaysOverride !== "undefined") {
-      console.log("Using profileAgeInDaysOverride");
-      profileAgeInDays = parseFloat(profileAgeInDaysOverride);
-      console.log("profileAgeInDays", profileAgeInDays);
-    }
-
-    // Profile needs to have been created at least yesterday and at most ten days ago
-    const eligibleProfileAge = profileAgeInDays > 1 && profileAgeInDays < 10;
-
     /*
-    return true if 1 < profile_age_id_days < 10
-    and locale is among those localized
+    return true if locale is among those localized
     */
-    return eligibleProfileAge && eligibleLocale;
+    return eligibleLocale;
+
+    // Note: Since 1.0.13, we are leaving the profile age requirements fully up to Normandy targeting
 
   },
 

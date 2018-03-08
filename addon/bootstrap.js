@@ -87,7 +87,7 @@ async function startup(addonData, reason) {
   if (privateBrowsingAutostart !== false) {
     console.log("Private browsing autostart, exiting study");
     await studyUtils.endStudy({ reason: "ineligible" });
-    return false;
+    return;
   }
 
   // startup for eligible users.
