@@ -169,38 +169,42 @@ class Client {
 
 }
 
-function getPageAction() {
+function getPageActionUrlbarIcon() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
   // Id reference style as was working in taar v1
-  let pageAction = window.document.getElementById("taarexpv2_shield_mozilla_org-page-action");
+  let pageActionUrlbarIcon = window.document.getElementById("taarexpv2_shield_mozilla_org-page-action");
   // Firefox 57+
-  if (!pageAction) {
-    pageAction = window.document.getElementById("pageAction-urlbar-taarexpv2_shield_mozilla_org");
+  if (!pageActionUrlbarIcon) {
+    pageActionUrlbarIcon = window.document.getElementById("pageAction-urlbar-taarexpv2_shield_mozilla_org");
   }
-  if (!pageAction) {
-    throw new PageActionElementNotFoundError([window.document, pageAction, window.document.querySelectorAll(".urlbar-page-action")]);
+  if (!pageActionUrlbarIcon) {
+    throw new PageActionUrlbarIconElementNotFoundError([window.document, pageActionUrlbarIcon, window.document.querySelectorAll(".urlbar-page-action")]);
   }
-  return pageAction;
+  return pageActionUrlbarIcon;
 
 }
 
-class PageActionElementNotFoundError extends Error {
+class PageActionUrlbarIconElementNotFoundError extends Error {
   constructor(debugInfo) {
-    const message = `"Error: TAAR V2 study add-on page action element not found. Debug content: window.document, pageAction, all urlbar page action classed elements: ${debugInfo.toString()}`;
+    const message = `"Error: TAAR V2 study add-on page action element not found. Debug content: window.document, pageActionUrlbarIcon, all urlbar page action classed elements: ${debugInfo.toString()}`;
     super(message);
     this.message = message;
     this.debugInfo = debugInfo;
-    this.name = "PageActionElementNotFoundError";
+    this.name = "PageActionUrlbarIconElementNotFoundError";
   }
 }
 
-function closePageAction() {
+/**
+ * Note: The page action popup should already be closed via it's own javascript's window.close() after any button is called
+ * but it will also close when we hide the page action urlbar icon via this method
+ */
+function hidePageActionUrlbarIcon() {
   try {
-    const pageAction = getPageAction();
-    pageAction.remove();
+    const pageActionUrlbarIcon = getPageActionUrlbarIcon();
+    pageActionUrlbarIcon.remove();
   } catch (e) {
-    if (e.name === "PageActionElementNotFoundError") {
+    if (e.name === "PageActionUrlbarIconElementNotFoundError") {
       // All good, no element found
     }
   }
@@ -294,8 +298,8 @@ class Feature {
         }
         client.setAndPersistStatus("sawPopup", true);
         try {
-          const pageAction = getPageAction();
-          pageAction.click();
+          const pageActionUrlbarIcon = getPageActionUrlbarIcon();
+          pageActionUrlbarIcon.click();
           // send telemetry
           const dataOut = {
             "pingType": "trigger-popup",
@@ -303,7 +307,7 @@ class Feature {
           self.notifyViaTelemetry(dataOut);
           sendReply({ response: "Triggered pop-up" });
         } catch (e) {
-          if (e.name === "PageActionElementNotFoundError") {
+          if (e.name === "PageActionUrlbarIconElementNotFoundError") {
             console.error(e);
           }
         }
@@ -316,7 +320,7 @@ class Feature {
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", { relatedToCurrent: true });
         client.setAndPersistStatus("clickedButton", true);
-        closePageAction();
+        hidePageActionUrlbarIcon();
         // send telemetry
         const dataOut = {
           "pingType": "button-click",
@@ -326,7 +330,7 @@ class Feature {
         return;
       } else if (msg["clicked-close-button"]) {
         client.setAndPersistStatus("clickedButton", false);
-        closePageAction();
+        hidePageActionUrlbarIcon();
         sendReply({ response: "Closed pop-up" });
         return;
       }

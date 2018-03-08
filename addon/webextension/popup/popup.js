@@ -9,18 +9,18 @@ document.addEventListener("click", (e) => {
     console.log(error);
   }
 
-  let message = null;
+  function tellBackground(message) {
+    const sending = browser.runtime.sendMessage(message);
+    sending.then(handleResponse, handleError);
+  }
 
   if (e.target.id === "browse-addons-button") {
     console.log("routing to about:addons...");
-    message = { "clicked-disco-button": true };
+    tellBackground({ "clicked-disco-button": true });
+    // Ensure that the popup closes only after button click
+    window.close();
   } else if (e.target.id === "close-button") {
-    message = { "clicked-close-button": true };
-  }
-
-  if (message) {
-    const sending = browser.runtime.sendMessage(message);
-    sending.then(handleResponse, handleError);
+    tellBackground({ "clicked-close-button": true });
     // Ensure that the popup closes only after button click
     window.close();
   }
