@@ -82,7 +82,7 @@ See [TELEMETRY.md](./TELEMETRY.md) for more details on what pings are sent by th
 
 ### Example of how the popup appears when testing in Firefox
 
-![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/35304654-fa9b6116-009e-11e8-8057-7b2f7152b825.png)
+![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/37150760-9cad116c-22db-11e8-822c-9959f70a8257.png)
 
 ## Debug
 

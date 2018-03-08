@@ -35,7 +35,6 @@ const locales = new Set(
     "id",
     "it",
     "ja",
-    "ko",
     "ms",
     "nl",
     "no",
