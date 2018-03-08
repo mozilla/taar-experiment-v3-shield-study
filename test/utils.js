@@ -45,9 +45,6 @@ const FIREFOX_PREFERENCES = {
   // Force variation for testing
   "shield.test.variation": "ensemble-taar",
 
-  // Force profile age for testing
-  "extensions.taarexpv2.profile-age-in-days-test-override": "5",
-
   /** WARNING: gecko webdriver sets many additional prefs at:
     * https://dxr.mozilla.org/mozilla-central/source/testing/geckodriver/src/prefs.rs
     *
