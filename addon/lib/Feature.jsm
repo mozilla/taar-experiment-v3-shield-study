@@ -11,6 +11,7 @@ Cu.import("resource://gre/modules/ClientID.jsm");
 Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
 Cu.import("resource://gre/modules/TelemetryController.jsm");
 Cu.import("resource://gre/modules/AddonManager.jsm");
+Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
@@ -136,7 +137,7 @@ class Client {
       const addonChanges = Client.analyzeAddonChangesBetweenEnvironments(oldEnvironment, TelemetryEnvironment.currentEnvironment);
       const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
       if (addonChanges.lastInstalled) {
-        feature.log.debug("Just installed", client.lastInstalled, "from", uri);
+        // feature.log.debug("Just installed", client.lastInstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
@@ -147,7 +148,7 @@ class Client {
         feature.notifyViaTelemetry(dataOut);
 
       } else if (addonChanges.lastDisabledOrUninstalled) {
-        feature.log.debug("Just disabled", client.lastDisabledOrUninstalled, "from", uri);
+        // feature.log.debug("Just disabled", client.lastDisabledOrUninstalled, "from", uri);
 
         // send telemetry
         const dataOut = {
@@ -374,8 +375,25 @@ class Feature {
     this.telemetry(stringStringMap);
   }
 
-  /* good practice to have the literal 'sending' be wrapped up */
+  aPrivateBrowserWindowIsOpen() {
+    if (PrivateBrowsingUtils.permanentPrivateBrowsing) {
+      return true;
+    }
+    const windowList = Services.wm.getEnumerator("navigator:browser");
+    while (windowList.hasMoreElements()) {
+      const nextWin = windowList.getNext();
+      if (PrivateBrowsingUtils.isWindowPrivate(nextWin)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   telemetry(stringStringMap) {
+    if (this.aPrivateBrowserWindowIsOpen()) {
+      // drop the ping - do not send any telemetry
+      return;
+    }
     this.studyUtils.telemetry(stringStringMap);
   }
 
