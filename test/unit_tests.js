@@ -3,6 +3,8 @@
 
 const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 
+console.log("Helpers.addedItemsDifference:");
+
 {
 
   const fixtures = {
@@ -15,7 +17,7 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
   const actual = Helpers.addedItemsDifference(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
 
   if (JSON.stringify(Array.from(expected)) !== JSON.stringify(Array.from(actual))) {
-    console.log("addedItemsDifference - expected, actual", expected, actual);
+    console.log("expected, actual", expected, actual);
     throw new Error("Test 2 - FAIL");
   }
   console.log("Test 1 - PASS");
@@ -33,11 +35,13 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
   const actual = Helpers.addedItemsDifference(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
 
   if (JSON.stringify(Array.from(expected)) !== JSON.stringify(Array.from(actual))) {
-    console.log("addedItemsDifference - expected, actual", expected, actual);
+    console.log("expected, actual", expected, actual);
     throw new Error("Test 2 - FAIL");
   }
   console.log("Test 2 - PASS");
 }
+
+console.log("Helpers.analyzeAddonChanges:");
 
 {
 
@@ -53,10 +57,10 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
   const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-    console.log("addonChanges - expected, actual", expected, actual);
-    throw new Error("Test 3 - FAIL");
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 1 - FAIL");
   }
-  console.log("Test 3 - PASS");
+  console.log("Test 1 - PASS");
 }
 
 {
@@ -73,10 +77,10 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
   const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-    console.log("addonChanges - expected, actual", expected, actual);
-    throw new Error("Test 4 - FAIL");
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 2 - FAIL");
   }
-  console.log("Test 4 - PASS");
+  console.log("Test 2 - PASS");
 }
 
 {
@@ -93,10 +97,10 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
   const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-    console.log("addonChanges - expected, actual", expected, actual);
-    throw new Error("Test 5 - FAIL");
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 3 - FAIL");
   }
-  console.log("Test 5 - PASS");
+  console.log("Test 3 - PASS");
 }
 
 {
@@ -114,8 +118,70 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
   const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
-    console.log("addonChanges - expected, actual", expected, actual);
-    throw new Error("Test 6 - FAIL");
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 4 - FAIL");
   }
-  console.log("Test 6 - PASS");
+  console.log("Test 4 - PASS");
+}
+
+console.log("Helpers.bucketURI:");
+
+{
+
+  const fixture = "about:addons";
+
+  const expected = "about:addons";
+
+  const actual = Helpers.bucketURI(fixture);
+
+  if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 1 - FAIL");
+  }
+  console.log("Test 1 - PASS");
+}
+
+{
+
+  const fixture = "https://addons.mozilla.org/en-US/firefox/addon/clippings/?src=collection";
+
+  const expected = "AMO";
+
+  const actual = Helpers.bucketURI(fixture);
+
+  if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 2 - FAIL");
+  }
+  console.log("Test 2 - PASS");
+}
+
+{
+
+  const fixture = "https://bugzilla.mozilla.org/show_bug.cgi?id=1450951";
+
+  const expected = "other";
+
+  const actual = Helpers.bucketURI(fixture);
+
+  if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 3 - FAIL");
+  }
+  console.log("Test 3 - PASS");
+}
+
+{
+
+  const fixture = "foobar";
+
+  const expected = "other";
+
+  const actual = Helpers.bucketURI(fixture);
+
+  if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 4 - FAIL");
+  }
+  console.log("Test 4 - PASS");
 }

@@ -25,4 +25,15 @@ this.Helpers = {
     return addonChanges;
   },
 
+  bucketURI: (uri) => {
+    if (uri !== "about:addons") {
+      if (uri.indexOf("addons.mozilla.org") > 0) {
+        uri = "AMO";
+      } else {
+        uri = "other";
+      }
+    }
+    return uri;
+  }
+
 };

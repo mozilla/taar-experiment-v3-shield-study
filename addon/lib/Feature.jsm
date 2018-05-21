@@ -103,17 +103,6 @@ class Client {
     return result;
   }
 
-  static bucketURI(uri) {
-    if (uri !== "about:addons") {
-      if (uri.indexOf("addons.mozilla.org") > 0) {
-        uri = "AMO";
-      } else {
-        uri = "other";
-      }
-    }
-    return uri;
-  }
-
   monitorAddonChanges() {
 
     // Prevent a dangling change listener (left after add-on uninstallation) to do anything
@@ -136,7 +125,7 @@ class Client {
 
     if (change === "addons-changed") {
       const addonChanges = Client.analyzeAddonChangesBetweenEnvironments(oldEnvironment, TelemetryEnvironment.currentEnvironment);
-      const uri = Client.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
+      const uri = Helpers.bucketURI(Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI.asciiSpec);
       if (addonChanges.lastInstalled) {
         // feature.log.debug("Just installed", client.lastInstalled, "from", uri);
 
