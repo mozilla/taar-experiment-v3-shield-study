@@ -36,8 +36,9 @@ function getMostRecentBrowserWindow() {
 */
 
 // unit-tested study helpers
+const BASE = `taarexpv2`;
 XPCOMUtils.defineLazyModuleGetter(
-  this, "Helpers", "resource://taarexpv2/lib/Helpers.jsm"
+  this, "Helpers", `chrome://${BASE}/content/lib/Helpers.jsm`
 );
 
 class Client {

@@ -29,7 +29,7 @@ log.level = Services.prefs.getIntPref(PREF_LOGGING_LEVEL, Log.Level.Warn);
 
 // QA NOTE: Study Specific Modules - package.json:addon.chromeResource
 const BASE = `taarexpv2`;
-XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Feature.jsm`);
+XPCOMUtils.defineLazyModuleGetter(this, "Feature", `chrome://${BASE}/content/lib/Feature.jsm`);
 
 
 /* Example addon-specific module imports.  Remember to Unload during shutdown() below.
@@ -40,7 +40,7 @@ XPCOMUtils.defineLazyModuleGetter(this, "Feature", `resource://${BASE}/lib/Featu
    NOT in this bootstrap.js.
 
   XPCOMUtils.defineLazyModuleGetter(this, "SomeExportedSymbol",
-    `resource://${BASE}/SomeModule.jsm");
+    `chrome://${BASE}/content/SomeModule.jsm");
 
   XPCOMUtils.defineLazyModuleGetter(this, "Preferences",
     "resource://gre/modules/Preferences.jsm");
@@ -149,8 +149,8 @@ function shutdown(addonData, reason) {
   // normal shutdown, or 2nd uninstall request
 
   // QA NOTE:  unload addon specific modules here.
-  Cu.unload(`resource://${BASE}/lib/Feature.jsm`);
-  Cu.unload(`resource://${BASE}/lib/Helpers.jsm`);
+  Cu.unload(`chrome://${BASE}/content/lib/Feature.jsm`);
+  Cu.unload(`chrome://${BASE}/content/lib/Helpers.jsm`);
 
   // clean up our modules.
   Cu.unload(CONFIGPATH);
