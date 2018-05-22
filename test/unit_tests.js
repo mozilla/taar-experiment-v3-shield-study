@@ -185,3 +185,33 @@ console.log("Helpers.bucketURI:");
   }
   console.log("Test 4 - PASS");
 }
+
+{
+
+  const fixture = "https://example.com/false-positive-amo/addons.mozilla.org/";
+
+  const expected = "AMO";
+
+  const actual = Helpers.bucketURI(fixture);
+
+  if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 5 - FAIL");
+  }
+  console.log("Test 5 - PASS");
+}
+
+{
+
+  const fixture = "about:addons#foo";
+
+  const expected = "about:addons";
+
+  const actual = Helpers.bucketURI(fixture);
+
+  if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+    console.log("expected, actual", expected, actual);
+    throw new Error("Test 6 - FAIL");
+  }
+  console.log("Test 6 - PASS");
+}
