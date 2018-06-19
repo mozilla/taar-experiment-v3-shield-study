@@ -1,24 +1,17 @@
 {
-  "name": "Button Icon Preference - Shield Study Example",
+  "name": "Active Shield Study: TAAR Experiment V3",
   "description": "__MSG_extensionDescription__",
-  "version": "2.0.0",
+  "version": "1.0.14",
   "manifest_version": 2,
   "applications": {
     "gecko": {
-      "id": "button-icon-preference@shield.mozilla.org",
-      "strict_min_version": "61.0a1"
+      "id": "taarexpv3@shield.mozilla.org",
+      "strict_min_version": "60.0.1",
+      "strict_max_version": "61.99.0"
     }
   },
   "default_locale": "en-US",
   "experiment_apis": {
-    "introductionNotificationBar": {
-      "schema": "./privileged/introductionNotificationBar/schema.json",
-      "parent": {
-        "scopes": ["addon_parent"],
-        "script": "./privileged/introductionNotificationBar/api.js",
-        "paths": [["introductionNotificationBar"]]
-      }
-    },
     "study": {
       "schema": "./privileged/study/schema.json",
       "parent": {
@@ -28,16 +21,20 @@
       }
     }
   },
-  "permissions": ["storage", "alarms"],
+  "permissions": ["storage", "alarms", "webNavigation", "tabs", "management"],
+  "incognito": "spanning",
+  "page_action": {
+    "browser_style": true
+  },
   "background": {
-    "scripts": ["studySetup.js", "feature.js", "background.js"]
+    "scripts": ["studySetup.js", "helpers.js", "feature.js", "background.js"]
   },
   "icons": {
     "48": "icons/shield-icon.svg"
   },
   "browser_action": {
     "browser_style": true,
-    "default_icon": "icons/isolatedcorndog.svg",
+    "default_icon": "icons/shield-icon.svg",
     "default_title": "__MSG_buttonTitle__"
   }
 }

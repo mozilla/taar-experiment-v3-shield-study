@@ -14,29 +14,9 @@ const utils = require("./utils");
 // TODO create new profile per test?
 // then we can test with a clean profile every time
 
-/* Part 1:  Utilities */
-
-async function getShieldPingsAfterTimestamp(driver, ts) {
-  return utils.getTelemetryPings(driver, {
-    type: ["shield-study", "shield-study-addon"],
-    timestamp: ts,
-  });
-}
-
-function summarizePings(pings) {
-  return pings.map(p => {
-    // prevent irrelevant comparisons of dynamic variables
-    if (p.payload.data.attributes && p.payload.data.attributes.startTime) {
-      p.payload.data.attributes.startTime = "***";
-    }
-
-    return [p.payload.type, p.payload.data];
-  });
-}
-
 /* Part 2:  The Tests */
 
-describe("basic functional tests", function() {
+describe("basic telemetry tests", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
@@ -79,37 +59,7 @@ describe("basic functional tests", function() {
     assert(pings.length > 0, "at least one shield telemetry ping");
   });
 
-  it("at least one shield-study telemetry ping with study_state=installed", async() => {
-    const foundPings = utils.searchTelemetry(
-      [
-        ping =>
-          ping.type === "shield-study" &&
-          ping.payload.data.study_state === "installed",
-      ],
-      pings,
-    );
-    assert(
-      foundPings.length > 0,
-      "at least one shield-study telemetry ping with study_state=installed",
-    );
-  });
-
-  it("at least one shield-study telemetry ping with study_state=enter", async() => {
-    const foundPings = utils.searchTelemetry(
-      [
-        ping =>
-          ping.type === "shield-study" &&
-          ping.payload.data.study_state === "enter",
-      ],
-      pings,
-    );
-    assert(
-      foundPings.length > 0,
-      "at least one shield-study telemetry ping with study_state=enter",
-    );
-  });
-
-  it("telemetry: has entered, installed, etc", function() {
+  it("telemetry", function() {
     // Telemetry:  order, and summary of pings is good.
     const observed = summarizePings(pings);
     const expected = [
@@ -126,18 +76,6 @@ describe("basic functional tests", function() {
             srcURI: "null",
             startTime: "***",
           },
-        },
-      ],
-      [
-        "shield-study",
-        {
-          study_state: "installed",
-        },
-      ],
-      [
-        "shield-study",
-        {
-          study_state: "enter",
         },
       ],
     ];

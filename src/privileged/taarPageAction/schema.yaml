@@ -1,0 +1,39 @@
+# Interface schema
+# https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/schema.html
+# possible types are here
+# - https://searchfox.org/mozilla-central/source/toolkit/components/extensions/Schemas.jsm#2418-2426
+#
+# - properties
+# - functions
+# - events
+# - types
+#
+# - type property:
+#   boolean, integer, number, string, array, object, or any.
+#
+
+---
+- namespace: prefs
+  description: |
+    Temporary subset of `Services.prefs` API,
+    described at:  https://developer.mozilla.org/en-US/docs/Mozilla/JavaScript_code_modules/Services.jsm
+
+    See https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsIPrefBranch
+
+    No attempt here to improve the api at all.
+
+    TODO: Convert observers to events.
+
+    If a true 'prefs' api lands in tree, this module will be removed.
+
+  functions:
+  - name: getStringPref
+    type: 'function'
+    async: true
+    description: ''
+    parameters:
+    - name: aPrefName
+      type: 'string'
+    - name: aDefaultValue
+      type: 'string'
+      optional: true
