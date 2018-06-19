@@ -32,7 +32,7 @@ All pings adhere to the same schema, with the following study-specific attribute
 **startTime** - String(Date.now()) at the moment of study initialization
 **clickedButton** - "true" or "false" depending on if the popup's "Browse Add-ons" button has been clicked during the study
 **discoPaneLoaded** - "true" or "false" depending on if the disco pane has been loaded during the study
-**aboutAddonsActiveTabSeconds** - cumulative seconds during which about:addons has been the active tab, as per decision [here](https://github.com/motin/taar-experiment-v2-shield-study/issues/3#issuecomment-356238395)
+**aboutAddonsActiveTabSeconds** - cumulative seconds during which about:addons has been the active tab, as per decision [here](https://github.com/motin/taar-experiment-v3-shield-study/issues/3#issuecomment-356238395)
 **sawPopup** - "true" or "false" depending on if the popup has been triggered/shown during the study
 **addon_id** - The add-on id in case of a install or uninstall ping type (otherwise "null")
 **srcURI** - The add-on source URI in case of a install or uninstall ping type (otherwise "null")
@@ -46,7 +46,7 @@ These are the `payload` fields from all pings in the `shield-study` and `shield-
 // common fields
 
 branch        ensemble-taar
-study_name    TAARExperimentV2
+study_name    TAARExperimentV3
 addon_version 1.0.7
 version       3
 

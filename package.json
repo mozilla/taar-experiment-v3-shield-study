@@ -1,24 +1,24 @@
 {
-  "name": "taarexpv2",
-  "description": "Shield Study: TAAR Experiment V2",
+  "name": "taarexpv3",
+  "description": "Shield Study: TAAR Experiment V3",
   "version": "1.0.14",
   "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "addon": {
     "ABOUT": "use these variables fill the moustache templates",
-    "id": "taarexpv2@shield.mozilla.org",
-    "name": "TAAR Experiment v2 Shield Study",
+    "id": "taarexpv3@shield.mozilla.org",
+    "name": "TAAR Experiment v3 Shield Study",
     "minVersion": "60.0.1",
     "maxVersion": "61.99.0",
     "multiprocessCompatible": true,
     "hasEmbeddedWebExtension": true,
-    "chromeResource": "taarexpv2",
+    "chromeResource": "taarexpv3",
     "creator": "Fredrik Wollsén <fwollsen@mozilla.com>",
-    "description": "TAAR Experiment v2 Shield Study",
+    "description": "TAAR Experiment v3 Shield Study",
     "bugzilla": "https://bugzilla.mozilla.org/show_bug.cgi?id=1428308",
     "iconPath": "icon.png"
   },
   "bugs": {
-    "url": "https://github.com/motin/taar-experiment-v2-shield-study/issues"
+    "url": "https://github.com/motin/taar-experiment-v3-shield-study/issues"
   },
   "devDependencies": {
     "addons-linter": "^0.28.2",
@@ -50,7 +50,7 @@
   "engines": {
     "node": ">=8.9.0"
   },
-  "homepage": "https://github.com/motin/taar-experiment-v2-shield-study",
+  "homepage": "https://github.com/motin/taar-experiment-v3-shield-study",
   "keywords": [
     "firefox",
     "legacy-addon",
@@ -61,7 +61,7 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git://github.com/motin/taar-experiment-v2-shield-study.git"
+    "url": "git://github.com/motin/taar-experiment-v3-shield-study.git"
   },
   "scripts": {
     "build": "bash ./bin/xpi.sh",

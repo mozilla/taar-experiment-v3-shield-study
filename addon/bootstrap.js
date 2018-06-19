@@ -28,7 +28,7 @@ log.level = Services.prefs.getIntPref(PREF_LOGGING_LEVEL, Log.Level.Warn);
 
 
 // QA NOTE: Study Specific Modules - package.json:addon.chromeResource
-const BASE = `taarexpv2`;
+const BASE = `taarexpv3`;
 XPCOMUtils.defineLazyModuleGetter(this, "Feature", `chrome://${BASE}/content/lib/Feature.jsm`);
 
 

@@ -15,8 +15,8 @@ Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
-const PREF_BRANCH = "extensions.taarexpv2";
-const SHIELD_STUDY_ADDON_ID = "taarexpv2@shield.mozilla.org";
+const PREF_BRANCH = "extensions.taarexpv3";
+const SHIELD_STUDY_ADDON_ID = "taarexpv3@shield.mozilla.org";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 XPCOMUtils.defineLazyModuleGetter(this, "RecentWindow",
@@ -36,7 +36,7 @@ function getMostRecentBrowserWindow() {
 */
 
 // unit-tested study helpers
-const BASE = `taarexpv2`;
+const BASE = `taarexpv3`;
 XPCOMUtils.defineLazyModuleGetter(
   this, "Helpers", `chrome://${BASE}/content/lib/Helpers.jsm`
 );
@@ -163,10 +163,10 @@ function getPageActionUrlbarIcon() {
 
   const window = Services.wm.getMostRecentWindow("navigator:browser");
   // Id reference style as was working in taar v1
-  let pageActionUrlbarIcon = window.document.getElementById("taarexpv2_shield_mozilla_org-page-action");
+  let pageActionUrlbarIcon = window.document.getElementById("taarexpv3_shield_mozilla_org-page-action");
   // Firefox 57+
   if (!pageActionUrlbarIcon) {
-    pageActionUrlbarIcon = window.document.getElementById("pageAction-urlbar-taarexpv2_shield_mozilla_org");
+    pageActionUrlbarIcon = window.document.getElementById("pageAction-urlbar-taarexpv3_shield_mozilla_org");
   }
   if (!pageActionUrlbarIcon) {
     throw new PageActionUrlbarIconElementNotFoundError([window.document, pageActionUrlbarIcon, window.document.querySelectorAll(".urlbar-page-action")]);
@@ -177,7 +177,7 @@ function getPageActionUrlbarIcon() {
 
 class PageActionUrlbarIconElementNotFoundError extends Error {
   constructor(debugInfo) {
-    const message = `"Error: TAAR V2 study add-on page action element not found. Debug content: window.document, pageActionUrlbarIcon, all urlbar page action classed elements: ${debugInfo.toString()}`;
+    const message = `"Error: TAAR V3 study add-on page action element not found. Debug content: window.document, pageActionUrlbarIcon, all urlbar page action classed elements: ${debugInfo.toString()}`;
     super(message);
     this.message = message;
     this.debugInfo = debugInfo;
@@ -228,7 +228,7 @@ class Feature {
     clientIdPromise.then((clientId) => {
 
       let aboutAddonsDomain = "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%";
-      aboutAddonsDomain += "?study=taarexpv2";
+      aboutAddonsDomain += "?study=taarexpv3";
       aboutAddonsDomain += "&branch=" + variation.name;
 
       // do not supply client id for the control branch

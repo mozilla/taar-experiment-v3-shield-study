@@ -22,7 +22,7 @@ First, make sure you are on NPM 5+ installed so that the proper dependencies are
 
 Clone the repo:
 
-`$ git clone https://github.com/motin/taar-experiment-v2-shield-study.git -b develop`
+`$ git clone https://github.com/motin/taar-experiment-v3-shield-study.git -b develop`
 
 After cloning the repo, you can run the following commands from the top level directory, one after another:
 
@@ -129,8 +129,8 @@ Note: This is currently only useful if you load the extension manually - it has 
 │   └── xpi.sh            # build the XPI
 ├── dist                  # built xpis (addons)
 │   ├── .gitignore
-│   ├── linked-addon.xpi -> taarexpv2@shield.mozilla.org-0.1.0.xpi
-│   └── taarexpv2@shield.mozilla.org-0.1.0.xpi
+│   ├── linked-addon.xpi -> taarexpv3@shield.mozilla.org-0.1.0.xpi
+│   └── taarexpv3@shield.mozilla.org-0.1.0.xpi
 ├── fetch_translations.py # python script used in v1 to fetch translations used to generate the popup html
 ├── generate_html.py      # python script used in v1 generate the popup html
 ├── package-lock.json
