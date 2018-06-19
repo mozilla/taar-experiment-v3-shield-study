@@ -1,6 +1,6 @@
 {
   "extensionName": {
-    "message": "Example Add-on",
+    "message": "Active Shield Study: TAAR Experiment v3",
     "description": "Name of the extension"
   },
   "extensionDescription": {
@@ -9,8 +9,7 @@
     "description": "Description of the extension."
   },
   "buttonTitle": {
-    "message": "Visit Mozilla",
-    "description":
-      "Description shown on the toolbar when hovered. DO NOT localise 'Mozilla'."
+    "message": "Add-on recommendations",
+    "description": "Description shown on the page action icon when hovered."
   }
 }

@@ -12,6 +12,14 @@
   },
   "default_locale": "en-US",
   "experiment_apis": {
+    "discoPaneNav": {
+      "schema": "./privileged/discoPaneNav/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/discoPaneNav/api.js",
+        "paths": [["discoPaneNav"]]
+      }
+    },
     "pageActionRemoteControl": {
       "schema": "./privileged/pageActionRemoteControl/schema.json",
       "parent": {
@@ -48,17 +56,13 @@
   "permissions": ["storage", "alarms", "webNavigation", "tabs", "management"],
   "incognito": "spanning",
   "page_action": {
-    "browser_style": true
+    "browser_style": true,
+    "default_title": "__MSG_buttonTitle__"
   },
   "background": {
     "scripts": ["studySetup.js", "helpers.js", "feature.js", "background.js"]
   },
   "icons": {
     "48": "icons/shield-icon.svg"
-  },
-  "browser_action": {
-    "browser_style": true,
-    "default_icon": "icons/shield-icon.svg",
-    "default_title": "__MSG_buttonTitle__"
   }
 }

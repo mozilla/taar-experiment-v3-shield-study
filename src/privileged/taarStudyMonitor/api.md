@@ -65,4 +65,40 @@ Fires when addon-changes are ready to be reported via telemetry.
 
 ## Data Types
 
-(None)
+### [0] AnyOrdinaryValue
+
+```json
+{
+  "id": "AnyOrdinaryValue",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "oneOf": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    }
+  ],
+  "choices": [
+    {
+      "type": "null"
+    },
+    {
+      "type": "boolean"
+    },
+    {
+      "type": "integer"
+    },
+    {
+      "type": "string"
+    }
+  ],
+  "testcases": [null, "a string", true, false, 123]
+}
+```

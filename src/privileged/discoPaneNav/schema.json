@@ -1,0 +1,15 @@
+[
+  {
+    "namespace": "discoPaneNav",
+    "description": "Gives ability to navigate to disco pane",
+    "functions": [
+      {
+        "name": "goto",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      }
+    ]
+  }
+]

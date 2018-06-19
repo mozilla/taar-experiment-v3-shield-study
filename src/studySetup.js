@@ -105,31 +105,22 @@ const locales = new Set([
   "zh-tw",
 ]);
 
-// a place to put an 'isEligible' function
+// A place to put an 'isEligible' function
 // Will run only during first install attempt
 async function isEligible() {
-  /*
-  Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
-  Cu.import("resource://gre/modules/Preferences.jsm");
-   */
-
   // Users with private browsing on autostart are not eligible
-  const privateBrowsingAutostart = Preferences.get(
-    "browser.privatebrowsing.autostart",
-  );
-  if (privateBrowsingAutostart !== false) {
-    console.log("Private browsing autostart, not enrolling in study");
+  if (await browser.privacyContext.permanentPrivateBrowsing()) {
+    console.log("Permanent private browsing, exiting study");
     return false;
   }
 
-  const locale = browser.i18n.getUILanguage().toLowerCase();
+  // Return true if locale is among those localized
+  const locale = browser.i18n
+    .getUILanguage()
+    .replace("_", "-")
+    .toLowerCase();
   console.log("locale", locale);
-  const eligibleLocale = locales.has(locale);
-
-  /*
-  return true if locale is among those localized
-  */
-  return eligibleLocale;
+  return locales.has(locale);
 
   // Note: Since 1.0.13, we are leaving the profile age requirements fully up to Normandy targeting
 }

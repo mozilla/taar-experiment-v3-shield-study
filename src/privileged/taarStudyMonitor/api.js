@@ -1,8 +1,8 @@
 "use strict";
 
-/* global ExtensionAPI */
+/* global ExtensionAPI, Services */
 
-const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+ChromeUtils.import("resource://gre/modules/Services.jsm");
 
 const { ExtensionCommon } = ChromeUtils.import(
   "resource://gre/modules/ExtensionCommon.jsm",
@@ -26,13 +26,10 @@ const PREF_BRANCH = "extensions.taarexpv3";
 const SHIELD_STUDY_ADDON_ID = "taarexpv3@shield.mozilla.org";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
-// unit-tested study helpers
-const BASE = `taarexpv3`;
-const { Helpers } = ChromeUtils.import(`chrome://${BASE}/content/helpers.js`);
-
 class Client {
-  constructor(apiEventEmitter) {
+  constructor(apiEventEmitter, Helpers) {
     this.apiEventEmitter = apiEventEmitter;
+    this.Helpers = Helpers;
     const clientStatusJson = Preferences.get(CLIENT_STATUS_PREF);
     if (clientStatusJson && clientStatusJson !== "") {
       this.status = JSON.parse(clientStatusJson);
@@ -73,6 +70,7 @@ class Client {
   static analyzeAddonChangesBetweenEnvironments(
     oldEnvironment,
     currentEnvironment,
+    Helpers,
   ) {
     const prev = Client.activeNonSystemAddonIdsInEnvironment(oldEnvironment);
     const curr = Client.activeNonSystemAddonIdsInEnvironment(
@@ -110,8 +108,9 @@ class Client {
       const addonChanges = Client.analyzeAddonChangesBetweenEnvironments(
         oldEnvironment,
         TelemetryEnvironment.currentEnvironment,
+        client.Helpers,
       );
-      const uri = Helpers.bucketURI(
+      const uri = client.Helpers.bucketURI(
         Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI
           .asciiSpec,
       );
@@ -146,8 +145,12 @@ class Client {
 
 this.taarStudyMonitor = class extends ExtensionAPI {
   getAPI(context) {
-    const apiEventEmitter = EventEmitter();
-    const client = new Client(apiEventEmitter);
+    // unit-tested study helpers
+    const { Helpers } = ChromeUtils.import(
+      context.extension.rootURI.resolve("helpers.js"),
+    );
+    const apiEventEmitter = new EventEmitter();
+    const client = new Client(apiEventEmitter, Helpers);
     return {
       taarStudyMonitor: {
         onFirstRunOnly: async function onFirstRunOnly() {
@@ -193,7 +196,7 @@ this.taarStudyMonitor = class extends ExtensionAPI {
           return client.setAndPersistStatus(key, value);
         },
 
-        getStatus: async function getStatus() {
+        getClientStatus: async function getClientStatus() {
           return client.getStatus();
         },
 
@@ -209,7 +212,7 @@ this.taarStudyMonitor = class extends ExtensionAPI {
 
         onAddonChangeTelemetry: new EventManager(
           context,
-          "taarStudyMonitor.onAddonChangeTelemetry",
+          "taarStudyMonitor:onAddonChangeTelemetry",
           fire => {
             const listener = value => {
               fire.async(value);
