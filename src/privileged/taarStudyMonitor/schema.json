@@ -4,7 +4,35 @@
     "description": "Privileged code used to monitor the study",
     "functions": [
       {
-        "name": "recordFirstRun",
+        "name": "onFirstRun",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "setAndPersistStatus",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "getStatus",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "incrementAndPersistClientStatusAboutAddonsActiveTabSeconds",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "reset",
         "type": "function",
         "async": true,
         "description": "",

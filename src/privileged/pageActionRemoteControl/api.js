@@ -23,12 +23,16 @@ XPCOMUtils.defineLazyModuleGetter(
 /** Return most recent NON-PRIVATE browser window, so that we can
  * manipulate chrome elements on it.
  */
+
+/*
 function getMostRecentBrowserWindow() {
   return BrowserWindowTracker.getTopWindow({
     private: false,
     allowPopups: false,
   });
 }
+getMostRecentBrowserWindow();
+*/
 
 function getPageActionUrlbarIcon() {
   // eslint-disable-next-line no-undef
@@ -81,14 +85,13 @@ function hidePageActionUrlbarIcon() {
 this.pageActionRemoteControl = class extends ExtensionAPI {
   getAPI(context) {
     return {
-      pageAction: {
-        remoteControl: {
-          show() {
-            getMostRecentBrowserWindow();
-          },
-          hide() {
-            hidePageActionUrlbarIcon();
-          },
+      pageActionRemoteControl: {
+        show: async function show() {
+          const pageActionUrlbarIcon = getPageActionUrlbarIcon();
+          pageActionUrlbarIcon.click();
+        },
+        hide: async function hide() {
+          hidePageActionUrlbarIcon();
         },
       },
     };

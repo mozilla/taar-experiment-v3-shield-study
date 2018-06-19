@@ -29,7 +29,7 @@ class Feature {
     // to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
     let currentExtensionsUiLastCategoryPreferenceValue = false;
 
-    browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
+    browser.runtime.onMessage.addListener(async(msg, sender, sendReply) => {
       self.log.debug(
         "Feature.jsm message handler - msg, sender, sendReply",
         msg,
@@ -80,8 +80,7 @@ class Feature {
         }
         browser.taarStudyMonitor.setAndPersistStatus("sawPopup", true);
         try {
-          const pageActionUrlbarIcon = browser.pageActionRemoteControl.getPageActionUrlbarIcon();
-          pageActionUrlbarIcon.click();
+          await browser.pageActionRemoteControl.show();
           // send telemetry
           const dataOut = {
             pingType: "trigger-popup",

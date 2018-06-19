@@ -13,8 +13,34 @@ this.taarStudyMonitor = class extends ExtensionAPI {
     return {
       taarStudyMonitor: {
         /* @TODO no description given */
-        recordFirstRun: async function recordFirstRun() {
-          console.log("called recordFirstRun ");
+        onFirstRun: async function onFirstRun() {
+          console.log("called onFirstRun ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        setAndPersistStatus: async function setAndPersistStatus() {
+          console.log("called setAndPersistStatus ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        getStatus: async function getStatus() {
+          console.log("called getStatus ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        incrementAndPersistClientStatusAboutAddonsActiveTabSeconds: async function incrementAndPersistClientStatusAboutAddonsActiveTabSeconds() {
+          console.log(
+            "called incrementAndPersistClientStatusAboutAddonsActiveTabSeconds ",
+          );
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        reset: async function reset() {
+          console.log("called reset ");
           return undefined;
         },
       },

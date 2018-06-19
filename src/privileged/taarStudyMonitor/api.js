@@ -6,12 +6,19 @@ const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
 const { XPCOMUtils } = ChromeUtils.import(
   "resource://gre/modules/XPCOMUtils.jsm",
 );
+/*
 const { ExtensionCommon } = ChromeUtils.import(
   "resource://gre/modules/ExtensionCommon.jsm",
 );
 const { ExtensionUtils } = ChromeUtils.import(
   "resource://gre/modules/ExtensionUtils.jsm",
 );
+*/
+
+// eslint-disable-next-line no-undef
+// const { EventManager } = ExtensionCommon;
+// eslint-disable-next-line no-undef
+// const { EventEmitter } = ExtensionUtils;
 
 const { Preferences } = ChromeUtils.import(
   "resource://gre/modules/Preferences.jsm",
@@ -31,11 +38,6 @@ const SHIELD_STUDY_ADDON_ID = "taarexpv3@shield.mozilla.org";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
 // eslint-disable-next-line no-undef
-const { EventManager } = ExtensionCommon;
-// eslint-disable-next-line no-undef
-const { EventEmitter } = ExtensionUtils;
-
-// eslint-disable-next-line no-undef
 XPCOMUtils.defineLazyModuleGetter(
   this,
   "BrowserWindowTracker",
@@ -45,12 +47,14 @@ XPCOMUtils.defineLazyModuleGetter(
 /** Return most recent NON-PRIVATE browser window, so that we can
  * manipulate chrome elements on it.
  */
+/*
 function getMostRecentBrowserWindow() {
   return BrowserWindowTracker.getTopWindow({
     private: false,
     allowPopups: false,
   });
 }
+*/
 
 // unit-tested study helpers
 const BASE = `taarexpv3`;
@@ -288,6 +292,7 @@ class Feature {
 this.EXPORTED_SYMBOLS = EXPORTED_SYMBOLS;
 this.Feature = Feature;
 
+/*
 class IntroductionNotificationBarEventEmitter extends EventEmitter {
   emitShow(variationName) {
     const self = this;
@@ -335,15 +340,37 @@ class IntroductionNotificationBarEventEmitter extends EventEmitter {
     self.emit("introduction-shown");
   }
 }
+*/
 
 this.taarStudyMonitor = class extends ExtensionAPI {
   getAPI(context) {
-    const introductionNotificationBarEventEmitter = new IntroductionNotificationBarEventEmitter();
     return {
       taarStudyMonitor: {
-        show() {
-          new EventManager();
-          introductionNotificationBarEventEmitter.emitShow();
+        onFirstRun: async function onFirstRun() {
+          console.log("called onFirstRun ");
+          return undefined;
+        },
+
+        setAndPersistStatus: async function setAndPersistStatus() {
+          console.log("called setAndPersistStatus ");
+          return undefined;
+        },
+
+        getStatus: async function getStatus() {
+          console.log("called getStatus ");
+          return undefined;
+        },
+
+        incrementAndPersistClientStatusAboutAddonsActiveTabSeconds: async function incrementAndPersistClientStatusAboutAddonsActiveTabSeconds() {
+          console.log(
+            "called incrementAndPersistClientStatusAboutAddonsActiveTabSeconds ",
+          );
+          return undefined;
+        },
+
+        reset: async function reset() {
+          console.log("called reset ");
+          return undefined;
         },
       },
     };
