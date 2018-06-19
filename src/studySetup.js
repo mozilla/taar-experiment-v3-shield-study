@@ -1,4 +1,5 @@
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "getStudySetup" }]*/
+/* global Preferences, TelemetryEnvironment */
 
 /**
  *  Overview:
@@ -30,7 +31,7 @@ const baseStudySetup = {
     // default false. Actually send pings.
     send: true,
     // Marks pings with testing=true.  Set flag to `true` before final release
-    removeTestingFlag: false,
+    removeTestingFlag: true,
   },
 
   // endings with urls
@@ -71,31 +72,95 @@ const baseStudySetup = {
     },
   },
 
-  /* Button study branches and sample weights
-     - test kittens vs. puppers if we can only have one.
-       - downweight lizards.  Lizards is a 'poison' branch, meant to
-         help control for novelty effect
-  */
+  // Equal weighting for each of the 3 variations
   weightedVariations: [
     {
-      name: "kittens",
-      weight: 1.5,
-    },
-    {
-      name: "puppers",
-      weight: 1.5,
-    },
-    {
-      name: "lizard",
+      name: "linear-taar",
       weight: 1,
-    }, // we want more puppers in our sample
+    },
+    {
+      name: "ensemble-taar",
+      weight: 1,
+    },
+    {
+      name: "control",
+      weight: 1,
+    },
   ],
 
   // maximum time that the study should run, from the first run
   expire: {
-    days: 14,
+    days: 21,
   },
 };
+
+const locales = new Set([
+  "ar",
+  "bg",
+  "cs",
+  "da",
+  "de",
+  "el",
+  "en-gb",
+  "en-us",
+  "es-es",
+  "es-la",
+  "fi",
+  "fr",
+  "hu",
+  "id",
+  "it",
+  "ja",
+  "ms",
+  "nl",
+  "no",
+  "pl",
+  "pt",
+  "pt-br",
+  "ro",
+  "ru",
+  "sk",
+  "sr",
+  "sv",
+  "tl",
+  "tr",
+  "uk",
+  "vi",
+  "zh-tw",
+]);
+
+// a place to put an 'isEligible' function
+// Will run only during first install attempt
+async function isEligible() {
+  /*
+  Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
+  Cu.import("resource://gre/modules/Preferences.jsm");
+   */
+
+  // Users with private browsing on autostart are not eligible
+  const privateBrowsingAutostart = Preferences.get(
+    "browser.privatebrowsing.autostart",
+  );
+  if (privateBrowsingAutostart !== false) {
+    console.log("Private browsing autostart, not enrolling in study");
+    return false;
+  }
+
+  console.log("awaiting telemetry environment initialization");
+  await TelemetryEnvironment.onInitialized();
+  console.log("telemetry environment initialized");
+
+  const locale = TelemetryEnvironment.currentEnvironment.settings.locale.toLowerCase();
+  console.log("locale", locale);
+  const eligibleLocale = locales.has(locale);
+
+  /*
+  return true if locale is among those localized
+  */
+  return eligibleLocale;
+
+  // Note: Since 1.0.13, we are leaving the profile age requirements fully up to Normandy targeting
+}
 
 /**
  * Determine, based on common and study-specific criteria, if enroll (first run)
@@ -123,7 +188,7 @@ async function cachingFirstRunShouldAllowEnroll() {
   */
 
   // could have other reasons to be eligible, such add-ons, prefs
-  allowed = true;
+  allowed = await isEligible();
 
   // cache the answer
   await browser.storage.local.set({ allowEnroll: allowed });

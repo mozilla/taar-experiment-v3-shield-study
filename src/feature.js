@@ -1,13 +1,147 @@
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(feature)" }]*/
+/* eslint no-console:off */
 
 class Feature {
   constructor() {}
-  /*
-  configure(studyInfo) {
+
+  async configure(/* studyInfo*/) {
+    /*
     const feature = this;
     const { variation, isFirstRun } = studyInfo;
+    */
+
+    // other browser.runtime.onMessage handlers for your addon, if any
+    this.feature.afterWebExtensionStartup();
+
+    // Users with private browsing on autostart should not continue being in the study
+    const privateBrowsingAutostart = browser.prefs.get(
+      "browser.privatebrowsing.autostart",
+    );
+    if (privateBrowsingAutostart !== false) {
+      console.log("Private browsing autostart, exiting study");
+      await browser.study.endStudy({ reason: "ineligible" });
+      return;
+    }
+
+    const experiment = new TAARExperiment();
+    experiment.start();
+
+    // to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
+    let currentExtensionsUiLastCategoryPreferenceValue = false;
+
+    browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
+      self.log.debug(
+        "Feature.jsm message handler - msg, sender, sendReply",
+        msg,
+        sender,
+        sendReply,
+      );
+
+      // event-based message handlers
+      if (msg.init) {
+        self.log.debug("init received");
+        browser.taarStudyMonitor.setAndPersistStatus(
+          "startTime",
+          String(Date.now()),
+        );
+        // send telemetry
+        const dataOut = {
+          pingType: "init",
+        };
+        self.notifyViaTelemetry(dataOut);
+        sendReply(dataOut);
+        return;
+      } else if (msg["disco-pane-loaded"]) {
+        browser.taarStudyMonitor.setAndPersistStatus("discoPaneLoaded", true);
+        // send telemetry
+        const dataOut = {
+          pingType: "disco-pane-loaded",
+        };
+        self.notifyViaTelemetry(dataOut);
+        sendReply({ response: "Disco pane loaded" });
+        // restore preference if we changed it temporarily
+        if (
+          typeof currentExtensionsUiLastCategoryPreferenceValue !==
+            "undefined" &&
+          currentExtensionsUiLastCategoryPreferenceValue !== false
+        ) {
+          browser.prefs.set(
+            "extensions.ui.lastCategory",
+            currentExtensionsUiLastCategoryPreferenceValue,
+          );
+        }
+        return;
+      } else if (msg["trigger-popup"]) {
+        if (browser.taarStudyMonitor.getStatus().discoPaneLoaded === true) {
+          self.log.debug(
+            "Not triggering popup since disco pane has already been loaded",
+          );
+          return;
+        }
+        browser.taarStudyMonitor.setAndPersistStatus("sawPopup", true);
+        try {
+          const pageActionUrlbarIcon = browser.pageActionRemoteControl.getPageActionUrlbarIcon();
+          pageActionUrlbarIcon.click();
+          // send telemetry
+          const dataOut = {
+            pingType: "trigger-popup",
+          };
+          self.notifyViaTelemetry(dataOut);
+          sendReply({ response: "Triggered pop-up" });
+        } catch (e) {
+          if (e.name === "PageActionUrlbarIconElementNotFoundError") {
+            console.error(e);
+          }
+        }
+        return;
+      } else if (msg["clicked-disco-button"]) {
+        // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
+        currentExtensionsUiLastCategoryPreferenceValue = browser.prefs.get(
+          "extensions.ui.lastCategory",
+        );
+        browser.prefs.set("extensions.ui.lastCategory", "addons://discover/");
+
+        // navigate to about:addons
+        /*
+        const window = Services.wm.getMostRecentWindow("navigator:browser");
+        window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", {
+          relatedToCurrent: true,
+        });
+        */
+
+        browser.taarStudyMonitor.setAndPersistStatus("clickedButton", true);
+        browser.pageActionRemoteControl.hidePageActionUrlbarIcon();
+        // send telemetry
+        const dataOut = {
+          pingType: "button-click",
+        };
+        self.notifyViaTelemetry(dataOut);
+        sendReply({ response: "Clicked discovery pane button" });
+        return;
+      } else if (msg["clicked-close-button"]) {
+        browser.taarStudyMonitor.setAndPersistStatus("clickedButton", false);
+        browser.pageActionRemoteControl.hidePageActionUrlbarIcon();
+        sendReply({ response: "Closed pop-up" });
+        return;
+      }
+
+      // getter and setter for browser.taarStudyMonitor status
+      if (msg.getClientStatus) {
+        self.log.debug(browser.taarStudyMonitor.status);
+        sendReply(browser.taarStudyMonitor.getStatus());
+      } else if (msg.setAndPersistClientStatus) {
+        browser.taarStudyMonitor.setAndPersistStatus(msg.key, msg.value);
+        self.log.debug(browser.taarStudyMonitor.status);
+        sendReply(browser.taarStudyMonitor.getStatus());
+      } else if (
+        msg.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds
+      ) {
+        browser.taarStudyMonitor.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds();
+        self.log.debug(browser.taarStudyMonitor.status);
+        sendReply(browser.taarStudyMonitor.getStatus());
+      }
+    });
   }
-  */
 
   /* good practice to have the literal 'sending' be wrapped up */
   sendTelemetry(stringStringMap) {
@@ -17,79 +151,10 @@ class Feature {
   /**
    * Called at end of study, and if the user disables the study or it gets uninstalled by other means.
    */
-  async cleanup() {}
-}
-
-/* eslint no-console:off */
-
-("use strict");
-
-/** `background.js` example for embedded webExtensions.
- * - As usual for webExtensions, controls BrowserAction (toolbar button)
- *   look, feel, interactions.
- *
- * - Also handles 2-way communication with the HOST (Legacy Addon)
- *
- *   - all communication to the Legacy Addon is via `browser.runtime.sendMessage`
- *
- *   - Only the webExtension can initiate messages.  see `msgStudyUtils("info")` below.
- */
-
-/**  Re-usable code for talking to `studyUtils` using `browser.runtime.sendMessage`
- *  - Host listens and responds at `bootstrap.js`:
- *
- *   `browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage)`;
- *
- *  - `msg` calls the corresponding studyUtils API call.
- *
- *     - info: current studyUtils configuration, including 'variation'
- *     - endStudy: for ending a study
- *     - telemetry: send a 'shield-study-addon' packet
- */
-async function msgStudyUtils(msg, data) {
-  const allowed = ["endStudy", "telemetry", "info"];
-  if (!allowed.includes(msg))
-    throw new Error(`shieldUtils doesn't know ${msg}, only knows ${allowed}`);
-  try {
-    // the "shield" key is how the Host listener knows it's for shield.
-    return await browser.runtime.sendMessage({ shield: true, msg, data });
-  } catch (e) {
-    console.error("ERROR msgStudyUtils", msg, data, e);
-    throw e;
+  async cleanup() {
+    await browser.taarStudyMonitor.reset();
   }
 }
-
-/** `telemetry`
- *
- * - check all pings for validity as "shield-study-addon" pings
- * - tell Legacy Addon to send
- *
- * Good practice: send all Telemetry from one function for easier
- * logging, debugging, validation
- *
- * Note: kyes, values must be strings to fulfill the `shield-study-addon`
- *   ping-type validation.  This allows `payload.data.attributes` to store
- *   correctly at Parquet at s.t.m.o.
- *
- *   Bold claim:  catching errors here
- *
- */
-
-/*
-function telemetry(data) {
-  function throwIfInvalid(obj) {
-    // Check: all keys and values must be strings,
-    for (const k in obj) {
-      if (typeof k !== "string") throw new Error(`key ${k} not a string`);
-      if (typeof obj[k] !== "string") throw new Error(`value ${k} ${obj[k]} not a string`);
-    }
-    return true
-  }
-
-  throwIfInvalid(data);
-  return msgStudyUtils("telemetry", data);
-}
-*/
 
 function handleError(error) {
   console.error(
@@ -221,7 +286,7 @@ function webNavListener_popupRelated(webNavInfo) {
 
 class TAARExperiment {
   async start() {
-    this.info = await msgStudyUtils("info");
+    this.info = await browser.study.info();
     await browser.runtime
       .sendMessage({ getClientStatus: true })
       .then(async function(clientStatus) {
@@ -285,9 +350,6 @@ class TAARExperiment {
     }, interval);
   }
 }
-
-const experiment = new TAARExperiment();
-experiment.start();
 
 // make an instance of the feature class available to background.js
 // construct only. will be configured after setup

@@ -45,7 +45,8 @@
     "selenium-webdriver": "^3.5.0",
     "sinon": "4.0.0",
     "sinon-chrome": "2.2.1",
-    "web-ext": "^2.7.0"
+    "web-ext": "^2.7.0",
+    "yamljs": "^0.3.0"
   },
   "engines": {
     "node": ">=8.11.1"
@@ -62,7 +63,14 @@
     "url": "git://github.com/motin/taar-experiment-v3-shield-study.git"
   },
   "scripts": {
-    "build": "web-ext build",
+    "build": "npm-run-all -s -n build:schema:* build:docs:* build:stubApi:* build:code",
+    "build:code": "web-ext build",
+    "build:docs:pageActionRemoteControl": "node ./node_modules/shield-studies-addon-utils/bin/documentSchema.js ./src/privileged/pageActionRemoteControl/schema.json > docs/api.md",
+    "build:docs:taarStudyMonitor": "node ./node_modules/shield-studies-addon-utils/bin/documentSchema.js ./src/privileged/taarStudyMonitor/schema.json > docs/api.md",
+    "build:schema:pageActionRemoteControl": "cd ./src/privileged/pageActionRemoteControl && yaml2json schema.yaml -p > schema.json && node ../../../node_modules/shield-studies-addon-utils/bin/verifyWeeSchema.js schema.json",
+    "build:schema:taarStudyMonitor": "cd ./src/privileged/taarStudyMonitor && yaml2json schema.yaml -p > schema.json && node ../../../node_modules/shield-studies-addon-utils/bin/verifyWeeSchema.js schema.json",
+    "build:stubApi:pageActionRemoteControl": "cd ./src/privileged/pageActionRemoteControl && node ../../../node_modules/shield-studies-addon-utils/bin/schemaToInterface.js ./schema.json > stubApi.js",
+    "build:stubApi:taarStudyMonitor": "cd ./src/privileged/taarStudyMonitor && node ../../../node_modules/shield-studies-addon-utils/bin/schemaToInterface.js ./schema.json > stubApi.js",
     "bundle-utils": "copyStudyUtils src/privileged",
     "docformat": "doctoc --title '**Contents**' docs/*.md && prettier '**/*.md' --write",
     "eslint": "eslint . --ext jsm --ext js --ext json",
@@ -82,7 +90,7 @@
     "sign": "echo 'TBD, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1407757'",
     "start": "web-ext run --no-reload",
     "test": "npm-run-all -n test:unit test:func",
-    "test:func": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=./dist/button_icon_preference_-_shield_study_example-2.0.0.zip mocha test/functional/ --bail",
+    "test:func": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=./dist/active_shield_study_taar_experiment_v3-1.0.14.zip mocha test/functional/ --bail",
     "test:unit": "NODE_ENV=test karma start",
     "watch": "web-ext run"
   }

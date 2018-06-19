@@ -1,0 +1,15 @@
+[
+  {
+    "namespace": "taarStudyMonitor",
+    "description": "Privileged code used to monitor the study",
+    "functions": [
+      {
+        "name": "recordFirstRun",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      }
+    ]
+  }
+]

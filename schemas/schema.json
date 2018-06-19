@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "taarexpv2",
+  "title": "taarexpv3",
   "definitions": {
     "attributes": {
       "properties": {

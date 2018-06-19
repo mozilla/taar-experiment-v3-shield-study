@@ -1,18 +1,28 @@
 "use strict";
 
-/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(EXPORTED_SYMBOLS|Feature)" }]*/
-/* global Helpers */
+/* global ExtensionAPI */
 
-const { utils: Cu } = Components;
-Cu.import("resource://gre/modules/Console.jsm");
-Cu.import("resource://gre/modules/Services.jsm");
-Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-Cu.import("resource://gre/modules/Preferences.jsm");
-Cu.import("resource://gre/modules/ClientID.jsm");
-Cu.import("resource://gre/modules/TelemetryEnvironment.jsm");
-Cu.import("resource://gre/modules/TelemetryController.jsm");
-Cu.import("resource://gre/modules/AddonManager.jsm");
-Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+const { Services } = ChromeUtils.import("resource://gre/modules/Services.jsm");
+const { XPCOMUtils } = ChromeUtils.import(
+  "resource://gre/modules/XPCOMUtils.jsm",
+);
+const { ExtensionCommon } = ChromeUtils.import(
+  "resource://gre/modules/ExtensionCommon.jsm",
+);
+const { ExtensionUtils } = ChromeUtils.import(
+  "resource://gre/modules/ExtensionUtils.jsm",
+);
+
+const { Preferences } = ChromeUtils.import(
+  "resource://gre/modules/Preferences.jsm",
+);
+const { ClientID } = ChromeUtils.import("resource://gre/modules/ClientID.jsm");
+const { TelemetryEnvironment } = ChromeUtils.import(
+  "resource://gre/modules/TelemetryEnvironment.jsm",
+);
+const { PrivateBrowsingUtils } = ChromeUtils.import(
+  "resource://gre/modules/PrivateBrowsingUtils.jsm",
+);
 
 const EXPORTED_SYMBOLS = ["Feature"];
 
@@ -20,32 +30,31 @@ const PREF_BRANCH = "extensions.taarexpv3";
 const SHIELD_STUDY_ADDON_ID = "taarexpv3@shield.mozilla.org";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
+// eslint-disable-next-line no-undef
+const { EventManager } = ExtensionCommon;
+// eslint-disable-next-line no-undef
+const { EventEmitter } = ExtensionUtils;
+
+// eslint-disable-next-line no-undef
 XPCOMUtils.defineLazyModuleGetter(
   this,
-  "RecentWindow",
-  "resource:///modules/RecentWindow.jsm",
+  "BrowserWindowTracker",
+  "resource:///modules/BrowserWindowTracker.jsm",
 );
 
 /** Return most recent NON-PRIVATE browser window, so that we can
  * manipulate chrome elements on it.
  */
-
-/*
 function getMostRecentBrowserWindow() {
-  return RecentWindow.getMostRecentBrowserWindow({
+  return BrowserWindowTracker.getTopWindow({
     private: false,
     allowPopups: false,
   });
 }
-*/
 
 // unit-tested study helpers
 const BASE = `taarexpv3`;
-XPCOMUtils.defineLazyModuleGetter(
-  this,
-  "Helpers",
-  `chrome://${BASE}/content/lib/Helpers.jsm`,
-);
+const { Helpers } = ChromeUtils.import(`chrome://${BASE}/content/helpers.js`);
 
 class Client {
   constructor(feature) {
@@ -176,61 +185,7 @@ class Client {
   }
 }
 
-function getPageActionUrlbarIcon() {
-  const window = Services.wm.getMostRecentWindow("navigator:browser");
-  // Id reference style as was working in taar v1
-  let pageActionUrlbarIcon = window.document.getElementById(
-    "taarexpv3_shield_mozilla_org-page-action",
-  );
-  // Firefox 57+
-  if (!pageActionUrlbarIcon) {
-    pageActionUrlbarIcon = window.document.getElementById(
-      "pageAction-urlbar-taarexpv3_shield_mozilla_org",
-    );
-  }
-  if (!pageActionUrlbarIcon) {
-    throw new PageActionUrlbarIconElementNotFoundError([
-      window.document,
-      pageActionUrlbarIcon,
-      window.document.querySelectorAll(".urlbar-page-action"),
-    ]);
-  }
-  return pageActionUrlbarIcon;
-}
-
-class PageActionUrlbarIconElementNotFoundError extends Error {
-  constructor(debugInfo) {
-    const message = `"Error: TAAR V3 study add-on page action element not found. Debug content: window.document, pageActionUrlbarIcon, all urlbar page action classed elements: ${debugInfo.toString()}`;
-    super(message);
-    this.message = message;
-    this.debugInfo = debugInfo;
-    this.name = "PageActionUrlbarIconElementNotFoundError";
-  }
-}
-
-/**
- * Note: The page action popup should already be closed via it's own javascript's window.close() after any button is called
- * but it will also close when we hide the page action urlbar icon via this method
- */
-function hidePageActionUrlbarIcon() {
-  try {
-    const pageActionUrlbarIcon = getPageActionUrlbarIcon();
-    pageActionUrlbarIcon.remove();
-  } catch (e) {
-    if (e.name === "PageActionUrlbarIconElementNotFoundError") {
-      // All good, no element found
-    }
-  }
-}
-
 class Feature {
-  /** A Demonstration feature.
-   *
-   *  - variation: study info about particular client study variation
-   *  - studyUtils:  the configured studyUtils singleton.
-   *  - reasonName: string of bootstrap.js startup/shutdown reason
-   *
-   */
   constructor({ variation, studyUtils, reasonName, log }) {
     this.variation = variation;
     this.studyUtils = studyUtils;
@@ -265,119 +220,9 @@ class Feature {
   }
 
   afterWebExtensionStartup(browser) {
-    // to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
-    let currentExtensionsUiLastCategoryPreferenceValue = false;
-
     const client = this.client;
-    const self = this;
 
     client.monitorAddonChanges();
-
-    browser.runtime.onMessage.addListener((msg, sender, sendReply) => {
-      self.log.debug(
-        "Feature.jsm message handler - msg, sender, sendReply",
-        msg,
-        sender,
-        sendReply,
-      );
-
-      // event-based message handlers
-      if (msg.init) {
-        self.log.debug("init received");
-        client.setAndPersistStatus("startTime", String(Date.now()));
-        // send telemetry
-        const dataOut = {
-          pingType: "init",
-        };
-        self.notifyViaTelemetry(dataOut);
-        sendReply(dataOut);
-        return;
-      } else if (msg["disco-pane-loaded"]) {
-        client.setAndPersistStatus("discoPaneLoaded", true);
-        // send telemetry
-        const dataOut = {
-          pingType: "disco-pane-loaded",
-        };
-        self.notifyViaTelemetry(dataOut);
-        sendReply({ response: "Disco pane loaded" });
-        // restore preference if we changed it temporarily
-        if (
-          typeof currentExtensionsUiLastCategoryPreferenceValue !==
-            "undefined" &&
-          currentExtensionsUiLastCategoryPreferenceValue !== false
-        ) {
-          Preferences.set(
-            "extensions.ui.lastCategory",
-            currentExtensionsUiLastCategoryPreferenceValue,
-          );
-        }
-        return;
-      } else if (msg["trigger-popup"]) {
-        if (client.getStatus().discoPaneLoaded === true) {
-          self.log.debug(
-            "Not triggering popup since disco pane has already been loaded",
-          );
-          return;
-        }
-        client.setAndPersistStatus("sawPopup", true);
-        try {
-          const pageActionUrlbarIcon = getPageActionUrlbarIcon();
-          pageActionUrlbarIcon.click();
-          // send telemetry
-          const dataOut = {
-            pingType: "trigger-popup",
-          };
-          self.notifyViaTelemetry(dataOut);
-          sendReply({ response: "Triggered pop-up" });
-        } catch (e) {
-          if (e.name === "PageActionUrlbarIconElementNotFoundError") {
-            console.error(e);
-          }
-        }
-        return;
-      } else if (msg["clicked-disco-button"]) {
-        // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
-        currentExtensionsUiLastCategoryPreferenceValue = Preferences.get(
-          "extensions.ui.lastCategory",
-        );
-        Preferences.set("extensions.ui.lastCategory", "addons://discover/");
-        // navigate to about:addons
-        const window = Services.wm.getMostRecentWindow("navigator:browser");
-        window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", {
-          relatedToCurrent: true,
-        });
-        client.setAndPersistStatus("clickedButton", true);
-        hidePageActionUrlbarIcon();
-        // send telemetry
-        const dataOut = {
-          pingType: "button-click",
-        };
-        self.notifyViaTelemetry(dataOut);
-        sendReply({ response: "Clicked discovery pane button" });
-        return;
-      } else if (msg["clicked-close-button"]) {
-        client.setAndPersistStatus("clickedButton", false);
-        hidePageActionUrlbarIcon();
-        sendReply({ response: "Closed pop-up" });
-        return;
-      }
-
-      // getter and setter for client status
-      if (msg.getClientStatus) {
-        self.log.debug(client.status);
-        sendReply(client.getStatus());
-      } else if (msg.setAndPersistClientStatus) {
-        client.setAndPersistStatus(msg.key, msg.value);
-        self.log.debug(client.status);
-        sendReply(client.getStatus());
-      } else if (
-        msg.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds
-      ) {
-        client.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds();
-        self.log.debug(client.status);
-        sendReply(client.getStatus());
-      }
-    });
   }
 
   /**
@@ -427,7 +272,7 @@ class Feature {
   }
 
   /* called at end of study */
-  shutdown() {
+  cleanup() {
     // send final telemetry
     const dataOut = {
       pingType: "shutdown",
@@ -442,3 +287,65 @@ class Feature {
 // webpack:`libraryTarget: 'this'`
 this.EXPORTED_SYMBOLS = EXPORTED_SYMBOLS;
 this.Feature = Feature;
+
+class IntroductionNotificationBarEventEmitter extends EventEmitter {
+  emitShow(variationName) {
+    const self = this;
+    const recentWindow = getMostRecentBrowserWindow();
+    const doc = recentWindow.document;
+    const notificationBox = doc.querySelector(
+      "#high-priority-global-notificationbox",
+    );
+
+    if (!notificationBox) return;
+
+    // api: https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XUL/Method/appendNotification
+    const notice = notificationBox.appendNotification(
+      "Welcome to the new feature! Look for changes!",
+      "feature orienation",
+      null, // icon
+      notificationBox.PRIORITY_INFO_HIGH, // priority
+      // buttons
+      [
+        {
+          label: "Thanks!",
+          isDefault: true,
+          callback: function acceptButton() {
+            // eslint-disable-next-line no-console
+            console.log("clicked THANKS!");
+            self.emit("introduction-accept");
+          },
+        },
+        {
+          label: "I do not want this.",
+          callback: function leaveStudyButton() {
+            // eslint-disable-next-line no-console
+            console.log("clicked NO!");
+            self.emit("introduction-leave-study");
+          },
+        },
+      ],
+      // callback for nb events
+      null,
+    );
+
+    // used by testing to confirm the bar is set with the correct config
+    notice.setAttribute("variation-name", variationName);
+
+    self.emit("introduction-shown");
+  }
+}
+
+this.taarStudyMonitor = class extends ExtensionAPI {
+  getAPI(context) {
+    const introductionNotificationBarEventEmitter = new IntroductionNotificationBarEventEmitter();
+    return {
+      taarStudyMonitor: {
+        show() {
+          new EventManager();
+          introductionNotificationBarEventEmitter.emitShow();
+        },
+      },
+    };
+  }
+};

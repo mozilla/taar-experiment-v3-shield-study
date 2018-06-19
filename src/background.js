@@ -1,37 +1,5 @@
 /* global getStudySetup, feature */
 
-/**
- *  Goal:  Implement an instrumented feature using `browser.study` API
- *
- *  Every runtime:
- *  - Prepare
- *
- *    - listen for `onEndStudy` (study endings)
- *    - listen for `study.onReady`
- *
- *  - Startup the feature
- *
- *    - attempt to `browser.study.setup` the study using our studySetup
- *
- *      - will fire EITHER
- *        -  `endStudy` (`expired`, `ineligible`)
- *        - onReady
- *      - (see docs for `browser.study.setup`)
- *
- *    - onReady: configure the feature to match the `variation` study selected
- *    - or, if we got an `onEndStudy` cleanup and uninstall.
- *
- *  During the feature:
- *    - `sendTelemetry` to send pings
- *    - `endStudy` to force an ending (for positive or negative reasons!)
- *
- *  Interesting things to try next:
- *  - `browser.study.validateJSON` your pings before sending
- *  - `endStudy` different endings in response to user action
- *  - force an override of setup.testing to choose branches.
- *
- */
-
 class StudyLifeCycleHandler {
   /**
    * Listen to onEndStudy, onReady
@@ -74,7 +42,7 @@ class StudyLifeCycleHandler {
    *
    * @returns {undefined}
    */
-  enableFeature(studyInfo) {
+  async enableFeature(studyInfo) {
     console.log("enabling feature", studyInfo);
     const { delayInMinutes } = studyInfo;
     if (delayInMinutes !== undefined) {
