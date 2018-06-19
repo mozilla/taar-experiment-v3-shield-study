@@ -17,19 +17,20 @@ const utils = require("./utils");
 /* Part 1:  Utilities */
 
 async function getShieldPingsAfterTimestamp(driver, ts) {
-  return utils.getTelemetryPings(driver, { type: ["shield-study", "shield-study-addon"], timestamp: ts });
+  return utils.getTelemetryPings(driver, {
+    type: ["shield-study", "shield-study-addon"],
+    timestamp: ts,
+  });
 }
 
 function summarizePings(pings) {
   return pings.map(p => {
-
     // prevent irrelevant comparisons of dynamic variables
     if (p.payload.data.attributes && p.payload.data.attributes.startTime) {
       p.payload.data.attributes.startTime = "***";
     }
 
     return [p.payload.type, p.payload.data];
-
   });
 }
 
@@ -57,17 +58,14 @@ describe("basic functional tests", function() {
     // collect sent pings
     pings = await getShieldPingsAfterTimestamp(driver, beginTime);
     // console.log(pingsReport(pings).report);
-
   });
 
   after(async() => {
     driver.quit();
   });
 
-  beforeEach(async() => {
-  });
-  afterEach(async() => {
-  });
+  beforeEach(async() => {});
+  afterEach(async() => {});
 
   /* Expected behaviour:
 
@@ -82,17 +80,33 @@ describe("basic functional tests", function() {
   });
 
   it("at least one shield-study telemetry ping with study_state=installed", async() => {
-    const foundPings = utils.searchTelemetry([
-      ping => ping.type === "shield-study" && ping.payload.data.study_state === "installed",
-    ], pings);
-    assert(foundPings.length > 0, "at least one shield-study telemetry ping with study_state=installed");
+    const foundPings = utils.searchTelemetry(
+      [
+        ping =>
+          ping.type === "shield-study" &&
+          ping.payload.data.study_state === "installed",
+      ],
+      pings,
+    );
+    assert(
+      foundPings.length > 0,
+      "at least one shield-study telemetry ping with study_state=installed",
+    );
   });
 
   it("at least one shield-study telemetry ping with study_state=enter", async() => {
-    const foundPings = utils.searchTelemetry([
-      ping => ping.type === "shield-study" && ping.payload.data.study_state === "enter",
-    ], pings);
-    assert(foundPings.length > 0, "at least one shield-study telemetry ping with study_state=enter");
+    const foundPings = utils.searchTelemetry(
+      [
+        ping =>
+          ping.type === "shield-study" &&
+          ping.payload.data.study_state === "enter",
+      ],
+      pings,
+    );
+    assert(
+      foundPings.length > 0,
+      "at least one shield-study telemetry ping with study_state=enter",
+    );
   });
 
   it("telemetry: has entered, installed, etc", function() {
@@ -102,32 +116,31 @@ describe("basic functional tests", function() {
       [
         "shield-study-addon",
         {
-          "attributes": {
-            "aboutAddonsActiveTabSeconds": "0",
-            "addon_id": "null",
-            "clickedButton": "false",
-            "discoPaneLoaded": "false",
-            "pingType": "init",
-            "sawPopup": "false",
-            "srcURI": "null",
-            "startTime": "***",
+          attributes: {
+            aboutAddonsActiveTabSeconds: "0",
+            addon_id: "null",
+            clickedButton: "false",
+            discoPaneLoaded: "false",
+            pingType: "init",
+            sawPopup: "false",
+            srcURI: "null",
+            startTime: "***",
           },
         },
       ],
       [
         "shield-study",
         {
-          "study_state": "installed",
+          study_state: "installed",
         },
       ],
       [
         "shield-study",
         {
-          "study_state": "enter",
+          study_state: "enter",
         },
       ],
     ];
     assert.deepEqual(expected, observed, "telemetry pings do not match");
   });
-
 });

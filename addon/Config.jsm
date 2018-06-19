@@ -15,45 +15,44 @@ Cu.import("resource://gre/modules/Console.jsm");
 const EXPORTED_SYMBOLS = ["config"];
 
 // const slug = "taarexpv2"; // matches chrome.manifest;
-const locales = new Set(
-  [
-    "ar",
-    "bg",
-    "cs",
-    "da",
-    "de",
-    "el",
-    "en-gb",
-    "en-us",
-    "es-es",
-    "es-la",
-    "fi",
-    "fr",
-    "hu",
-    "id",
-    "it",
-    "ja",
-    "ms",
-    "nl",
-    "no",
-    "pl",
-    "pt",
-    "pt-br",
-    "ro",
-    "ru",
-    "sk",
-    "sr",
-    "sv",
-    "tl",
-    "tr",
-    "uk",
-    "vi",
-    "zh-tw",
-  ]);
+const locales = new Set([
+  "ar",
+  "bg",
+  "cs",
+  "da",
+  "de",
+  "el",
+  "en-gb",
+  "en-us",
+  "es-es",
+  "es-la",
+  "fi",
+  "fr",
+  "hu",
+  "id",
+  "it",
+  "ja",
+  "ms",
+  "nl",
+  "no",
+  "pl",
+  "pt",
+  "pt-br",
+  "ro",
+  "ru",
+  "sk",
+  "sr",
+  "sv",
+  "tl",
+  "tr",
+  "uk",
+  "vi",
+  "zh-tw",
+]);
 
-var config = {
+const config = {
   // required STUDY key
-  "study": {
+  study: {
     /** Required for studyUtils.setup():
      *
      * - studyName
@@ -69,7 +68,7 @@ var config = {
     // required keys: studyName, endings, telemetry
 
     // will be used activeExperiments tagging
-    "studyName": "TAARExperimentV2",
+    studyName: "TAARExperimentV2",
     /** **endings**
      * - keys indicate the 'endStudy' even that opens these.
      * - urls should be static (data) or external, because they have to
@@ -77,37 +76,37 @@ var config = {
      * - If there is no key for an endStudy reason, no url will open.
      * - usually surveys, orientations, explanations
      */
-    "endings": {
+    endings: {
       /** standard endings */
       "no-endings": {
-        "url": "null",
+        url: "null",
       },
       /** User defined endings */
       "used-often": {
-        "baseUrl": "http://www.example.com/?reason=used-often",
-        "study_state": "ended-positive",  // neutral is default
+        baseUrl: "http://www.example.com/?reason=used-often",
+        study_state: "ended-positive", // neutral is default
       },
       "a-non-url-opening-ending": {
-        "study_state": "ended-neutral",
-        "baseUrl": null,
+        study_state: "ended-neutral",
+        baseUrl: null,
       },
       "introduction-leave-study": {
-        "study_state": "ended-negative",
-        "baseUrl": "http://www.example.com/?reason=introduction-leave-study",
+        study_state: "ended-negative",
+        baseUrl: "http://www.example.com/?reason=introduction-leave-study",
       },
     },
-    "telemetry": {
-      "send": true, // assumed false. Actually send pings?
-      "removeTestingFlag": true,  // Marks pings as testing, set true for actual release
+    telemetry: {
+      send: true, // assumed false. Actually send pings?
+      removeTestingFlag: true, // Marks pings as testing, set true for actual release
       // TODO "onInvalid": "throw"  // invalid packet for schema?  throw||log
     },
   },
 
   // required LOG key
-  "log": {
+  log: {
     // Fatal: 70, Error: 60, Warn: 50, Info: 40, Config: 30, Debug: 20, Trace: 10, All: -1,
-    "studyUtils": {
-      "level": "Trace",
+    studyUtils: {
+      level: "Trace",
     },
   },
 
@@ -115,10 +114,11 @@ var config = {
 
   // a place to put an 'isEligible' function
   // Will run only during first install attempt
-  "isEligible": async function() {
-
+  async isEligible() {
     // Users with private browsing on autostart are not eligible
-    const privateBrowsingAutostart = Preferences.get("browser.privatebrowsing.autostart");
+    const privateBrowsingAutostart = Preferences.get(
+      "browser.privatebrowsing.autostart",
+    );
     if (privateBrowsingAutostart !== false) {
       console.log("Private browsing autostart, not enrolling in study");
       return false;
@@ -138,25 +138,24 @@ var config = {
     return eligibleLocale;
 
     // Note: Since 1.0.13, we are leaving the profile age requirements fully up to Normandy targeting
-
   },
 
   // Equal weighting for each of the 3 variations
-  "weightedVariations": [
+  weightedVariations: [
     {
-      "name": "linear-taar",
-      "weight": 1,
+      name: "linear-taar",
+      weight: 1,
     },
     {
-      "name": "ensemble-taar",
-      "weight": 1,
+      name: "ensemble-taar",
+      weight: 1,
     },
     {
-      "name": "control",
-      "weight": 1,
+      name: "control",
+      weight: 1,
     },
   ],
 
   // Optional: relative to bootstrap.js in the xpi
-  "studyUtilsPath": `./StudyUtils.jsm`,
+  studyUtilsPath: `./StudyUtils.jsm`,
 };

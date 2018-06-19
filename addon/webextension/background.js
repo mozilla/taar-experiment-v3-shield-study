@@ -13,7 +13,6 @@
  *   - Only the webExtension can initiate messages.  see `msgStudyUtils("info")` below.
  */
 
-
 /**  Re-usable code for talking to `studyUtils` using `browser.runtime.sendMessage`
  *  - Host listens and responds at `bootstrap.js`:
  *
@@ -27,7 +26,8 @@
  */
 async function msgStudyUtils(msg, data) {
   const allowed = ["endStudy", "telemetry", "info"];
-  if (!allowed.includes(msg)) throw new Error(`shieldUtils doesn't know ${msg}, only knows ${allowed}`);
+  if (!allowed.includes(msg))
+    throw new Error(`shieldUtils doesn't know ${msg}, only knows ${allowed}`);
   try {
     // the "shield" key is how the Host listener knows it's for shield.
     return await browser.runtime.sendMessage({ shield: true, msg, data });
@@ -70,17 +70,21 @@ function telemetry(data) {
 */
 
 function handleError(error) {
-  console.error("A study-specific callback handler encountered the following error:", error);
+  console.error(
+    "A study-specific callback handler encountered the following error:",
+    error,
+  );
 }
 
 /**
  * To use as response handler when no response is necessary - to workaround the apparent bug that messages sent without a response handler yields an error
  */
-function noop() {
-}
+function noop() {}
 
 function triggerPopup() {
-  browser.runtime.sendMessage({ "trigger-popup": true }).then(noop, handleError);
+  browser.runtime
+    .sendMessage({ "trigger-popup": true })
+    .then(noop, handleError);
 }
 
 function webNavListener(webNavInfo) {
@@ -90,23 +94,25 @@ function webNavListener(webNavInfo) {
 }
 
 function webNavListener_trackDiscoPaneLoading(webNavInfo) {
-
-  if (webNavInfo.frameId > 0 && webNavInfo.url.indexOf("https://discovery.addons.mozilla.org/") > -1 && webNavInfo.parentFrameId === 0) {
+  if (
+    webNavInfo.frameId > 0 &&
+    webNavInfo.url.indexOf("https://discovery.addons.mozilla.org/") > -1 &&
+    webNavInfo.parentFrameId === 0
+  ) {
     // Only send message if not in incognito tab
     const gettingInfo = browser.tabs.get(webNavInfo.tabId);
     gettingInfo.then(function(tabInfo) {
-
       // Do not track anything in private browsing mode
       if (tabInfo.incognito) {
         // console.log("Do not track anything in private browsing mode", tabInfo);
         return;
       }
 
-      browser.runtime.sendMessage({ "disco-pane-loaded": true }).then(noop, handleError);
-
+      browser.runtime
+        .sendMessage({ "disco-pane-loaded": true })
+        .then(noop, handleError);
     });
   }
-
 }
 
 function webNavListener_popupRelated(webNavInfo) {
@@ -116,26 +122,36 @@ function webNavListener_popupRelated(webNavInfo) {
   }
 
   // Increment total navigations and trigger popup when relevant
-  const onCompletedWebNavigationInAnActiveNonIncognitoTab = function(currentActiveTabInfo) {
-
+  const onCompletedWebNavigationInAnActiveNonIncognitoTab = function(
+    currentActiveTabInfo,
+  ) {
     // get up to date client status
-    browser.runtime.sendMessage({ "getClientStatus": true }).then(
-      function(clientStatus) {
-
+    browser.runtime
+      .sendMessage({ getClientStatus: true })
+      .then(function(clientStatus) {
         const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
-        const locale = browser.i18n.getUILanguage().replace("_", "-").toLowerCase();
+        const locale = browser.i18n
+          .getUILanguage()
+          .replace("_", "-")
+          .toLowerCase();
         const tabId = webNavInfo.tabId;
 
         clientStatus.totalWebNav++;
 
-        browser.runtime.sendMessage({
-          "setAndPersistClientStatus": true,
-          "key": "totalWebNav",
-          "value": clientStatus.totalWebNav,
-        }).then(
-          function(updatedClientStatus) {
+        browser.runtime
+          .sendMessage({
+            setAndPersistClientStatus: true,
+            key: "totalWebNav",
+            value: clientStatus.totalWebNav,
+          })
+          .then(function(updatedClientStatus) {
             // console.log("TotalURI: " + updatedClientStatus.totalWebNav);
-            if ((!updatedClientStatus.sawPopup && updatedClientStatus.totalWebNav <= 3) || forcePopup) { // client has not seen popup
+            if (
+              (!updatedClientStatus.sawPopup &&
+                updatedClientStatus.totalWebNav <= 3) ||
+              forcePopup
+            ) {
+              // client has not seen popup
               // arbitrary condition for now
               if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
                 browser.storage.local.set({ "PA-tabId": tabId });
@@ -148,20 +164,14 @@ function webNavListener_popupRelated(webNavInfo) {
                 // so we can pageAction.show() from bootstrap.js
                 setTimeout(triggerPopup, 500);
               }
-            } else { // client has seen the popup
+            } else {
+              // client has seen the popup
               browser.storage.local.get("PA-tabId").then(function(result2) {
                 browser.pageAction.hide(result2["PA-tabId"]);
               });
             }
-
-          },
-          handleError
-        );
-
-      },
-      handleError
-    );
-
+          }, handleError);
+      }, handleError);
   };
 
   // Only consider web navigations that has completed in the currently active tab
@@ -170,44 +180,48 @@ function webNavListener_popupRelated(webNavInfo) {
     if (tabs.length > 0) {
       const gettingInfo = browser.tabs.get(tabs[0].id);
       gettingInfo.then(function(currentActiveTabInfo) {
-        if (currentActiveTabInfo.status === "complete" && webNavInfo.tabId === currentActiveTabInfo.id) {
-
+        if (
+          currentActiveTabInfo.status === "complete" &&
+          webNavInfo.tabId === currentActiveTabInfo.id
+        ) {
           // Do not track anything in private browsing mode
           if (currentActiveTabInfo.incognito) {
             // console.log("Do not track anything in private browsing mode");
             return;
           }
 
-          onCompletedWebNavigationInAnActiveNonIncognitoTab(currentActiveTabInfo);
+          onCompletedWebNavigationInAnActiveNonIncognitoTab(
+            currentActiveTabInfo,
+          );
         }
       });
     }
   });
-
 }
 
-
 class TAARExperiment {
-
   async start() {
     this.info = await msgStudyUtils("info");
-    await browser.runtime.sendMessage({ "getClientStatus": true }).then(async function(clientStatus) {
-      if (clientStatus.startTime === null) {
-        await TAARExperiment.firstRun();
-      }
-      TAARExperiment.monitorNavigation();
-      TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
-    }, handleError);
+    await browser.runtime
+      .sendMessage({ getClientStatus: true })
+      .then(async function(clientStatus) {
+        if (clientStatus.startTime === null) {
+          await TAARExperiment.firstRun();
+        }
+        TAARExperiment.monitorNavigation();
+        TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
+      }, handleError);
   }
 
   static async firstRun() {
-    return browser.runtime.sendMessage({ "init": true }).then(noop, handleError);
+    return browser.runtime.sendMessage({ init: true }).then(noop, handleError);
   }
 
   static monitorNavigation() {
     // console.log("Monitoring navigation to be able to show popup after 3 page visits");
-    browser.webNavigation.onCompleted.addListener(webNavListener,
-      { url: [{ schemes: ["http", "https"] }] });
+    browser.webNavigation.onCompleted.addListener(webNavListener, {
+      url: [{ schemes: ["http", "https"] }],
+    });
   }
 
   static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
@@ -216,41 +230,38 @@ class TAARExperiment {
     const interval = 1000;
 
     setInterval(function() {
-
-      const querying = browser.tabs.query({ currentWindow: true, active: true });
+      const querying = browser.tabs.query({
+        currentWindow: true,
+        active: true,
+      });
       querying.then(function(tabs) {
-
         if (tabs.length > 0) {
           const gettingInfo = browser.tabs.get(tabs[0].id);
           gettingInfo.then(function(currentActiveTabInfo) {
-
-            if (currentActiveTabInfo.url === "about:addons" && currentActiveTabInfo.status === "complete") {
-
+            if (
+              currentActiveTabInfo.url === "about:addons" &&
+              currentActiveTabInfo.status === "complete"
+            ) {
               // Do not track anything in private browsing mode
               if (currentActiveTabInfo.incognito) {
                 // console.log("Do not track anything in private browsing mode");
                 return;
               }
 
-              browser.runtime.sendMessage({
-                "incrementAndPersistClientStatusAboutAddonsActiveTabSeconds": true,
-              }).then(function(clientStatus) {
-                // console.log("aboutAddonsActiveTabSeconds increased to: " + clientStatus.aboutAddonsActiveTabSeconds);
-              }, handleError);
-
+              browser.runtime
+                .sendMessage({
+                  incrementAndPersistClientStatusAboutAddonsActiveTabSeconds: true,
+                })
+                .then(function(clientStatus) {
+                  // console.log("aboutAddonsActiveTabSeconds increased to: " + clientStatus.aboutAddonsActiveTabSeconds);
+                }, handleError);
             }
-
           }, handleError);
         }
-
       }, handleError);
-
     }, interval);
-
   }
-
 }
 
 const experiment = new TAARExperiment();
 experiment.start();
-

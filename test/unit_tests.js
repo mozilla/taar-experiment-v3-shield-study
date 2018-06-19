@@ -6,17 +6,24 @@ const Helpers = require("../addon/lib/Helpers.jsm").Helpers;
 console.log("Helpers.addedItemsDifference:");
 
 {
-
   const fixtures = {
     previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
+    currentNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+    ]),
   };
 
   const expected = new Set(["uBlock0@raymondhill.net"]);
 
-  const actual = Helpers.addedItemsDifference(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
+  const actual = Helpers.addedItemsDifference(
+    fixtures.previousNonSystemAddons,
+    fixtures.currentNonSystemAddons,
+  );
 
-  if (JSON.stringify(Array.from(expected)) !== JSON.stringify(Array.from(actual))) {
+  if (
+    JSON.stringify(Array.from(expected)) !== JSON.stringify(Array.from(actual))
+  ) {
     console.log("expected, actual", expected, actual);
     throw new Error("Test 2 - FAIL");
   }
@@ -24,17 +31,28 @@ console.log("Helpers.addedItemsDifference:");
 }
 
 {
-
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
+    previousNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+    ]),
+    currentNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+      "support@lastpass.com",
+    ]),
   };
 
   const expected = new Set(["support@lastpass.com"]);
 
-  const actual = Helpers.addedItemsDifference(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
+  const actual = Helpers.addedItemsDifference(
+    fixtures.previousNonSystemAddons,
+    fixtures.currentNonSystemAddons,
+  );
 
-  if (JSON.stringify(Array.from(expected)) !== JSON.stringify(Array.from(actual))) {
+  if (
+    JSON.stringify(Array.from(expected)) !== JSON.stringify(Array.from(actual))
+  ) {
     console.log("expected, actual", expected, actual);
     throw new Error("Test 2 - FAIL");
   }
@@ -44,17 +62,22 @@ console.log("Helpers.addedItemsDifference:");
 console.log("Helpers.analyzeAddonChanges:");
 
 {
-
   const fixtures = {
     previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
+    currentNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+    ]),
   };
 
   const expected = {
     lastInstalled: "uBlock0@raymondhill.net",
   };
 
-  const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
+  const actual = Helpers.analyzeAddonChanges(
+    fixtures.previousNonSystemAddons,
+    fixtures.currentNonSystemAddons,
+  );
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
     console.log("expected, actual", expected, actual);
@@ -64,17 +87,26 @@ console.log("Helpers.analyzeAddonChanges:");
 }
 
 {
-
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
+    previousNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+    ]),
+    currentNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+      "support@lastpass.com",
+    ]),
   };
 
   const expected = {
     lastInstalled: "support@lastpass.com",
   };
 
-  const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
+  const actual = Helpers.analyzeAddonChanges(
+    fixtures.previousNonSystemAddons,
+    fixtures.currentNonSystemAddons,
+  );
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
     console.log("expected, actual", expected, actual);
@@ -84,17 +116,26 @@ console.log("Helpers.analyzeAddonChanges:");
 }
 
 {
-
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "support@lastpass.com"]),
+    previousNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+      "support@lastpass.com",
+    ]),
+    currentNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "support@lastpass.com",
+    ]),
   };
 
   const expected = {
     lastDisabledOrUninstalled: "uBlock0@raymondhill.net",
   };
 
-  const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
+  const actual = Helpers.analyzeAddonChanges(
+    fixtures.previousNonSystemAddons,
+    fixtures.currentNonSystemAddons,
+  );
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
     console.log("expected, actual", expected, actual);
@@ -104,10 +145,17 @@ console.log("Helpers.analyzeAddonChanges:");
 }
 
 {
-
   const fixtures = {
-    previousNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "uBlock0@raymondhill.net", "support@lastpass.com"]),
-    currentNonSystemAddons: new Set(["taarexpv2@shield.mozilla.org", "support@lastpass.com", "new@foo.com"]),
+    previousNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "uBlock0@raymondhill.net",
+      "support@lastpass.com",
+    ]),
+    currentNonSystemAddons: new Set([
+      "taarexpv2@shield.mozilla.org",
+      "support@lastpass.com",
+      "new@foo.com",
+    ]),
   };
 
   const expected = {
@@ -115,7 +163,10 @@ console.log("Helpers.analyzeAddonChanges:");
     lastDisabledOrUninstalled: "uBlock0@raymondhill.net",
   };
 
-  const actual = Helpers.analyzeAddonChanges(fixtures.previousNonSystemAddons, fixtures.currentNonSystemAddons);
+  const actual = Helpers.analyzeAddonChanges(
+    fixtures.previousNonSystemAddons,
+    fixtures.currentNonSystemAddons,
+  );
 
   if (JSON.stringify(expected) !== JSON.stringify(actual)) {
     console.log("expected, actual", expected, actual);
@@ -127,7 +178,6 @@ console.log("Helpers.analyzeAddonChanges:");
 console.log("Helpers.bucketURI:");
 
 {
-
   const fixture = "about:addons";
 
   const expected = "about:addons";
@@ -142,8 +192,8 @@ console.log("Helpers.bucketURI:");
 }
 
 {
-
-  const fixture = "https://addons.mozilla.org/en-US/firefox/addon/clippings/?src=collection";
+  const fixture =
+    "https://addons.mozilla.org/en-US/firefox/addon/clippings/?src=collection";
 
   const expected = "AMO";
 
@@ -157,7 +207,6 @@ console.log("Helpers.bucketURI:");
 }
 
 {
-
   const fixture = "https://bugzilla.mozilla.org/show_bug.cgi?id=1450951";
 
   const expected = "other";
@@ -172,7 +221,6 @@ console.log("Helpers.bucketURI:");
 }
 
 {
-
   const fixture = "foobar";
 
   const expected = "other";
@@ -187,7 +235,6 @@ console.log("Helpers.bucketURI:");
 }
 
 {
-
   const fixture = "https://example.com/false-positive-amo/addons.mozilla.org/";
 
   const expected = "AMO";
@@ -202,7 +249,6 @@ console.log("Helpers.bucketURI:");
 }
 
 {
-
   const fixture = "about:addons#foo";
 
   const expected = "about:addons";

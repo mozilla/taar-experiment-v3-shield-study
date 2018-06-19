@@ -1,5 +1,4 @@
-document.addEventListener("click", (e) => {
-
+document.addEventListener("click", e => {
   function handleResponse(message) {
     console.log(`Message from the privileged script: ${message.response}`);
     browser.storage.local.set({ sawPopup: true });
@@ -24,5 +23,4 @@ document.addEventListener("click", (e) => {
     // Ensure that the popup closes only after button click
     window.close();
   }
-
 });

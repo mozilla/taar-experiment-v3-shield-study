@@ -1,10 +1,7 @@
-"use strict";
+"use strict" /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(startup|shutdown|install|uninstall)" }]*/; // Cu.import
 
 /* global  __SCRIPT_URI_SPEC__  */
-/* global Feature, Services */ // Cu.import
-/* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(startup|shutdown|install|uninstall)" }]*/
-
-const { utils: Cu } = Components;
+/* global Feature, Services */ const { utils: Cu } = Components;
 Cu.import("resource://gre/modules/Console.jsm");
 Cu.import("resource://gre/modules/Log.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
@@ -26,11 +23,13 @@ const log = Log.repository.getLogger(BOOTSTRAP_LOGGER_NAME);
 log.addAppender(new Log.ConsoleAppender(new Log.BasicFormatter()));
 log.level = Services.prefs.getIntPref(PREF_LOGGING_LEVEL, Log.Level.Warn);
 
-
 // QA NOTE: Study Specific Modules - package.json:addon.chromeResource
 const BASE = `taarexpv3`;
-XPCOMUtils.defineLazyModuleGetter(this, "Feature", `chrome://${BASE}/content/lib/Feature.jsm`);
-
+XPCOMUtils.defineLazyModuleGetter(
+  this,
+  "Feature",
+  `chrome://${BASE}/content/lib/Feature.jsm`,
+);
 
 /* Example addon-specific module imports.  Remember to Unload during shutdown() below.
 
@@ -56,18 +55,25 @@ async function startup(addonData, reason) {
     addon: { id: addonData.id, version: addonData.version },
   });
   // choose the variation for this particular user, then set it.
-  const variation = getVariationFromPref(config.weightedVariations) ||
-    await studyUtils.deterministicVariation(
-      config.weightedVariations
-    );
+  const variation =
+    getVariationFromPref(config.weightedVariations) ||
+    (await studyUtils.deterministicVariation(config.weightedVariations));
   studyUtils.setVariation(variation);
-  log.debug(`studyUtils has config and variation.name: ${variation.name}.  Ready to send telemetry`);
+  log.debug(
+    `studyUtils has config and variation.name: ${
+      variation.name
+    }.  Ready to send telemetry`,
+  );
 
   /** addon_install and addon_upgrade (which is considered a new study) ONLY:
    * - note first seen,
    * - check eligible
    */
-  if (reason === REASONS.ADDON_INSTALL || reason === REASONS.ADDON_UPGRADE || reason === REASONS.ADDON_DOWNGRADE) {
+  if (
+    reason === REASONS.ADDON_INSTALL ||
+    reason === REASONS.ADDON_UPGRADE ||
+    reason === REASONS.ADDON_DOWNGRADE
+  ) {
     //  telemetry "enter" ONCE per new study period
     studyUtils.firstSeen();
     // check user eligibility ONCE per new study period
@@ -83,7 +89,9 @@ async function startup(addonData, reason) {
   }
 
   // Users with private browsing on autostart should not continue being in the study
-  const privateBrowsingAutostart = Preferences.get("browser.privatebrowsing.autostart");
+  const privateBrowsingAutostart = Preferences.get(
+    "browser.privatebrowsing.autostart",
+  );
   if (privateBrowsingAutostart !== false) {
     console.log("Private browsing autostart, exiting study");
     await studyUtils.endStudy({ reason: "ineligible" });
@@ -96,11 +104,15 @@ async function startup(addonData, reason) {
   await studyUtils.startup({ reason });
 
   // if you have code to handle expiration / long-timers, it could go here
-  (function fakeTrackExpiration() {
-  })();
+  (function fakeTrackExpiration() {})();
 
   // initiate the chrome-privileged part of the study add-on
-  this.feature = new Feature({ variation, studyUtils, reasonName: REASONS[reason], log });
+  this.feature = new Feature({
+    variation,
+    studyUtils,
+    reasonName: REASONS[reason],
+    log,
+  });
 
   // IFF your study has an embedded webExtension, start it.
   const { webExtension } = addonData;
@@ -110,10 +122,11 @@ async function startup(addonData, reason) {
       /** spec for messages intended for Shield =>
        * {shield:true,msg=[info|endStudy|telemetry],data=data}
        */
-      browser.runtime.onMessage.addListener(studyUtils.respondToWebExtensionMessage);
+      browser.runtime.onMessage.addListener(
+        studyUtils.respondToWebExtensionMessage,
+      );
       // other browser.runtime.onMessage handlers for your addon, if any
       this.feature.afterWebExtensionStartup(browser);
-
     });
   }
 
@@ -166,7 +179,6 @@ function install(addonData, reason) {
   // handle ADDON_UPGRADE (if needful) here
 }
 
-
 // helper to let Dev or QA set the variation name
 function getVariationFromPref(weightedVariations) {
   const key = "shield.test.variation";
@@ -174,7 +186,9 @@ function getVariationFromPref(weightedVariations) {
   if (name !== "") {
     const variation = weightedVariations.filter(x => x.name === name)[0];
     if (!variation) {
-      throw new Error(`about:config => shield.test.variation set to ${name}, but not variation with that name exists`);
+      throw new Error(
+        `about:config => shield.test.variation set to ${name}, but not variation with that name exists`,
+      );
     }
     return variation;
   }

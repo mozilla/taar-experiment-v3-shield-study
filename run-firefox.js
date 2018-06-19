@@ -28,7 +28,6 @@ const {
   MODIFIER_KEY,
 } = require("./test/utils");
 
-
 const HELP = `
 env vars:
 
@@ -52,7 +51,6 @@ const minimistHandler = {
   alias: { h: "help", v: "version" },
   "--": true,
 };
-
 
 (async() => {
   const minimist = require("minimist");
@@ -84,7 +82,9 @@ const minimistHandler = {
     const openBrowserConsole = Key.chord(MODIFIER_KEY, Key.SHIFT, "j");
     await urlBar.sendKeys(openBrowserConsole);
 
-    console.log("The addon should now be loaded and you should be able to interact with the addon in the newly opened Firefox instance.");
+    console.log(
+      "The addon should now be loaded and you should be able to interact with the addon in the newly opened Firefox instance.",
+    );
 
     // allow our shield study addon some time to start
     console.log("Waiting 60 seconds to allow for telemetry to be triggered");
@@ -103,7 +103,6 @@ const minimistHandler = {
 
     writePingsJson(pings);
     console.log("Shield study telemetry pings written to pings.json");
-
   } catch (e) {
     console.error(e);
   }

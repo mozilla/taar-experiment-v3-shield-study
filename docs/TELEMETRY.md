@@ -56,7 +56,6 @@ All pings adhere to the same schema, with the following study-specific attribute
 These are the `payload` fields from all pings in the `shield-study` and `shield-study-addon` buckets.
 
 ```
-
 // common fields
 
 branch        ensemble-taar
