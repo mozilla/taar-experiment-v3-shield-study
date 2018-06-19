@@ -13,20 +13,37 @@ this.taarStudyMonitor = class extends ExtensionAPI {
     return {
       taarStudyMonitor: {
         /* @TODO no description given */
-        onFirstRun: async function onFirstRun() {
-          console.log("called onFirstRun ");
+        onFirstRunOnly: async function onFirstRunOnly() {
+          console.log("called onFirstRunOnly ");
           return undefined;
         },
 
         /* @TODO no description given */
-        setAndPersistStatus: async function setAndPersistStatus() {
-          console.log("called setAndPersistStatus ");
+        enableTaarInDiscoPane: async function enableTaarInDiscoPane(
+          variationName,
+        ) {
+          console.log("called enableTaarInDiscoPane variationName");
           return undefined;
         },
 
         /* @TODO no description given */
-        getStatus: async function getStatus() {
-          console.log("called getStatus ");
+        monitorAddonChanges: async function monitorAddonChanges() {
+          console.log("called monitorAddonChanges ");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        setAndPersistClientStatus: async function setAndPersistClientStatus(
+          key,
+          value,
+        ) {
+          console.log("called setAndPersistClientStatus key, value");
+          return undefined;
+        },
+
+        /* @TODO no description given */
+        getClientStatus: async function getClientStatus() {
+          console.log("called getClientStatus ");
           return undefined;
         },
 
@@ -43,6 +60,22 @@ this.taarStudyMonitor = class extends ExtensionAPI {
           console.log("called reset ");
           return undefined;
         },
+
+        // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
+        /* Fires when addon-changes are ready to be reported via telemetry. */
+        onAddonChangeTelemetry: new EventManager(
+          context,
+          "taarStudyMonitor:onAddonChangeTelemetry",
+          fire => {
+            const callback = value => {
+              fire.async(value);
+            };
+            // RegisterSomeInternalCallback(callback);
+            return () => {
+              // UnregisterInternalCallback(callback);
+            };
+          },
+        ).api(),
       },
     };
   }

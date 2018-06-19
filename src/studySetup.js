@@ -38,37 +38,13 @@ const baseStudySetup = {
   endings: {
     /** standard endings */
     "user-disable": {
-      baseUrls: [
-        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=user-disable",
-      ],
+      baseUrls: [],
     },
     ineligible: {
-      baseUrls: [
-        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=ineligible",
-      ],
+      baseUrls: [],
     },
     expired: {
-      baseUrls: [
-        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=expired",
-      ],
-    },
-
-    /** Study specific endings */
-    "used-often": {
-      baseUrls: [
-        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=used-often",
-      ],
-      category: "ended-positive",
-    },
-    "a-non-url-opening-ending": {
       baseUrls: [],
-      category: "ended-neutral",
-    },
-    "introduction-leave-study": {
-      baseUrls: [
-        "https://qsurvey.mozilla.com/s3/Shield-Study-Example-Survey/?reason=introduction-leave-study",
-      ],
-      category: "ended-negative",
     },
   },
 
@@ -146,11 +122,7 @@ async function isEligible() {
     return false;
   }
 
-  console.log("awaiting telemetry environment initialization");
-  await TelemetryEnvironment.onInitialized();
-  console.log("telemetry environment initialized");
-
-  const locale = TelemetryEnvironment.currentEnvironment.settings.locale.toLowerCase();
+  const locale = browser.i18n.getUILanguage().toLowerCase();
   console.log("locale", locale);
   const eligibleLocale = locales.has(locale);
 

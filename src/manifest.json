@@ -12,12 +12,36 @@
   },
   "default_locale": "en-US",
   "experiment_apis": {
+    "pageActionRemoteControl": {
+      "schema": "./privileged/pageActionRemoteControl/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/pageActionRemoteControl/api.js",
+        "paths": [["pageActionRemoteControl"]]
+      }
+    },
+    "privacyContext": {
+      "schema": "./privileged/privacyContext/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/privacyContext/api.js",
+        "paths": [["privacyContext"]]
+      }
+    },
     "study": {
       "schema": "./privileged/study/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
         "script": "./privileged/study/api.js",
         "paths": [["study"]]
+      }
+    },
+    "taarStudyMonitor": {
+      "schema": "./privileged/taarStudyMonitor/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/taarStudyMonitor/api.js",
+        "paths": [["taarStudyMonitor"]]
       }
     }
   },

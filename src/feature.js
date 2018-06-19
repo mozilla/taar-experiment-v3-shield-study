@@ -1,149 +1,247 @@
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(feature)" }]*/
 /* eslint no-console:off */
 
-class Feature {
+// to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
+let currentExtensionsUiLastCategoryPreferenceValue = false;
+
+class TAARExperiment {
   constructor() {}
 
-  async configure(/* studyInfo*/) {
-    /*
-    const feature = this;
+  async configure(studyInfo) {
     const { variation, isFirstRun } = studyInfo;
-    */
-
-    // other browser.runtime.onMessage handlers for your addon, if any
-    this.feature.afterWebExtensionStartup();
 
     // Users with private browsing on autostart should not continue being in the study
-    const privateBrowsingAutostart = browser.prefs.get(
-      "browser.privatebrowsing.autostart",
-    );
-    if (privateBrowsingAutostart !== false) {
-      console.log("Private browsing autostart, exiting study");
+    if (await browser.privacyContext.permanentPrivateBrowsing()) {
+      console.log("Permanent private browsing, exiting study");
       await browser.study.endStudy({ reason: "ineligible" });
       return;
     }
 
-    const experiment = new TAARExperiment();
-    experiment.start();
+    // TODO: Remove need for this
+    browser.runtime.onMessage.addListener(this.messageBus);
 
-    // to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
-    let currentExtensionsUiLastCategoryPreferenceValue = false;
+    await browser.taarStudyMonitor.enableTaarInDiscoPane(variation.name);
 
-    browser.runtime.onMessage.addListener(async(msg, sender, sendReply) => {
-      self.log.debug(
-        "Feature.jsm message handler - msg, sender, sendReply",
-        msg,
-        sender,
-        sendReply,
+    const clientStatus = await browser.taarStudyMonitor.getClientStatus();
+
+    console.log("clientStatus", clientStatus);
+
+    if (isFirstRun) {
+      if (clientStatus.startTime === null) {
+        await this.firstRun();
+      }
+    }
+
+    await browser.taarStudyMonitor.monitorAddonChanges();
+    TAARExperiment.monitorNavigation();
+    TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
+  }
+
+  async firstRun() {
+    console.debug("init received");
+    await browser.taarStudyMonitor.setAndPersistClientStatus(
+      "startTime",
+      String(Date.now()),
+    );
+    // send telemetry
+    const dataOut = {
+      pingType: "init",
+    };
+    await this.notifyViaTelemetry(dataOut);
+  }
+
+  static monitorNavigation() {
+    // console.log("Monitoring navigation to be able to show popup after 3 page visits");
+    browser.webNavigation.onCompleted.addListener(webNavListener, {
+      url: [{ schemes: ["http", "https"] }],
+    });
+  }
+
+  static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
+    // console.log("Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds");
+
+    const interval = 1000;
+
+    setInterval(function() {
+      const querying = browser.tabs.query({
+        currentWindow: true,
+        active: true,
+      });
+      querying.then(function(tabs) {
+        if (tabs.length > 0) {
+          const gettingInfo = browser.tabs.get(tabs[0].id);
+          gettingInfo.then(function(currentActiveTabInfo) {
+            if (
+              currentActiveTabInfo.url === "about:addons" &&
+              currentActiveTabInfo.status === "complete"
+            ) {
+              // Do not track anything in private browsing mode
+              if (currentActiveTabInfo.incognito) {
+                // console.log("Do not track anything in private browsing mode");
+                return;
+              }
+
+              browser.runtime
+                .sendMessage({
+                  incrementAndPersistClientStatusAboutAddonsActiveTabSeconds: true,
+                })
+                .then(
+                  function(/* clientStatus */) {
+                    // console.log("aboutAddonsActiveTabSeconds increased to: " + clientStatus.aboutAddonsActiveTabSeconds);
+                  },
+                  handleError,
+                );
+            }
+          }, handleError);
+        }
+      }, handleError);
+    }, interval);
+  }
+
+  async messageBus(msg, sender, sendReply) {
+    console.debug(
+      "Feature.jsm message handler - msg, sender, sendReply",
+      msg,
+      sender,
+      sendReply,
+    );
+
+    // event-based message handlers
+    if (msg["disco-pane-loaded"]) {
+      await browser.taarStudyMonitor.setAndPersistClientStatus(
+        "discoPaneLoaded",
+        true,
       );
-
-      // event-based message handlers
-      if (msg.init) {
-        self.log.debug("init received");
-        browser.taarStudyMonitor.setAndPersistStatus(
-          "startTime",
-          String(Date.now()),
-        );
-        // send telemetry
-        const dataOut = {
-          pingType: "init",
-        };
-        self.notifyViaTelemetry(dataOut);
-        sendReply(dataOut);
-        return;
-      } else if (msg["disco-pane-loaded"]) {
-        browser.taarStudyMonitor.setAndPersistStatus("discoPaneLoaded", true);
-        // send telemetry
-        const dataOut = {
-          pingType: "disco-pane-loaded",
-        };
-        self.notifyViaTelemetry(dataOut);
-        sendReply({ response: "Disco pane loaded" });
-        // restore preference if we changed it temporarily
-        if (
-          typeof currentExtensionsUiLastCategoryPreferenceValue !==
-            "undefined" &&
-          currentExtensionsUiLastCategoryPreferenceValue !== false
-        ) {
-          browser.prefs.set(
-            "extensions.ui.lastCategory",
-            currentExtensionsUiLastCategoryPreferenceValue,
-          );
-        }
-        return;
-      } else if (msg["trigger-popup"]) {
-        if (browser.taarStudyMonitor.getStatus().discoPaneLoaded === true) {
-          self.log.debug(
-            "Not triggering popup since disco pane has already been loaded",
-          );
-          return;
-        }
-        browser.taarStudyMonitor.setAndPersistStatus("sawPopup", true);
-        try {
-          await browser.pageActionRemoteControl.show();
-          // send telemetry
-          const dataOut = {
-            pingType: "trigger-popup",
-          };
-          self.notifyViaTelemetry(dataOut);
-          sendReply({ response: "Triggered pop-up" });
-        } catch (e) {
-          if (e.name === "PageActionUrlbarIconElementNotFoundError") {
-            console.error(e);
-          }
-        }
-        return;
-      } else if (msg["clicked-disco-button"]) {
-        // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
-        currentExtensionsUiLastCategoryPreferenceValue = browser.prefs.get(
+      // send telemetry
+      const dataOut = {
+        pingType: "disco-pane-loaded",
+      };
+      await this.notifyViaTelemetry(dataOut);
+      sendReply({ response: "Disco pane loaded" });
+      // restore preference if we changed it temporarily
+      if (
+        typeof currentExtensionsUiLastCategoryPreferenceValue !== "undefined" &&
+        currentExtensionsUiLastCategoryPreferenceValue !== false
+      ) {
+        browser.prefs.set(
           "extensions.ui.lastCategory",
+          currentExtensionsUiLastCategoryPreferenceValue,
         );
-        browser.prefs.set("extensions.ui.lastCategory", "addons://discover/");
+      }
+      return;
+    } else if (msg["trigger-popup"]) {
+      if (
+        (await browser.taarStudyMonitor.getClientStatus().discoPaneLoaded) ===
+        true
+      ) {
+        console.debug(
+          "Not triggering popup since disco pane has already been loaded",
+        );
+        return;
+      }
+      await browser.taarStudyMonitor.setAndPersistClientStatus(
+        "sawPopup",
+        true,
+      );
+      try {
+        await browser.pageActionRemoteControl.show();
+        // send telemetry
+        const dataOut = {
+          pingType: "trigger-popup",
+        };
+        await this.notifyViaTelemetry(dataOut);
+        sendReply({ response: "Triggered pop-up" });
+      } catch (e) {
+        if (e.name === "PageActionUrlbarIconElementNotFoundError") {
+          console.error(e);
+        }
+      }
+      return;
+    } else if (msg["clicked-disco-button"]) {
+      // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
+      currentExtensionsUiLastCategoryPreferenceValue = browser.prefs.get(
+        "extensions.ui.lastCategory",
+      );
+      browser.prefs.set("extensions.ui.lastCategory", "addons://discover/");
 
-        // navigate to about:addons
-        /*
+      // navigate to about:addons
+      /*
         const window = Services.wm.getMostRecentWindow("navigator:browser");
         window.gBrowser.selectedTab = window.gBrowser.addTab("about:addons", {
           relatedToCurrent: true,
         });
         */
 
-        browser.taarStudyMonitor.setAndPersistStatus("clickedButton", true);
-        browser.pageActionRemoteControl.hidePageActionUrlbarIcon();
-        // send telemetry
-        const dataOut = {
-          pingType: "button-click",
-        };
-        self.notifyViaTelemetry(dataOut);
-        sendReply({ response: "Clicked discovery pane button" });
-        return;
-      } else if (msg["clicked-close-button"]) {
-        browser.taarStudyMonitor.setAndPersistStatus("clickedButton", false);
-        browser.pageActionRemoteControl.hidePageActionUrlbarIcon();
-        sendReply({ response: "Closed pop-up" });
-        return;
-      }
+      await browser.taarStudyMonitor.setAndPersistClientStatus(
+        "clickedButton",
+        true,
+      );
+      browser.pageActionRemoteControl.hidePageActionUrlbarIcon();
+      // send telemetry
+      const dataOut = {
+        pingType: "button-click",
+      };
+      await this.notifyViaTelemetry(dataOut);
+      sendReply({ response: "Clicked discovery pane button" });
+      return;
+    } else if (msg["clicked-close-button"]) {
+      await browser.taarStudyMonitor.setAndPersistClientStatus(
+        "clickedButton",
+        false,
+      );
+      browser.pageActionRemoteControl.hidePageActionUrlbarIcon();
+      sendReply({ response: "Closed pop-up" });
+      return;
+    }
 
-      // getter and setter for browser.taarStudyMonitor status
-      if (msg.getClientStatus) {
-        self.log.debug(browser.taarStudyMonitor.status);
-        sendReply(browser.taarStudyMonitor.getStatus());
-      } else if (msg.setAndPersistClientStatus) {
-        browser.taarStudyMonitor.setAndPersistStatus(msg.key, msg.value);
-        self.log.debug(browser.taarStudyMonitor.status);
-        sendReply(browser.taarStudyMonitor.getStatus());
-      } else if (
-        msg.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds
-      ) {
-        browser.taarStudyMonitor.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds();
-        self.log.debug(browser.taarStudyMonitor.status);
-        sendReply(browser.taarStudyMonitor.getStatus());
-      }
-    });
+    // getter and setter for browser.taarStudyMonitor status
+    if (msg.getClientStatus) {
+      console.debug(await browser.taarStudyMonitor.getClientStatus());
+      sendReply(await browser.taarStudyMonitor.getClientStatus());
+    } else if (msg.setAndPersistClientStatus) {
+      await browser.taarStudyMonitor.setAndPersistClientStatus(
+        msg.key,
+        msg.value,
+      );
+      console.debug(await browser.taarStudyMonitor.getClientStatus());
+      sendReply(await browser.taarStudyMonitor.getClientStatus());
+    } else if (msg.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds) {
+      await browser.taarStudyMonitor.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds();
+      console.debug(await browser.taarStudyMonitor.getClientStatus());
+      sendReply(await browser.taarStudyMonitor.getClientStatus());
+    }
+  }
+
+  /**
+   * Wrapper that ensures that telemetry gets sent in the expected format for the study
+   * @param stringStringMap
+   */
+  async notifyViaTelemetry(stringStringMap) {
+    const client = this.client;
+    stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    stringStringMap.clickedButton = String(client.status.clickedButton);
+    stringStringMap.sawPopup = String(client.status.sawPopup);
+    stringStringMap.startTime = String(client.status.startTime);
+    stringStringMap.discoPaneLoaded = String(client.status.discoPaneLoaded);
+    stringStringMap.aboutAddonsActiveTabSeconds = String(
+      client.status.aboutAddonsActiveTabSeconds,
+    );
+    if (typeof stringStringMap.addon_id === "undefined") {
+      stringStringMap.addon_id = "null";
+    }
+    if (typeof stringStringMap.srcURI === "undefined") {
+      stringStringMap.srcURI = "null";
+    }
+    // send telemetry
+    this.sendTelemetry(stringStringMap);
   }
 
   /* good practice to have the literal 'sending' be wrapped up */
-  sendTelemetry(stringStringMap) {
+  async sendTelemetry(stringStringMap) {
+    if (await browser.privacyContext.aPrivateBrowserWindowIsOpen()) {
+      // drop the ping - do not send any telemetry
+      return;
+    }
     browser.study.sendTelemetry(stringStringMap);
   }
 
@@ -151,6 +249,12 @@ class Feature {
    * Called at end of study, and if the user disables the study or it gets uninstalled by other means.
    */
   async cleanup() {
+    // send final telemetry
+    const dataOut = {
+      pingType: "shutdown",
+    };
+    this.notifyViaTelemetry(dataOut);
+
     await browser.taarStudyMonitor.reset();
   }
 }
@@ -283,73 +387,6 @@ function webNavListener_popupRelated(webNavInfo) {
   });
 }
 
-class TAARExperiment {
-  async start() {
-    this.info = await browser.study.info();
-    await browser.runtime
-      .sendMessage({ getClientStatus: true })
-      .then(async function(clientStatus) {
-        if (clientStatus.startTime === null) {
-          await TAARExperiment.firstRun();
-        }
-        TAARExperiment.monitorNavigation();
-        TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
-      }, handleError);
-  }
-
-  static async firstRun() {
-    return browser.runtime.sendMessage({ init: true }).then(noop, handleError);
-  }
-
-  static monitorNavigation() {
-    // console.log("Monitoring navigation to be able to show popup after 3 page visits");
-    browser.webNavigation.onCompleted.addListener(webNavListener, {
-      url: [{ schemes: ["http", "https"] }],
-    });
-  }
-
-  static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
-    // console.log("Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds");
-
-    const interval = 1000;
-
-    setInterval(function() {
-      const querying = browser.tabs.query({
-        currentWindow: true,
-        active: true,
-      });
-      querying.then(function(tabs) {
-        if (tabs.length > 0) {
-          const gettingInfo = browser.tabs.get(tabs[0].id);
-          gettingInfo.then(function(currentActiveTabInfo) {
-            if (
-              currentActiveTabInfo.url === "about:addons" &&
-              currentActiveTabInfo.status === "complete"
-            ) {
-              // Do not track anything in private browsing mode
-              if (currentActiveTabInfo.incognito) {
-                // console.log("Do not track anything in private browsing mode");
-                return;
-              }
-
-              browser.runtime
-                .sendMessage({
-                  incrementAndPersistClientStatusAboutAddonsActiveTabSeconds: true,
-                })
-                .then(
-                  function(/* clientStatus */) {
-                    // console.log("aboutAddonsActiveTabSeconds increased to: " + clientStatus.aboutAddonsActiveTabSeconds);
-                  },
-                  handleError,
-                );
-            }
-          }, handleError);
-        }
-      }, handleError);
-    }, interval);
-  }
-}
-
 // make an instance of the feature class available to background.js
 // construct only. will be configured after setup
-window.feature = new Feature();
+window.feature = new TAARExperiment();

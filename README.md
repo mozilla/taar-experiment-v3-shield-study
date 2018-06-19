@@ -22,6 +22,6 @@ See [DEV.md](./docs/DEV.md) for more details on how to work with this add-on as 
 
 # History
 
-* Study v1: [launch bug](https://bugzilla.mozilla.org/show_bug.cgi?id=1414900) - [code](https://github.com/benmiroglio/taar-experiment)
+* Study v1: [launch bug]() - [code](https://github.com/benmiroglio/taar-experiment)
 * Study v2: [launch bug](https://bugzilla.mozilla.org/show_bug.cgi?id=1450951) - [phd](https://docs.google.com/document/d/1ZrfxNfBiEiAkqz4ZW9wmWfJF5sdfQg-Xq6_2mY1EXtI/edit) - [code](https://github.com/motin/taar-experiment-v3-shield-study)
 * Study v3: [launch bug]() - [phd]() - this repository

@@ -4,21 +4,49 @@
     "description": "Privileged code used to monitor the study",
     "functions": [
       {
-        "name": "onFirstRun",
+        "name": "onFirstRunOnly",
         "type": "function",
         "async": true,
         "description": "",
         "parameters": []
       },
       {
-        "name": "setAndPersistStatus",
+        "name": "enableTaarInDiscoPane",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": [
+          {
+            "name": "variationName",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "monitorAddonChanges",
         "type": "function",
         "async": true,
         "description": "",
         "parameters": []
       },
       {
-        "name": "getStatus",
+        "name": "setAndPersistClientStatus",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": [
+          {
+            "name": "key",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "getClientStatus",
         "type": "function",
         "async": true,
         "description": "",
@@ -37,6 +65,20 @@
         "async": true,
         "description": "",
         "parameters": []
+      }
+    ],
+    "events": [
+      {
+        "name": "onAddonChangeTelemetry",
+        "type": "function",
+        "description":
+          "Fires when addon-changes are ready to be reported via telemetry.",
+        "parameters": [
+          {
+            "name": "dataOut",
+            "type": "object"
+          }
+        ]
       }
     ]
   }

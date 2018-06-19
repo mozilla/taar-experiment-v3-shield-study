@@ -4,15 +4,39 @@ Privileged code used to monitor the study
 
 ## Functions
 
-### `browser.taarStudyMonitor.onFirstRun( )`
+### `browser.taarStudyMonitor.onFirstRunOnly( )`
 
 **Parameters**
 
-### `browser.taarStudyMonitor.setAndPersistStatus( )`
+### `browser.taarStudyMonitor.enableTaarInDiscoPane( variationName )`
 
 **Parameters**
 
-### `browser.taarStudyMonitor.getStatus( )`
+* `variationName`
+  * type: variationName
+  * $ref:
+  * optional: false
+
+### `browser.taarStudyMonitor.monitorAddonChanges( )`
+
+**Parameters**
+
+### `browser.taarStudyMonitor.setAndPersistClientStatus( key, value )`
+
+**Parameters**
+
+* `key`
+
+  * type: key
+  * $ref:
+  * optional: false
+
+* `value`
+  * type: value
+  * $ref:
+  * optional: false
+
+### `browser.taarStudyMonitor.getClientStatus( )`
 
 **Parameters**
 
@@ -26,7 +50,16 @@ Privileged code used to monitor the study
 
 ## Events
 
-(None)
+### `browser.taarStudyMonitor.onAddonChangeTelemetry ()` Event
+
+Fires when addon-changes are ready to be reported via telemetry.
+
+**Parameters**
+
+* `dataOut`
+  * type: dataOut
+  * $ref:
+  * optional: false
 
 ## Properties TBD
 
