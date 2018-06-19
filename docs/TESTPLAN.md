@@ -1,5 +1,22 @@
 # Test plan for this add-on
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Contents**
+
+* [Manual / QA TEST Instructions](#manual--qa-test-instructions)
+  * [Preparations](#preparations)
+  * [Install the add-on and enroll in the study](#install-the-add-on-and-enroll-in-the-study)
+* [Expected User Experience / Functionality](#expected-user-experience--functionality)
+  * [Do these tests](#do-these-tests)
+  * [Design](#design)
+  * [Note: checking "sent Telemetry is correct"](#note-checking-sent-telemetry-is-correct)
+* [Debug](#debug)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Manual / QA TEST Instructions
 
 ### Preparations
@@ -12,6 +29,12 @@
 * Set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
 * Set `shield.test.variation` to `ensemble-taar` or `linear-taar`.
 * Go to [https://bugzilla.mozilla.org/show_bug.cgi?id=1428308](https://bugzilla.mozilla.org/show_bug.cgi?id=1428308) and install the latest signed XPI
+
+## Expected User Experience / Functionality
+
+### Example of how the popup appears when testing in Firefox
+
+![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/37150760-9cad116c-22db-11e8-822c-9959f70a8257.png)
 
 ### Do these tests
 
@@ -63,15 +86,15 @@
 
 If you happen to have a profile age between 1 and 10 lying around, verify that the study starts without any use of the override preference.
 
+### Design
+
+Any UI in a Shield study should be consistent with standard Firefox design specifications. These standards can be found at [design.firefox.com](https://design.firefox.com/photon/welcome.html). Firefox logo specifications can be found [here](https://design.firefox.com/photon/visuals/product-identity-assets.html).
+
 ### Note: checking "sent Telemetry is correct"
 
 * Open the Browser Console using Firefox's top menu at `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) log output from the add-on.
 
 See [TELEMETRY.md](./TELEMETRY.md) for more details on what pings are sent by this add-on.
-
-### Example of how the popup appears when testing in Firefox
-
-![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/37150760-9cad116c-22db-11e8-822c-9959f70a8257.png)
 
 ## Debug
 

@@ -1,11 +1,25 @@
 # Telemetry sent by this add-on
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+**Contents**
+
+* [Usual Firefox Telemetry is unaffected.](#usual-firefox-telemetry-is-unaffected)
+* [Study-specific endings](#study-specific-endings)
+* [`shield-study` pings (common to all shield-studies)](#shield-study-pings-common-to-all-shield-studies)
+* [`shield-study-addon` pings, specific to THIS study.](#shield-study-addon-pings-specific-to-this-study)
+* [Example sequence for a 'voted => not sure' interaction](#example-sequence-for-a-voted--not-sure-interaction)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ## Usual Firefox Telemetry is unaffected.
 
-- No change: `main` and other pings are UNAFFECTED by this add-on.
-- Respects telemetry preferences.  If user has disabled telemetry, no telemetry will be sent.
+* No change: `main` and other pings are UNAFFECTED by this add-on.
+* Respects telemetry preferences. If user has disabled telemetry, no telemetry will be sent.
 
-##  Study-specific endings
+## Study-specific endings
 
 This study has no surveys and as such has NO SPECIFIC ENDINGS.
 
@@ -21,7 +35,7 @@ A ping is sent from the add-on upon:
 * upon discovery pane load (every time, not only the first)
 * upon popup display
 * upon popup discovery pane button click
-* every time the user installs/uninstalls/disables an add-on 
+* every time the user installs/uninstalls/disables an add-on
 * study shutdown
 
 ### Attributes
