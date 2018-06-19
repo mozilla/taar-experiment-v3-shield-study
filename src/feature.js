@@ -22,7 +22,7 @@ class Feature {
 
 /* eslint no-console:off */
 
-"use strict";
+("use strict");
 
 /** `background.js` example for embedded webExtensions.
  * - As usual for webExtensions, controls BrowserAction (toolbar button)
@@ -144,9 +144,7 @@ function webNavListener_popupRelated(webNavInfo) {
   }
 
   // Increment total navigations and trigger popup when relevant
-  const onCompletedWebNavigationInAnActiveNonIncognitoTab = function(
-    currentActiveTabInfo,
-  ) {
+  const onCompletedWebNavigationInAnActiveNonIncognitoTab = function(/* currentActiveTabInfo */) {
     // get up to date client status
     browser.runtime
       .sendMessage({ getClientStatus: true })
@@ -274,9 +272,12 @@ class TAARExperiment {
                 .sendMessage({
                   incrementAndPersistClientStatusAboutAddonsActiveTabSeconds: true,
                 })
-                .then(function(clientStatus) {
-                  // console.log("aboutAddonsActiveTabSeconds increased to: " + clientStatus.aboutAddonsActiveTabSeconds);
-                }, handleError);
+                .then(
+                  function(/* clientStatus */) {
+                    // console.log("aboutAddonsActiveTabSeconds increased to: " + clientStatus.aboutAddonsActiveTabSeconds);
+                  },
+                  handleError,
+                );
             }
           }, handleError);
         }

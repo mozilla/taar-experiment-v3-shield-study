@@ -9,7 +9,7 @@ ChromeUtils.import("resource://gre/modules/ExtensionCommon.jsm");
 ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 
 // eslint-disable-next-line no-undef
-const { EventManager } = ExtensionCommon;
+// const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
 const { EventEmitter } = ExtensionUtils;
 

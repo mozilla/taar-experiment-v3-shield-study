@@ -1,43 +1,25 @@
 /* eslint-env node, mocha */
 
-/* Purpose:
- *
- * Tests that are SPECIFIC TO THIS ADDON's FUNCTIONALITY
- */
-
 // for unhandled promise rejection debugging
-process.on("unhandledRejection", r => console.log(r)); // eslint-disable-line no-console
+process.on("unhandledRejection", r => console.error(r)); // eslint-disable-line no-console
 
 const assert = require("assert");
 const utils = require("./utils");
 
-// TODO create new profile per test?
-// then we can test with a clean profile every time
-
-/* Part 2:  The Tests */
-
-describe("basic telemetry tests", function() {
+describe("feature telemetry", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
   let driver;
-  let pings;
+  let beginTime;
 
   // runs ONCE
   before(async() => {
-    const beginTime = Date.now();
-    driver = await utils.promiseSetupDriver();
-    // await setTreatment(driver, "doorHangerAddToToolbar");
-
-    // install the addon
-    await utils.installAddon(driver);
-    // add the share-button to the toolbar
-    // await utils.addShareButton(driver);
-    // allow our shield study addon some time to send initial pings
-    await driver.sleep(1000);
-    // collect sent pings
-    pings = await getShieldPingsAfterTimestamp(driver, beginTime);
-    // console.log(pingsReport(pings).report);
+    beginTime = Date.now();
+    driver = await utils.setupWebdriver.promiseSetupDriver(
+      utils.FIREFOX_PREFERENCES,
+    );
+    await utils.setupWebdriver.installAddon(driver);
   });
 
   after(async() => {
@@ -47,38 +29,50 @@ describe("basic telemetry tests", function() {
   beforeEach(async() => {});
   afterEach(async() => {});
 
-  /* Expected behaviour:
+  describe("should have sent the expected telemetry", function() {
+    let studyPings;
 
-  - after install
-  - get one of many treatments
-  - shield agrees on which treatment.
+    before(async() => {
+      // allow our shield study add-on some time to send initial pings
+      await driver.sleep(2000);
+      // collect sent pings
+      studyPings = await utils.telemetry.getShieldPingsAfterTimestamp(
+        driver,
+        beginTime,
+      );
+      // for debugging tests
+      // console.log("Pings report: ", utils.telemetry.pingsReport(studyPings));
+    });
 
-  */
+    it("should have sent at least one shield telemetry ping", async() => {
+      assert(studyPings.length > 0, "at least one shield telemetry ping");
+    });
 
-  it("should send shield telemetry pings", async() => {
-    assert(pings.length > 0, "at least one shield telemetry ping");
-  });
+    it("telemetry", function() {
+      // Telemetry:  order, and summary of pings is good.
+      const filteredPings = studyPings.filter(
+        ping => ping.type === "shield-study-addon",
+      );
 
-  it("telemetry", function() {
-    // Telemetry:  order, and summary of pings is good.
-    const observed = summarizePings(pings);
-    const expected = [
-      [
-        "shield-study-addon",
-        {
-          attributes: {
-            aboutAddonsActiveTabSeconds: "0",
-            addon_id: "null",
-            clickedButton: "false",
-            discoPaneLoaded: "false",
-            pingType: "init",
-            sawPopup: "false",
-            srcURI: "null",
-            startTime: "***",
+      const observed = utils.telemetry.summarizePings(filteredPings);
+      const expected = [
+        [
+          "shield-study-addon",
+          {
+            attributes: {
+              aboutAddonsActiveTabSeconds: "0",
+              addon_id: "null",
+              clickedButton: "false",
+              discoPaneLoaded: "false",
+              pingType: "init",
+              sawPopup: "false",
+              srcURI: "null",
+              startTime: "***",
+            },
           },
-        },
-      ],
-    ];
-    assert.deepEqual(expected, observed, "telemetry pings do not match");
+        ],
+      ];
+      assert.deepEqual(expected, observed, "telemetry pings do not match");
+    });
   });
 });
