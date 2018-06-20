@@ -12,37 +12,17 @@
 console.log("Starting up firefox");
 
 const firefox = require("selenium-webdriver/firefox");
-const path = require("path");
 const Context = firefox.Context;
-const webdriver = require("selenium-webdriver");
-const Key = webdriver.Key;
 
-const {
-  installAddon,
-  promiseSetupDriver,
-  getTelemetryPings,
-  printPings,
-  takeScreenshot,
-  writePingsJson,
-  promiseUrlBar,
-  MODIFIER_KEY,
-} = require("./test/utils");
+const utils = require("./test/functional/utils");
 
 const HELP = `
 env vars:
 
-- XPI (optional): path to xpi / addon
+- ADDON_ZIP (optional): path to xpi / addon
+  installs $ADDON_ZIP as a temporary addon.
 
-  installs $XPI as a temporary addon.
-
-  Note: must be 'legacy signed' if on Beta or Release.
-
-- FIREFOX_BINARY :  nightly | beta | firefox
-
-Future will clean up this interface a bit!
-- prefs
-- multiple addons
-- re-use or create profiles, etc.
+- FIREFOX_BINARY :  nightly | beta | firefox | firefoxdeveloperedition
 
 `;
 
@@ -61,15 +41,16 @@ const minimistHandler = {
   }
 
   try {
-    const driver = await promiseSetupDriver();
-    console.log("Starting up firefox");
+    const beginTime = Date.now();
+    const driver = await utils.setupWebdriver.promiseSetupDriver(
+      utils.FIREFOX_PREFERENCES,
+    );
+    console.log("Firefox started");
 
     // install the addon
-    if (process.env.XPI) {
-      const fileLocation = path.join(process.cwd(), process.env.XPI);
-      console.log(fileLocation);
-      await installAddon(driver, fileLocation);
-      console.log("Load temporary addon.");
+    if (process.env.ADDON_ZIP) {
+      await utils.setupWebdriver.installAddon(driver);
+      console.log("Installed temporary add-on.");
     }
 
     // navigate to about:debugging
@@ -77,10 +58,7 @@ const minimistHandler = {
     driver.get("about:debugging");
 
     // open the browser console
-    driver.setContext(Context.CHROME);
-    const urlBar = await promiseUrlBar(driver);
-    const openBrowserConsole = Key.chord(MODIFIER_KEY, Key.SHIFT, "j");
-    await urlBar.sendKeys(openBrowserConsole);
+    utils.ui.openBrowserConsole(driver);
 
     console.log(
       "The addon should now be loaded and you should be able to interact with the addon in the newly opened Firefox instance.",
@@ -90,19 +68,18 @@ const minimistHandler = {
     console.log("Waiting 60 seconds to allow for telemetry to be triggered");
     await driver.sleep(60 * 1000);
 
-    await takeScreenshot(driver);
+    await utils.ui.takeScreenshot(driver);
     console.log("Screenshot dumped");
 
-    const telemetryPingsFilterOptions = {
-      type: ["shield-study", "shield-study-addon"],
-      headersOnly: false,
-    };
-    const pings = await getTelemetryPings(driver, telemetryPingsFilterOptions);
+    const studyPings = await utils.telemetry.getShieldPingsAfterTimestamp(
+      driver,
+      beginTime,
+    );
     console.log("Shield study telemetry pings: ");
-    printPings(pings);
+    console.log(utils.telemetry.pingsReport(studyPings));
 
-    writePingsJson(pings);
-    console.log("Shield study telemetry pings written to pings.json");
+    // utils.telemetry.writePingsJson(pings);
+    // console.log("Shield study telemetry pings written to pings.json");
   } catch (e) {
     console.error(e);
   }

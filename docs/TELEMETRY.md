@@ -58,65 +58,68 @@ These are the `payload` fields from all pings in the `shield-study` and `shield-
 ```
 // common fields
 
-branch        ensemble-taar
-study_name    TAARExperimentV3
-addon_version 1.0.7
+branch        linear-taar
+study_name    taarexpv3@shield.mozilla.org
+addon_version 1.0.14
 version       3
 
-
-2018-02-13T07:03:47.849Z shield-study-addon
+2018-06-20T16:08:49.151Z shield-study-addon
 {
   "attributes": {
-    "aboutAddonsActiveTabSeconds": "16",
+    "aboutAddonsActiveTabSeconds": "20",
     "addon_id": "null",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "disco-pane-loaded",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1518505392083"
+    "startTime": "1529510893759"
   }
 }
-2018-02-13T07:03:44.074Z shield-study-addon
+
+2018-06-20T16:08:44.153Z shield-study-addon
 {
   "attributes": {
-    "aboutAddonsActiveTabSeconds": "12",
-    "addon_id": "uBlock0@raymondhill.net",
+    "aboutAddonsActiveTabSeconds": "15",
+    "addon_id": "treestyletab@piro.sakura.ne.jp",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "uninstall",
     "sawPopup": "true",
     "srcURI": "about:addons",
-    "startTime": "1518505392083"
+    "startTime": "1529510893759"
   }
 }
-2018-02-13T07:03:38.233Z shield-study-addon
+
+2018-06-20T16:08:39.930Z shield-study-addon
 {
   "attributes": {
-    "aboutAddonsActiveTabSeconds": "7",
-    "addon_id": "uBlock0@raymondhill.net",
+    "aboutAddonsActiveTabSeconds": "12",
+    "addon_id": "treestyletab@piro.sakura.ne.jp",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "install",
     "sawPopup": "true",
     "srcURI": "about:addons",
-    "startTime": "1518505392083"
+    "startTime": "1529510893759"
   }
 }
-2018-02-13T07:03:33.858Z shield-study-addon
+
+2018-06-20T16:08:35.884Z shield-study-addon
 {
   "attributes": {
-    "aboutAddonsActiveTabSeconds": "2",
+    "aboutAddonsActiveTabSeconds": "8",
     "addon_id": "null",
     "clickedButton": "true",
     "discoPaneLoaded": "true",
     "pingType": "disco-pane-loaded",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1518505392083"
+    "startTime": "1529510893759"
   }
 }
-2018-02-13T07:03:30.922Z shield-study-addon
+
+2018-06-20T16:08:27.024Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "0",
@@ -126,10 +129,11 @@ version       3
     "pingType": "button-click",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1518505392083"
+    "startTime": "1529510893759"
   }
 }
-2018-02-13T07:03:29.655Z shield-study-addon
+
+2018-06-20T16:08:25.215Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "0",
@@ -139,10 +143,11 @@ version       3
     "pingType": "trigger-popup",
     "sawPopup": "true",
     "srcURI": "null",
-    "startTime": "1518505392083"
+    "startTime": "1529510893759"
   }
 }
-2018-02-13T07:03:12.089Z shield-study-addon
+
+2018-06-20T16:08:13.871Z shield-study-addon
 {
   "attributes": {
     "aboutAddonsActiveTabSeconds": "0",
@@ -152,14 +157,16 @@ version       3
     "pingType": "init",
     "sawPopup": "false",
     "srcURI": "null",
-    "startTime": "1518505392083"
+    "startTime": "1529510893759"
   }
 }
-2018-02-13T07:03:11.926Z shield-study
+
+2018-06-20T16:08:13.671Z shield-study
 {
   "study_state": "installed"
 }
-2018-02-13T07:03:10.282Z shield-study
+
+2018-06-20T16:08:13.659Z shield-study
 {
   "study_state": "enter"
 }
