@@ -14,9 +14,9 @@
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-## Usual Firefox Telemetry is unaffected.
+## Usual Firefox Telemetry is mostly unaffected
 
-* No change: `main` and other pings are UNAFFECTED by this add-on.
+* No change: `main` and other pings are UNAFFECTED by this add-on, except that [shield-studies-addon-utils](https://github.com/mozilla/shield-studies-addon-utils) adds the add-on id as an active experiment in the telemetry environment.
 * Respects telemetry preferences. If user has disabled telemetry, no telemetry will be sent.
 
 ## Study-specific endings
@@ -35,7 +35,7 @@ A ping is sent from the add-on upon:
 * upon discovery pane load (every time, not only the first)
 * upon popup display
 * upon popup discovery pane button click
-* every time the user installs/uninstalls/disables an add-on
+* every time the user installs/uninstalls/disables an add-on (but not when undoing a disabling of an add-on)
 * study shutdown
 
 ### Attributes
@@ -53,7 +53,7 @@ All pings adhere to the same schema, with the following study-specific attribute
 
 ## Example sequence for a 'init => trigger-popup => button-click => disco-pane-loaded => install => uninstall => disco-pane-loaded' interaction
 
-These are the `payload` fields from all pings in the `shield-study` and `shield-study-addon` buckets.
+These are the `payload` fields from all pings in the `shield-study` and `shield-study-addon` buckets. (Reverse chronological order)
 
 ```
 // common fields
