@@ -9,7 +9,9 @@ class TAARExperiment {
 
     // Users with private browsing on autostart should not continue being in the study
     if (await browser.privacyContext.permanentPrivateBrowsing()) {
-      console.log("Permanent private browsing, exiting study");
+      await browser.taarStudyMonitor.log(
+        "Permanent private browsing, exiting study",
+      );
       await browser.study.endStudy({ reason: "ineligible" });
       return;
     }
@@ -18,7 +20,7 @@ class TAARExperiment {
     browser.runtime.onMessage.addListener(TAARExperiment.popupMessageListener);
 
     const clientStatus = await browser.taarStudyMonitor.getClientStatus();
-    console.log("clientStatus", clientStatus);
+    await browser.taarStudyMonitor.log("clientStatus", clientStatus);
 
     if (isFirstRun) {
       if (clientStatus.startTime === null) {
@@ -27,17 +29,12 @@ class TAARExperiment {
     }
 
     await browser.taarStudyMonitor.monitorAddonChanges();
-    TAARExperiment.monitorNavigation();
-    TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
+    await TAARExperiment.monitorNavigation();
+    await TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
   }
 
   static popupMessageListener(msg, sender, sendReply) {
-    console.debug(
-      "popupMessageListener - msg, sender, sendReply",
-      msg,
-      sender,
-      sendReply,
-    );
+    // console.debug("popupMessageListener - msg, sender, sendReply", msg, sender, sendReply);
 
     if (msg["clicked-disco-button"]) {
       TAARExperiment.notifyClickedDiscoButton();
@@ -49,7 +46,7 @@ class TAARExperiment {
   }
 
   static async firstRun() {
-    console.debug("init received");
+    // console.debug("init received");
     await browser.taarStudyMonitor.setAndPersistClientStatus(
       "startTime",
       String(Date.now()),
@@ -61,8 +58,8 @@ class TAARExperiment {
     await TAARExperiment.notifyViaTelemetry(dataOut);
   }
 
-  static monitorNavigation() {
-    console.log(
+  static async monitorNavigation() {
+    await browser.taarStudyMonitor.log(
       "Monitoring navigation to be able to show popup after 3 page visits",
     );
     browser.webNavigation.onCompleted.addListener(
@@ -73,8 +70,8 @@ class TAARExperiment {
     );
   }
 
-  static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
-    console.log(
+  static async notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
+    await browser.taarStudyMonitor.log(
       "Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds",
     );
 
@@ -95,7 +92,9 @@ class TAARExperiment {
             ) {
               // Do not track anything in private browsing mode
               if (currentActiveTabInfo.incognito) {
-                console.log("Do not track anything in private browsing mode");
+                await browser.taarStudyMonitor.log(
+                  "Do not track anything in private browsing mode",
+                );
                 return;
               }
 
@@ -123,7 +122,7 @@ class TAARExperiment {
   static async triggerPopup() {
     const clientStatus = await browser.taarStudyMonitor.getClientStatus();
     if (clientStatus.discoPaneLoaded === true) {
-      console.debug(
+      await browser.taarStudyMonitor.log(
         "Not triggering popup since disco pane has already been loaded",
       );
       return;
@@ -182,7 +181,7 @@ class TAARExperiment {
       gettingInfo.then(async function(tabInfo) {
         // Do not track anything in private browsing mode
         if (tabInfo.incognito) {
-          console.log(
+          await browser.taarStudyMonitor.log(
             "Do not track anything in private browsing mode",
             tabInfo,
           );
@@ -221,7 +220,9 @@ class TAARExperiment {
       );
 
       const updatedClientStatus = await browser.taarStudyMonitor.getClientStatus();
-      console.log("TotalURI: " + updatedClientStatus.totalWebNav);
+      await browser.taarStudyMonitor.log(
+        "TotalURI: " + updatedClientStatus.totalWebNav,
+      );
       if (
         (!updatedClientStatus.sawPopup &&
           updatedClientStatus.totalWebNav <= 3) ||
@@ -260,7 +261,7 @@ class TAARExperiment {
           ) {
             // Do not track anything in private browsing mode
             if (currentActiveTabInfo.incognito) {
-              // console.log("Do not track anything in private browsing mode");
+              // await browser.taarStudyMonitor.log("Do not track anything in private browsing mode");
               return;
             }
 

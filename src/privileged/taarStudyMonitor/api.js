@@ -26,6 +26,30 @@ const PREF_BRANCH = "extensions.taarexpv3";
 const SHIELD_STUDY_ADDON_ID = "taarexpv3@shield.mozilla.org";
 const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
 
+/**
+ * Creates a logger for debugging.
+ *
+ * The pref to control this is "shieldStudy.logLevel"
+ *
+ * @param {string} logPrefix - the name of the Console instance
+ * @param {string} maxLogLevel - level to use by default
+ * @returns {Object} - the Console instance, see gre/modules/Console.jsm
+ */
+function createShieldStudyLogger(logPrefix, maxLogLevel = "Warn") {
+  const prefName = "shieldStudy.logLevel";
+  const ConsoleAPI = ChromeUtils.import(
+    "resource://gre/modules/Console.jsm",
+    {},
+  ).ConsoleAPI;
+  return new ConsoleAPI({
+    maxLogLevel,
+    maxLogLevelPref: prefName,
+    prefix: logPrefix,
+  });
+}
+
+const logger = createShieldStudyLogger(PREF_BRANCH + ".taarStudyMonitor");
+
 class Client {
   constructor(apiEventEmitter, Helpers) {
     this.apiEventEmitter = apiEventEmitter;
@@ -60,7 +84,7 @@ class Client {
   }
 
   persistStatus() {
-    console.log("persistStatus", JSON.stringify(this.status));
+    logger.debug("persistStatus", JSON.stringify(this.status));
     Preferences.set(CLIENT_STATUS_PREF, JSON.stringify(this.status));
   }
 
@@ -175,9 +199,7 @@ this.taarStudyMonitor = class extends ExtensionAPI {
               aboutAddonsDomain += "&clientId=" + clientId;
             }
 
-            console.debug(
-              `Study-specific add-ons domain: ${aboutAddonsDomain}`,
-            );
+            logger.log(`Study-specific add-ons domain: ${aboutAddonsDomain}`);
 
             Preferences.set(
               "extensions.webservice.discoverURL",
@@ -209,6 +231,10 @@ this.taarStudyMonitor = class extends ExtensionAPI {
           // remove artifacts of this study
           const defaultBranch = Services.prefs.getDefaultBranch(null);
           defaultBranch.deleteBranch(PREF_BRANCH);
+        },
+
+        log: async function log(...args) {
+          logger.log(...args);
         },
 
         onAddonChangeTelemetry: new EventManager(

@@ -1,11 +1,10 @@
 document.addEventListener("click", e => {
   function handleResponse(message) {
-    console.log(`Message from the privileged script: ${message.response}`);
-    browser.storage.local.set({ sawPopup: true });
+    console.debug(`Message from the privileged script: ${message.response}`);
   }
 
   function handleError(error) {
-    console.log(error);
+    console.error(error);
   }
 
   function tellBackground(message) {

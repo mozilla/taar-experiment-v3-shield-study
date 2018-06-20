@@ -48,6 +48,39 @@ Privileged code used to monitor the study
 
 **Parameters**
 
+### `browser.taarStudyMonitor.log( value1, value2, value3, value4, value5 )`
+
+**Parameters**
+
+* `value1`
+
+  * type: value1
+  * $ref:
+  * optional: false
+
+* `value2`
+
+  * type: value2
+  * $ref:
+  * optional: true
+
+* `value3`
+
+  * type: value3
+  * $ref:
+  * optional: true
+
+* `value4`
+
+  * type: value4
+  * $ref:
+  * optional: true
+
+* `value5`
+  * type: value5
+  * $ref:
+  * optional: true
+
 ## Events
 
 ### `browser.taarStudyMonitor.onAddonChangeTelemetry ()` Event
@@ -82,6 +115,9 @@ Fires when addon-changes are ready to be reported via telemetry.
       "type": "integer"
     },
     {
+      "type": "object"
+    },
+    {
       "type": "string"
     }
   ],
@@ -96,9 +132,21 @@ Fires when addon-changes are ready to be reported via telemetry.
       "type": "integer"
     },
     {
+      "type": "object"
+    },
+    {
       "type": "string"
     }
   ],
-  "testcases": [null, "a string", true, false, 123]
+  "testcases": [
+    null,
+    "a string",
+    true,
+    false,
+    123,
+    {
+      "foo": "bar"
+    }
+  ]
 }
 ```

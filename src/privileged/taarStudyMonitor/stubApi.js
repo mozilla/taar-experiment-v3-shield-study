@@ -61,6 +61,12 @@ this.taarStudyMonitor = class extends ExtensionAPI {
           return undefined;
         },
 
+        /* @TODO no description given */
+        log: async function log(value1, value2, value3, value4, value5) {
+          console.log("called log value1, value2, value3, value4, value5");
+          return undefined;
+        },
+
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
         /* Fires when addon-changes are ready to be reported via telemetry. */
         onAddonChangeTelemetry: new EventManager(

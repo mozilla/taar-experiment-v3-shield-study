@@ -73,6 +73,25 @@
     async: true
     description: ''
     parameters: []
+  - name: log
+    type: function
+    async: true
+    description: ''
+    parameters:
+    - name: value1
+      type: 'any'
+    - name: value2
+      type: 'any'
+      optional: true
+    - name: value3
+      type: 'any'
+      optional: true
+    - name: value4
+      type: 'any'
+      optional: true
+    - name: value5
+      type: 'any'
+      optional: true
 
   events:
   - name: onAddonChangeTelemetry

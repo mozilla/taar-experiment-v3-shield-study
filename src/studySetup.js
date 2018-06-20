@@ -110,7 +110,9 @@ const locales = new Set([
 async function isEligible() {
   // Users with private browsing on autostart are not eligible
   if (await browser.privacyContext.permanentPrivateBrowsing()) {
-    console.log("Permanent private browsing, exiting study");
+    await browser.taarStudyMonitor.log(
+      "Permanent private browsing, exiting study",
+    );
     return false;
   }
 
@@ -119,7 +121,7 @@ async function isEligible() {
     .getUILanguage()
     .replace("_", "-")
     .toLowerCase();
-  console.log("locale", locale);
+  await browser.taarStudyMonitor.log("locale", locale);
   return locales.has(locale);
 
   // Note: Since 1.0.13, we are leaving the profile age requirements fully up to Normandy targeting
