@@ -48,13 +48,21 @@ describe("feature telemetry", function() {
       assert(studyPings.length > 0, "at least one shield telemetry ping");
     });
 
-    it("telemetry", function() {
+    it("telemetry contents is as expected", function() {
       // Telemetry:  order, and summary of pings is good.
       const filteredPings = studyPings.filter(
         ping => ping.type === "shield-study-addon",
       );
 
-      const observed = utils.telemetry.summarizePings(filteredPings);
+      const maskedPings = filteredPings.map(p => {
+        // prevent irrelevant comparisons of dynamic variables
+        if (p.payload.data.attributes && p.payload.data.attributes.startTime) {
+          p.payload.data.attributes.startTime = "***";
+        }
+        return p;
+      });
+
+      const observed = utils.telemetry.summarizePings(maskedPings);
       const expected = [
         [
           "shield-study-addon",
