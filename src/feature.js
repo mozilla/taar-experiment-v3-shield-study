@@ -18,6 +18,9 @@ class TAARExperiment {
 
     await browser.taarStudyMonitor.enableTaarInDiscoPane(variation.name);
     browser.runtime.onMessage.addListener(TAARExperiment.popupMessageListener);
+    browser.taarStudyMonitor.onAddonChangeTelemetry.addListener(
+      TAARExperiment.addonChangeTelemetryListener,
+    );
 
     const clientStatus = await browser.taarStudyMonitor.getClientStatus();
     await browser.taarStudyMonitor.log("clientStatus", clientStatus);
@@ -43,6 +46,11 @@ class TAARExperiment {
       TAARExperiment.notifyClickedCloseButton();
       sendReply({ response: "Clicked discovery pane button" });
     }
+  }
+
+  static async addonChangeTelemetryListener(dataOut) {
+    await browser.taarStudyMonitor.log("addonChangeTelemetryListener", dataOut);
+    await TAARExperiment.notifyViaTelemetry(dataOut);
   }
 
   static async firstRun() {

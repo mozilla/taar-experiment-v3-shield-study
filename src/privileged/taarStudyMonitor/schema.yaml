@@ -96,7 +96,7 @@
   events:
   - name: onAddonChangeTelemetry
     type: function
-    description: Fires when addon-changes are ready to be reported via telemetry.
+    description: Fires when add-on changes are ready to be reported via telemetry.
     parameters:  # for the callback
     - name: dataOut
       type: object

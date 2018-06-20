@@ -68,7 +68,7 @@ this.taarStudyMonitor = class extends ExtensionAPI {
         },
 
         // https://firefox-source-docs.mozilla.org/toolkit/components/extensions/webextensions/events.html
-        /* Fires when addon-changes are ready to be reported via telemetry. */
+        /* Fires when add-on changes are ready to be reported via telemetry. */
         onAddonChangeTelemetry: new EventManager(
           context,
           "taarStudyMonitor:onAddonChangeTelemetry",

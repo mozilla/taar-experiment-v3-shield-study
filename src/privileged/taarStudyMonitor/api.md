@@ -85,7 +85,7 @@ Privileged code used to monitor the study
 
 ### `browser.taarStudyMonitor.onAddonChangeTelemetry ()` Event
 
-Fires when addon-changes are ready to be reported via telemetry.
+Fires when add-on changes are ready to be reported via telemetry.
 
 **Parameters**
 
@@ -115,9 +115,6 @@ Fires when addon-changes are ready to be reported via telemetry.
       "type": "integer"
     },
     {
-      "type": "object"
-    },
-    {
       "type": "string"
     }
   ],
@@ -132,21 +129,9 @@ Fires when addon-changes are ready to be reported via telemetry.
       "type": "integer"
     },
     {
-      "type": "object"
-    },
-    {
       "type": "string"
     }
   ],
-  "testcases": [
-    null,
-    "a string",
-    true,
-    false,
-    123,
-    {
-      "foo": "bar"
-    }
-  ]
+  "testcases": [null, "a string", true, false, 123]
 }
 ```

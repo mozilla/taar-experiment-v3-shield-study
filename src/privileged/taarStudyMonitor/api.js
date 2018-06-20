@@ -135,9 +135,15 @@ class Client {
         TelemetryEnvironment.currentEnvironment,
         client.Helpers,
       );
-      const uri = client.Helpers.bucketURI(
-        Services.wm.getMostRecentWindow("navigator:browser").gBrowser.currentURI
-          .asciiSpec,
+      const uri = Services.wm.getMostRecentWindow("navigator:browser").gBrowser
+        .currentURI.asciiSpec;
+      const bucketedUri = client.Helpers.bucketURI(uri);
+
+      logger.log(
+        "Add-on change - addonChanges, uri, bucketedUri",
+        addonChanges,
+        uri,
+        bucketedUri,
       );
 
       if (addonChanges.lastInstalled) {
@@ -146,7 +152,7 @@ class Client {
         // send telemetry
         const dataOut = {
           addon_id: String(addonChanges.lastInstalled),
-          srcURI: String(uri),
+          srcURI: String(bucketedUri),
           pingType: "install",
         };
         client.apiEventEmitter.emit("AddonChangeTelemetry", dataOut);
@@ -156,7 +162,7 @@ class Client {
         // send telemetry
         const dataOut = {
           addon_id: String(addonChanges.lastDisabledOrUninstalled),
-          srcURI: String(uri),
+          srcURI: String(bucketedUri),
           pingType: "uninstall",
         };
         client.apiEventEmitter.emit("AddonChangeTelemetry", dataOut);
@@ -241,8 +247,8 @@ this.taarStudyMonitor = class extends ExtensionAPI {
           context,
           "taarStudyMonitor:onAddonChangeTelemetry",
           fire => {
-            const listener = value => {
-              fire.async(value);
+            const listener = (eventReference, dataOut) => {
+              fire.async(dataOut);
             };
             apiEventEmitter.on("AddonChangeTelemetry", listener);
             return () => {
