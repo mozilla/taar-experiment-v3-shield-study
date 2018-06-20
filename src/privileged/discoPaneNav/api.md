@@ -8,6 +8,10 @@ Gives ability to navigate to disco pane
 
 **Parameters**
 
+### `browser.discoPaneNav.notifyLoaded( )`
+
+**Parameters**
+
 ## Events
 
 (None)

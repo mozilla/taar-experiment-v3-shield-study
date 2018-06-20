@@ -11,7 +11,7 @@ ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
 // eslint-disable-next-line no-undef
 // const { EventManager } = ExtensionCommon;
 // eslint-disable-next-line no-undef
-// const { EventEmitter } = ExtensionUtils;
+const { ExtensionError } = ExtensionUtils;
 
 // eslint-disable-next-line no-undef
 XPCOMUtils.defineLazyModuleGetter(
@@ -19,20 +19,6 @@ XPCOMUtils.defineLazyModuleGetter(
   "BrowserWindowTracker",
   "resource:///modules/BrowserWindowTracker.jsm",
 );
-
-/** Return most recent NON-PRIVATE browser window, so that we can
- * manipulate chrome elements on it.
- */
-
-/*
-function getMostRecentBrowserWindow() {
-  return BrowserWindowTracker.getTopWindow({
-    private: false,
-    allowPopups: false,
-  });
-}
-getMostRecentBrowserWindow();
-*/
 
 function getPageActionUrlbarIcon() {
   // eslint-disable-next-line no-undef
@@ -57,7 +43,7 @@ function getPageActionUrlbarIcon() {
   return pageActionUrlbarIcon;
 }
 
-class PageActionUrlbarIconElementNotFoundError extends Error {
+class PageActionUrlbarIconElementNotFoundError extends ExtensionError {
   constructor(debugInfo) {
     const message = `"Error: TAAR V3 study add-on page action element not found. Debug content: window.document, pageActionUrlbarIcon, all urlbar page action classed elements: ${debugInfo.toString()}`;
     super(message);

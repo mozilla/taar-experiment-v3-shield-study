@@ -1,9 +1,6 @@
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(feature)" }]*/
 /* eslint no-console:off */
 
-// to track temporary changing of preference necessary to have about:addons lead to discovery pane directly
-let currentExtensionsUiLastCategoryPreferenceValue = false;
-
 class TAARExperiment {
   constructor() {}
 
@@ -25,7 +22,7 @@ class TAARExperiment {
 
     if (isFirstRun) {
       if (clientStatus.startTime === null) {
-        await this.firstRun();
+        await TAARExperiment.firstRun();
       }
     }
 
@@ -35,8 +32,15 @@ class TAARExperiment {
   }
 
   static popupMessageListener(msg, sender, sendReply) {
+    console.debug(
+      "popupMessageListener - msg, sender, sendReply",
+      msg,
+      sender,
+      sendReply,
+    );
+
     if (msg["clicked-disco-button"]) {
-      TAARExperiment.notifyClickedCloseButton();
+      TAARExperiment.notifyClickedDiscoButton();
       sendReply({ response: "Closed pop-up" });
     } else if (msg["clicked-close-button"]) {
       TAARExperiment.notifyClickedCloseButton();
@@ -44,7 +48,7 @@ class TAARExperiment {
     }
   }
 
-  async firstRun() {
+  static async firstRun() {
     console.debug("init received");
     await browser.taarStudyMonitor.setAndPersistClientStatus(
       "startTime",
@@ -58,7 +62,9 @@ class TAARExperiment {
   }
 
   static monitorNavigation() {
-    // console.log("Monitoring navigation to be able to show popup after 3 page visits");
+    console.log(
+      "Monitoring navigation to be able to show popup after 3 page visits",
+    );
     browser.webNavigation.onCompleted.addListener(
       TAARExperiment.webNavListener,
       {
@@ -68,7 +74,9 @@ class TAARExperiment {
   }
 
   static notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl() {
-    // console.log("Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds");
+    console.log(
+      "Checking the active tab every second to be able to increment aboutAddonsActiveTabSeconds",
+    );
 
     const interval = 1000;
 
@@ -87,7 +95,7 @@ class TAARExperiment {
             ) {
               // Do not track anything in private browsing mode
               if (currentActiveTabInfo.incognito) {
-                // console.log("Do not track anything in private browsing mode");
+                console.log("Do not track anything in private browsing mode");
                 return;
               }
 
@@ -109,23 +117,12 @@ class TAARExperiment {
       pingType: "disco-pane-loaded",
     };
     await TAARExperiment.notifyViaTelemetry(dataOut);
-    // restore preference if we changed it temporarily
-    if (
-      typeof currentExtensionsUiLastCategoryPreferenceValue !== "undefined" &&
-      currentExtensionsUiLastCategoryPreferenceValue !== false
-    ) {
-      browser.prefs.set(
-        "extensions.ui.lastCategory",
-        currentExtensionsUiLastCategoryPreferenceValue,
-      );
-    }
+    await browser.discoPaneNav.notifyLoaded();
   }
 
   static async triggerPopup() {
-    if (
-      (await browser.taarStudyMonitor.getClientStatus().discoPaneLoaded) ===
-      true
-    ) {
+    const clientStatus = await browser.taarStudyMonitor.getClientStatus();
+    if (clientStatus.discoPaneLoaded === true) {
       console.debug(
         "Not triggering popup since disco pane has already been loaded",
       );
@@ -147,17 +144,7 @@ class TAARExperiment {
   }
 
   static async notifyClickedDiscoButton() {
-    // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
-    currentExtensionsUiLastCategoryPreferenceValue = browser.prefs.get(
-      "extensions.ui.lastCategory",
-    );
-    browser.prefs.set("extensions.ui.lastCategory", "addons://discover/");
-
-    await browser.taarStudyMonitor.navigateToAboutAddons();
-    // navigate to about:addons
-
     await browser.discoPaneNav.goto();
-
     await browser.taarStudyMonitor.setAndPersistClientStatus(
       "clickedButton",
       true,
@@ -179,7 +166,7 @@ class TAARExperiment {
   }
 
   static webNavListener(webNavInfo) {
-    // console.log("webNavListener - webNavInfo:", webNavInfo);
+    // console.debug("webNavListener - webNavInfo:", webNavInfo);
     TAARExperiment.webNavListener_trackDiscoPaneLoading(webNavInfo);
     TAARExperiment.webNavListener_popupRelated(webNavInfo);
   }
@@ -192,15 +179,18 @@ class TAARExperiment {
     ) {
       // Only send message if not in incognito tab
       const gettingInfo = browser.tabs.get(webNavInfo.tabId);
-      gettingInfo.then(function(tabInfo) {
+      gettingInfo.then(async function(tabInfo) {
         // Do not track anything in private browsing mode
         if (tabInfo.incognito) {
-          // console.log("Do not track anything in private browsing mode", tabInfo);
+          console.log(
+            "Do not track anything in private browsing mode",
+            tabInfo,
+          );
           return;
         }
 
-        this.notifyDiscoPaneLoaded();
-      });
+        await TAARExperiment.notifyDiscoPaneLoaded();
+      }, handleError);
     }
   }
 
@@ -231,7 +221,7 @@ class TAARExperiment {
       );
 
       const updatedClientStatus = await browser.taarStudyMonitor.getClientStatus();
-      // console.log("TotalURI: " + updatedClientStatus.totalWebNav);
+      console.log("TotalURI: " + updatedClientStatus.totalWebNav);
       if (
         (!updatedClientStatus.sawPopup &&
           updatedClientStatus.totalWebNav <= 3) ||

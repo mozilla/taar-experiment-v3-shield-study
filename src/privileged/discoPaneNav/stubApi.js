@@ -17,6 +17,12 @@ this.discoPaneNav = class extends ExtensionAPI {
           console.log("called goto ");
           return undefined;
         },
+
+        /* @TODO no description given */
+        notifyLoaded: async function notifyLoaded() {
+          console.log("called notifyLoaded ");
+          return undefined;
+        },
       },
     };
   }

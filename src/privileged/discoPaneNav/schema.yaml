@@ -22,3 +22,8 @@
     async: true
     description: ''
     parameters: []
+  - name: notifyLoaded
+    type: 'function'
+    async: true
+    description: ''
+    parameters: []

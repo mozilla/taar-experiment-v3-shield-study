@@ -60,6 +60,7 @@ class Client {
   }
 
   persistStatus() {
+    console.log("persistStatus", JSON.stringify(this.status));
     Preferences.set(CLIENT_STATUS_PREF, JSON.stringify(this.status));
   }
 
