@@ -37,7 +37,7 @@ module.exports = function(config) {
       "src/helpers.js",
       "test/unit/*.spec.js",
     ],
-    preprocessors: { "src/feature.js": ["babel"] },
+    preprocessors: { "src/helpers.js": ["babel"] },
     plugins: [
       "karma-babel-preprocessor",
       "karma-chai",
