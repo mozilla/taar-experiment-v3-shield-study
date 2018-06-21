@@ -51,11 +51,11 @@ const baseStudySetup = {
   // Equal weighting for each of the 3 variations
   weightedVariations: [
     {
-      name: "linear-taar",
+      name: "intervention-a",
       weight: 1,
     },
     {
-      name: "ensemble-taar",
+      name: "intervention-b",
       weight: 1,
     },
     {

@@ -29,7 +29,7 @@
 
 * Navigate to _about:config_ and set the following preferences. (If a preference does not exist, create it be right-clicking in the white area and selecting New -> String)
 * Set `shieldStudy.logLevel` to `All`. This permits shield-add-on log output in browser console.
-* Set `extensions.taarexpv3_shield_mozilla_org.test.variationName` to `ensemble-taar` or `linear-taar`.
+* Set `extensions.taarexpv3_shield_mozilla_org.test.variationName` to `intervention-a`, `intervention-b` or `control`.
 * Go to <https://bugzilla.mozilla.org/show_bug.cgi?id=1469546> and install the latest add-on zip file
 
 ## Expected User Experience / Functionality
