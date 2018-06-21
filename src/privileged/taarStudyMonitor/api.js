@@ -22,9 +22,7 @@ const { TelemetryEnvironment } = ChromeUtils.import(
   "resource://gre/modules/TelemetryEnvironment.jsm",
 );
 
-const PREF_BRANCH = "extensions.taarexpv3";
-const SHIELD_STUDY_ADDON_ID = "taarexpv3@shield.mozilla.org";
-const CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
+let PREF_BRANCH, SHIELD_STUDY_ADDON_ID, CLIENT_STATUS_PREF, logger;
 
 /**
  * Creates a logger for debugging.
@@ -47,8 +45,6 @@ function createShieldStudyLogger(logPrefix, maxLogLevel = "Warn") {
     prefix: logPrefix,
   });
 }
-
-const logger = createShieldStudyLogger(PREF_BRANCH + ".taarStudyMonitor");
 
 class Client {
   constructor(apiEventEmitter, Helpers) {
@@ -176,6 +172,18 @@ class Client {
 
 this.taarStudyMonitor = class extends ExtensionAPI {
   getAPI(context) {
+    const { extension } = this;
+    // Copied here from tree
+    function makeWidgetId(id) {
+      id = id.toLowerCase();
+      return id.replace(/[^a-z0-9_-]/g, "_");
+    }
+    SHIELD_STUDY_ADDON_ID = extension.manifest.applications.gecko.id;
+    const widgetId = makeWidgetId(SHIELD_STUDY_ADDON_ID);
+    PREF_BRANCH = `extensions.${widgetId}`;
+    CLIENT_STATUS_PREF = PREF_BRANCH + ".client-status";
+    logger = createShieldStudyLogger(PREF_BRANCH + ".taarStudyMonitor");
+
     // unit-tested study helpers
     const { Helpers } = ChromeUtils.import(
       context.extension.rootURI.resolve("helpers.js"),
