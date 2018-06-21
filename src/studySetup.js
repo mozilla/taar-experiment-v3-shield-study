@@ -51,16 +51,16 @@ const baseStudySetup = {
   // Equal weighting for each of the 3 variations
   weightedVariations: [
     {
+      name: "control",
+      weight: 1,
+    },
+    {
       name: "intervention-a",
       weight: 1,
     },
     {
       name: "intervention-b",
-      weight: 1,
-    },
-    {
-      name: "control",
-      weight: 1,
+      weight: 2,
     },
   ],
 
