@@ -239,7 +239,6 @@ class TAARExperiment {
         // client has not seen popup
         // arbitrary condition for now
         if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
-          browser.storage.local.set({ "PA-tabId": tabId });
           browser.pageAction.show(tabId);
           browser.pageAction.setPopup({
             tabId,
@@ -251,9 +250,7 @@ class TAARExperiment {
         }
       } else {
         // client has seen the popup
-        browser.storage.local.get("PA-tabId").then(function(result2) {
-          browser.pageAction.hide(result2["PA-tabId"]);
-        });
+        await browser.pageActionRemoteControl.hide();
       }
     };
 
