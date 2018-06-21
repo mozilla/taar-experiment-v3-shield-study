@@ -12,6 +12,8 @@
 * [Loading the Web Extension in Firefox](#loading-the-web-extension-in-firefox)
 * [Seeing the add-on in action](#seeing-the-add-on-in-action)
 * [Automated testing](#automated-testing)
+  * [Unit tests](#unit-tests)
+  * [Functional tests](#functional-tests)
 * [Directory Structure and Files](#directory-structure-and-files)
 * [General Shield Study Engineering](#general-shield-study-engineering)
 

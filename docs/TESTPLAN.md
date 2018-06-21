@@ -10,10 +10,12 @@
   * [Preparations](#preparations)
   * [Install the add-on and enroll in the study](#install-the-add-on-and-enroll-in-the-study)
 * [Expected User Experience / Functionality](#expected-user-experience--functionality)
+  * [Example of how the popup appears when testing in Firefox](#example-of-how-the-popup-appears-when-testing-in-firefox)
   * [Do these tests](#do-these-tests)
   * [Design](#design)
   * [Note: checking "sent Telemetry is correct"](#note-checking-sent-telemetry-is-correct)
 * [Debug](#debug)
+* [Peculiarities](#peculiarities)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
