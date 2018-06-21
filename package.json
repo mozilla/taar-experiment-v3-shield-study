@@ -1,7 +1,7 @@
 {
   "name": "taarexpv3",
   "description": "Shield Study: TAAR Experiment V3",
-  "version": "1.0.14",
+  "version": "3.0.0",
   "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "bugs": {
     "url": "https://github.com/motin/taar-experiment-v3-shield-study/issues"
