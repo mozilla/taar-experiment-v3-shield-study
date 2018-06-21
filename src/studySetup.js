@@ -1,5 +1,4 @@
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "getStudySetup" }]*/
-/* global Preferences, TelemetryEnvironment */
 
 /**
  *  Overview:
@@ -48,7 +47,7 @@ const baseStudySetup = {
     },
   },
 
-  // Equal weighting for each of the 3 variations
+  // Weightings for the study variations
   weightedVariations: [
     {
       name: "control",

@@ -85,7 +85,6 @@
     "generate:stubApi:privacyContext": "cd ./src/privileged/privacyContext && node ../../../node_modules/shield-studies-addon-utils/weeUtils/generateStubApi.js ./schema.json > stubApi.js",
     "generate:stubApi:taarStudyMonitor": "cd ./src/privileged/taarStudyMonitor && node ../../../node_modules/shield-studies-addon-utils/weeUtils/generateStubApi.js ./schema.json > stubApi.js",
     "generate:stubApi:testingOverrides": "cd ./src/privileged/testingOverrides && node ../../../node_modules/shield-studies-addon-utils/weeUtils/generateStubApi.js ./schema.json > stubApi.js",
-    "harness_test": "npm run test:func -- --retry 2 --reporter json",
     "lint": "npm-run-all lint:*",
     "lint:eslint": "npm run eslint",
     "lint:fixpack": "fixpack",
