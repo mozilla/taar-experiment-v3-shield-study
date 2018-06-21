@@ -1,0 +1,101 @@
+* {
+  box-sizing: border-box;
+}
+
+/* mostly from https://github.com/johngruen/project-dfa/tree/master/src */
+body {
+  color: #0c0c0d;
+  font: message-box;
+}
+
+/*=====MINIMAL RESETS, ADJUSTMENTS, ETC =====*/
+p {
+  font-size: 13px;
+  line-height: 1.4;
+  margin: 0.5em 0 0 0;
+}
+
+/* specific heights we like */
+
+h1 {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+body {
+  width: 425px;
+  padding: 0 0;
+  margin: 0 0;
+  overflow: hidden;
+}
+
+#topbar {
+  height: 16px;
+}
+
+#topsection {
+  display: flex;
+  padding: 0 16px 24px 16px;
+}
+
+#picture {
+  margin-right: 16px;
+}
+
+#icon {
+  width: 32px;
+  height: 33px;
+}
+
+#header {
+  text-align: left;
+  margin: 8px 0;
+}
+
+#bottomsection {
+  height: 48px;
+  background: #fff;
+}
+
+#button-container {
+  display: flex;
+}
+
+.button-style {
+  padding: 8px;
+  font-size: 13px;
+  line-height: 1.25;
+  text-align: center;
+  flex: 1 0 50%;
+  border: none;
+  border-top: solid 1px rgba(12, 12, 13, 0.1);
+  min-height: 48px;
+}
+
+#browse-addons-button {
+  color: #fff;
+  background-color: #0060df;
+}
+
+#browse-addons-button:hover {
+  background-color: #003eaa;
+}
+
+#browse-addons-button:hover:active {
+  background-color: #002275;
+}
+
+#close-button {
+  background-color: rgba(12, 12, 13, 0.1);
+  color: #0c0c0d;
+  text-align: center;
+}
+
+#close-button:hover {
+  background-color: rgba(12, 12, 13, 0.2);
+}
+
+#close-button:hover:active {
+  background-color: rgba(12, 12, 13, 0.3);
+}

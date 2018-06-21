@@ -1,0 +1,15 @@
+{
+  "extensionName": {
+    "message": "Active Shield Study: TAAR Experiment v3",
+    "description": "Name of the extension"
+  },
+  "extensionDescription": {
+    "message":
+      "The TAAR v3 (Telemetry-Aware Addon Recommender) extension is automatically installed by Mozilla to help us evaluate prototype improvements to the about:addons user experience. To change your study enrollment preferences please navigate to about:studies. More information about the TAAR project can be found at https://github.com/mozilla/taar",
+    "description": "Description of the extension."
+  },
+  "buttonTitle": {
+    "message": "Add-on recommendations",
+    "description": "Description shown on the page action icon when hovered."
+  }
+}

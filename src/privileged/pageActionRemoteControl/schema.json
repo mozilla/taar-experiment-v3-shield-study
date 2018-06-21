@@ -1,0 +1,23 @@
+[
+  {
+    "namespace": "pageActionRemoteControl",
+    "description":
+      "Allows the web extension to interact with its page action without requiring user input",
+    "functions": [
+      {
+        "name": "show",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "hide",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      }
+    ]
+  }
+]

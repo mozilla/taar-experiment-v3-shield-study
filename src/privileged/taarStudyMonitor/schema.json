@@ -1,0 +1,152 @@
+[
+  {
+    "namespace": "taarStudyMonitor",
+    "description": "Privileged code used to monitor the study",
+    "types": [
+      {
+        "id": "AnyOrdinaryValue",
+        "$schema": "http://json-schema.org/draft-04/schema",
+        "oneOf": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "choices": [
+          {
+            "type": "null"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "testcases": [null, "a string", true, false, 123]
+      }
+    ],
+    "functions": [
+      {
+        "name": "onFirstRunOnly",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "enableTaarInDiscoPane",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": [
+          {
+            "name": "variationName",
+            "type": "string"
+          }
+        ]
+      },
+      {
+        "name": "monitorAddonChanges",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "setAndPersistClientStatus",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": [
+          {
+            "name": "key",
+            "type": "string"
+          },
+          {
+            "name": "value",
+            "$ref": "AnyOrdinaryValue"
+          }
+        ]
+      },
+      {
+        "name": "getClientStatus",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "incrementAndPersistClientStatusAboutAddonsActiveTabSeconds",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "reset",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": []
+      },
+      {
+        "name": "log",
+        "type": "function",
+        "async": true,
+        "description": "",
+        "parameters": [
+          {
+            "name": "value1",
+            "type": "any"
+          },
+          {
+            "name": "value2",
+            "type": "any",
+            "optional": true
+          },
+          {
+            "name": "value3",
+            "type": "any",
+            "optional": true
+          },
+          {
+            "name": "value4",
+            "type": "any",
+            "optional": true
+          },
+          {
+            "name": "value5",
+            "type": "any",
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "onAddonChangeTelemetry",
+        "type": "function",
+        "description":
+          "Fires when add-on changes are ready to be reported via telemetry.",
+        "parameters": [
+          {
+            "name": "dataOut",
+            "type": "object"
+          }
+        ]
+      }
+    ]
+  }
+]

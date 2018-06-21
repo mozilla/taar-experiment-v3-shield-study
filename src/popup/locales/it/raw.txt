@@ -1,0 +1,7 @@
+[[[this is for a popup within a web browser, please separate each section with a triple dash (---) for easier parsing ]]]
+
+Personalizza Firefox con i componenti aggiuntivi
+---
+Cambia l’aspetto del browser o aggiungi nuove funzionalità in grado di migliorarne diversi aspetti, dalla gestione dei file multimediali alla protezione della privacy durante la navigazione.
+---
+Chiudi, Esplora i componenti aggiuntivi
