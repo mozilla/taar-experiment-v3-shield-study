@@ -25,10 +25,10 @@
 
 ### Install the add-on and enroll in the study
 
-* Navigate to _about:config_ and set the following preferences. (If a preference does not exist, create it be right-clicking in the white area and selecting New -> String or Integer depending on the type of preference)
-* Set `extensions.legacy.enabled` to `true`. This permits the loading of the embedded Web Extension since new versions of Firefox are becoming restricted to pure Web Extensions only.
-* Set `shield.test.variation` to `ensemble-taar` or `linear-taar`.
-* Go to [https://bugzilla.mozilla.org/show_bug.cgi?id=1428308](https://bugzilla.mozilla.org/show_bug.cgi?id=1428308) and install the latest signed XPI
+* Navigate to _about:config_ and set the following preferences. (If a preference does not exist, create it be right-clicking in the white area and selecting New -> String)
+* Set `shieldStudy.logLevel` to `All`. This permits shield-add-on log output in browser console.
+* Set `shieldStudy.test.variationName` to `ensemble-taar` or `linear-taar`.
+* Go to [https://bugzilla.mozilla.org/show_bug.cgi?id=1469546) and install the latest add-on zip file
 
 ## Expected User Experience / Functionality
 
@@ -40,7 +40,7 @@
 
 **Eligibility test 1 (ineligible locale)**
 
-* Change your locale to one that is not specified in Config.jsm (for instance: Afrikaans `af`)
+* Change your locale to one that is not specified in studySetup.js (for instance: Afrikaans `af`)
 * Install the add-on as per above
 * Verify that the study does not run
 
@@ -82,10 +82,6 @@
 * Uninstall any installed add-on
 * Verify that sent Telemetry is correct upon uninstallation of the add-on
 
-### Bonus
-
-If you happen to have a profile age between 1 and 10 lying around, verify that the study starts without any use of the override preference.
-
 ### Design
 
 Any UI in a Shield study should be consistent with standard Firefox design specifications. These standards can be found at [design.firefox.com](https://design.firefox.com/photon/welcome.html). Firefox logo specifications can be found [here](https://design.firefox.com/photon/visuals/product-identity-assets.html).
@@ -100,7 +96,6 @@ See [TELEMETRY.md](./TELEMETRY.md) for more details on what pings are sent by th
 
 To debug installation and loading of the add-on:
 
-* Navigate to _about:config_ and set `shield.testing.logging.level` to `10`. This permits shield-add-on log output in browser console (If the preference does not exist, create it be right-clicking in the white area and selecting New -> Integer)
 * Open the Browser Console using Firefox's top menu at `Tools > Web Developer > Browser Console`. This will display Shield (loading/telemetry) and log output from the add-on.
 
 ## Peculiarities
