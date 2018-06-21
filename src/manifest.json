@@ -6,7 +6,7 @@
   "applications": {
     "gecko": {
       "id": "taarexpv3@shield.mozilla.org",
-      "strict_min_version": "60.0.1",
+      "strict_min_version": "60.0.1"
     }
   },
   "default_locale": "en-US",
