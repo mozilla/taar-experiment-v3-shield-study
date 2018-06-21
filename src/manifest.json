@@ -50,6 +50,14 @@
         "script": "./privileged/taarStudyMonitor/api.js",
         "paths": [["taarStudyMonitor"]]
       }
+    },
+    "testingOverrides": {
+      "schema": "./privileged/testingOverrides/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "script": "./privileged/testingOverrides/api.js",
+        "paths": [["testingOverrides"]]
+      }
     }
   },
   "permissions": ["storage", "alarms", "webNavigation", "tabs", "management"],
