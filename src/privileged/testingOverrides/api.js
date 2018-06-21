@@ -13,8 +13,6 @@ this.testingOverrides = class extends ExtensionAPI {
     // Copied here from tree
     function makeWidgetId(id) {
       id = id.toLowerCase();
-      // FIXME: This allows for collisions.
-      // WebExt hasn't ever had a problem.
       return id.replace(/[^a-z0-9_-]/g, "_");
     }
 
