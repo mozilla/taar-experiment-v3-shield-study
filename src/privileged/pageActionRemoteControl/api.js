@@ -22,7 +22,6 @@ XPCOMUtils.defineLazyModuleGetter(
 
 this.pageActionRemoteControl = class extends ExtensionAPI {
   getAPI(context) {
-
     const { extension } = this;
     // Copied here from tree
     function makeWidgetId(id) {

@@ -92,11 +92,11 @@ describe("setup of an already expired study should result in endStudy('expired')
     // Set preference that simulates that the study has been running for a very long time already (0 = started running 1970-01-01 00:00:00)
     const addonWidgetId = await utils.ui.addonWidgetId();
     const customPreferences = Object.assign({}, utils.FIREFOX_PREFERENCES);
-    customPreferences[`extensions.${addonWidgetId}.test.firstRunTimestamp`] = String(0);
+    customPreferences[
+      `extensions.${addonWidgetId}.test.firstRunTimestamp`
+    ] = String(0);
 
-    driver = await utils.setupWebdriver.promiseSetupDriver(
-      customPreferences,
-    );
+    driver = await utils.setupWebdriver.promiseSetupDriver(customPreferences);
 
     await utils.setupWebdriver.installAddon(driver);
   });
@@ -167,15 +167,15 @@ describe("setup of a study that expires within a few seconds should result in en
 
     // Set preference that simulates that the study will expire after a few seconds
     const msInOneDay = 60 * 60 * 24 * 1000;
-    const expiresInDays = 7*20; // Needs to be the same as in src/studySetup.js
+    const expiresInDays = 7 * 20; // Needs to be the same as in src/studySetup.js
     const firstRunTimestamp = beginTime - msInOneDay * expiresInDays + 5000;
     const addonWidgetId = await utils.ui.addonWidgetId();
     const customPreferences = Object.assign({}, utils.FIREFOX_PREFERENCES);
-    customPreferences[`extensions.${addonWidgetId}.test.firstRunTimestamp`] = String(firstRunTimestamp);
+    customPreferences[
+      `extensions.${addonWidgetId}.test.firstRunTimestamp`
+    ] = String(firstRunTimestamp);
 
-    driver = await utils.setupWebdriver.promiseSetupDriver(
-      customPreferences,
-    );
+    driver = await utils.setupWebdriver.promiseSetupDriver(customPreferences);
 
     await utils.setupWebdriver.installAddon(driver);
   });
