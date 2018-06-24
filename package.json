@@ -1,13 +1,13 @@
 {
   "name": "taarexpv3",
   "description": "Shield Study: TAAR Experiment V3",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "author": "Fredrik Wollsén <fwollsen@mozilla.com>",
   "bugs": {
     "url": "https://github.com/motin/taar-experiment-v3-shield-study/issues"
   },
   "dependencies": {
-    "shield-studies-addon-utils": "github:mozilla/shield-studies-addon-utils#release/5.0.2"
+    "shield-studies-addon-utils": "github:mozilla/shield-studies-addon-utils#release/5.0.3"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -85,13 +85,12 @@
     "generate:stubApi:privacyContext": "cd ./src/privileged/privacyContext && node ../../../node_modules/shield-studies-addon-utils/weeUtils/generateStubApi.js ./schema.json > stubApi.js",
     "generate:stubApi:taarStudyMonitor": "cd ./src/privileged/taarStudyMonitor && node ../../../node_modules/shield-studies-addon-utils/weeUtils/generateStubApi.js ./schema.json > stubApi.js",
     "generate:stubApi:testingOverrides": "cd ./src/privileged/testingOverrides && node ../../../node_modules/shield-studies-addon-utils/weeUtils/generateStubApi.js ./schema.json > stubApi.js",
-    "harness_test": "npm run test:func -- --retry 2 --reporter json",
     "lint": "npm-run-all lint:*",
     "lint:eslint": "npm run eslint",
     "lint:fixpack": "fixpack",
     "lint:nsp": "nsp check",
     "lint:web-ext-lint": "web-ext lint",
-    "manual-test": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=./dist/active_shield_study_taar_experiment_v3-3.0.0.zip node run-firefox.js",
+    "manual-test": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=./dist/taar_v3_telemetry-aware_addon_recommender_-3.0.1.zip node run-firefox.js",
     "postformat": "npm run eslint-fix && fixpack",
     "prebuild": "npm run bundle-utils",
     "prestart": "npm run bundle-utils",
@@ -100,7 +99,7 @@
     "sign": "echo 'TBD, see: https://bugzilla.mozilla.org/show_bug.cgi?id=1407757'",
     "start": "web-ext run --no-reload",
     "test": "npm-run-all -n test:unit test:func",
-    "test:func": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=./dist/active_shield_study_taar_experiment_v3-3.0.0.zip mocha test/functional/ --bail",
+    "test:func": "FIREFOX_BINARY=${FIREFOX_BINARY:-firefoxdeveloperedition} ADDON_ZIP=./dist/taar_v3_telemetry-aware_addon_recommender_-3.0.1.zip mocha test/functional/ --bail",
     "test:unit": "NODE_ENV=test karma start",
     "watch": "web-ext run"
   }

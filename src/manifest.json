@@ -1,7 +1,7 @@
 {
-  "name": "Active Shield Study: TAAR Experiment V3",
+  "name": "TAAR v3 (Telemetry-Aware Addon Recommender)",
   "description": "__MSG_extensionDescription__",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "manifest_version": 2,
   "applications": {
     "gecko": {

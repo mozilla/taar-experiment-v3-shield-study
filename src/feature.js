@@ -1,5 +1,4 @@
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "(feature)" }]*/
-/* eslint no-console:off */
 
 class TAARExperiment {
   constructor() {}

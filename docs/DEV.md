@@ -35,8 +35,8 @@ npm start
 ## run and reload on filechanges
 npm run watch
 
-# run and reload on filechanges, with a variation/branch set by preference (TODO: requires utils v5.1)
-npm run watch -- --pref extensions.button_icon_preference.variation='kittens'
+# run and reload on filechanges, with a variation/branch set by preference
+npm run watch -- --pref extensions.taarexpv3_shield_mozilla_org.test.variationName=intervention-b
 
 # run and reload on filechanges, with a specific Firefox installation
 npm run watch -- -f "/Applications/Firefox Nightly.app/Contents/MacOS/firefox-bin"
@@ -135,13 +135,11 @@ ln -s Firefox\ Nightly.app FirefoxNightly.app
 npm run test:func
 ```
 
-Runs functional tests using the Selenium driver, verifying the telemetry payload at Firefox startup and add-on installation in a clean profile, then does **optimistic testing** of the _commonest path_ though the study for a user:
-
-Note: This runs in a recently created profile. To have the study run despite the eligibility requirement of having at least 1 day old profiles, a config override is set in place to force the study to run.
-
-Note: The study variation/branch during tests is overridden by a preference (TODO: requires utils v5.1) in the FIREFOX_PREFERENCES section of `test/utils.js`.
+Runs functional tests using the Selenium driver, verifying the telemetry payload at Firefox startup and add-on installation in a clean profile.
 
 Code at [./test/functional/](./test/functional/).
+
+Note: The study variation/branch during tests is overridden by a preference in the FIREFOX_PREFERENCES section of `test/utils.js`.
 
 ## Directory Structure and Files
 

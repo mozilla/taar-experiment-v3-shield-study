@@ -1,5 +1,4 @@
 /* eslint no-unused-vars: ["error", { "varsIgnorePattern": "getStudySetup" }]*/
-/* global Preferences, TelemetryEnvironment */
 
 /**
  *  Overview:
@@ -48,25 +47,25 @@ const baseStudySetup = {
     },
   },
 
-  // Equal weighting for each of the 3 variations
+  // Weightings for the study variations
   weightedVariations: [
+    {
+      name: "control",
+      weight: 1,
+    },
     {
       name: "intervention-a",
       weight: 1,
     },
     {
       name: "intervention-b",
-      weight: 1,
-    },
-    {
-      name: "control",
-      weight: 1,
+      weight: 2,
     },
   ],
 
   // maximum time that the study should run, from the first run
   expire: {
-    days: 21,
+    days: 7 * 20,
   },
 };
 
