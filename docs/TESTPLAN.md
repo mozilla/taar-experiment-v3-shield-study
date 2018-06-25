@@ -84,6 +84,15 @@
 * Uninstall any installed add-on
 * Verify that sent Telemetry is correct upon uninstallation of the add-on
 
+**End study clean up test 1**
+
+* Install the add-on as per above
+* Verify that the study starts
+* Verify that the preference `extensions.webservice.discoverURL` has been annotated with query string parameters `?study=taarexpv3&branch={the-current-branch}`
+* Uninstall the add-on
+* Verify that sent exit Telemetry is correct
+* Verify that the preference `extensions.webservice.discoverURL` no longer is annotated with query string parameters `?study=taarexpv3&branch={the-current-branch}`
+
 ### Design
 
 Any UI in a Shield study should be consistent with standard Firefox design specifications. These standards can be found at [design.firefox.com](https://design.firefox.com/photon/welcome.html). Firefox logo specifications can be found [here](https://design.firefox.com/photon/visuals/product-identity-assets.html).
