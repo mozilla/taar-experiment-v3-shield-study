@@ -4,7 +4,6 @@
 
 /* mostly from https://github.com/johngruen/project-dfa/tree/master/src */
 body {
-  color: #0c0c0d;
   font: message-box;
 }
 
@@ -48,10 +47,6 @@ body {
   height: 33px;
 }
 
-#picture svg path {
-  fill: #0c0c0d;
-}
-
 #header {
   text-align: left;
   margin: 8px 0;
@@ -73,33 +68,69 @@ body {
   text-align: center;
   flex: 1 0 50%;
   border: none;
-  border-top: solid 1px rgba(12, 12, 13, 0.1);
+  border-top: solid 1px;
   min-height: 48px;
 }
 
-#browse-addons-button {
-  color: #fff;
-  background-color: #0060df;
-}
-
-#browse-addons-button:hover {
-  background-color: #003eaa;
-}
-
-#browse-addons-button:hover:active {
-  background-color: #002275;
-}
-
 #close-button {
-  background-color: rgba(12, 12, 13, 0.1);
-  color: #0c0c0d;
   text-align: center;
 }
 
+:root {
+  --default-theme-background-color: #fff;
+  /*
+  --default-theme-highlight-color: #6d6d6f;
+  --default-theme-superhighlight-color: hsla(0, 0%, 80%, 0.45);
+  */
+  --default-theme-color: #0c0c0d;
+  --default-theme-button-style-border-color: rgba(12, 12, 13, 0.1);
+  --default-theme-primary-button-text-color: #fff;
+  --default-theme-primary-button-background-color: #0060df;
+  --default-theme-primary-button-background-color-hover: #003eaa;
+  --default-theme-primary-button-background-color-active: #002275;
+  --default-theme-secondary-button-text-color: #0c0c0d;
+  --default-theme-secondary-button-background-color: rgba(12, 12, 13, 0.1);
+  --default-theme-secondary-button-background-color-hover: rgba(12, 12, 13, 0.2);
+  --default-theme-secondary-button-background-color-active: rgba(12, 12, 13, 0.3);
+}
+
+/* Default (light) theme */
+
+body {
+  background-color: var(--default-theme-background-color);
+  color: var(--default-theme-color);
+}
+
+#picture svg path {
+  fill: var(--default-theme-color);
+}
+
+.button-style {
+  border-color: var(--default-theme-button-style-border-color);
+}
+
+#browse-addons-button {
+  color: var(--default-theme-primary-button-text-color);
+  background-color: var(--default-theme-primary-button-background-color);
+}
+
+#browse-addons-button:hover {
+  background-color: var(--default-theme-primary-button-background-color-hover);
+}
+
+#browse-addons-button:hover:active {
+  background-color: var(--default-theme-primary-button-background-color-active);
+}
+
+#close-button {
+  background-color: var(--default-theme-secondary-button-background-color);
+  color: var(--default-theme-secondary-button-text-color);
+}
+
 #close-button:hover {
-  background-color: rgba(12, 12, 13, 0.2);
+  background-color: var(--default-theme-secondary-button-background-color-hover);
 }
 
 #close-button:hover:active {
-  background-color: rgba(12, 12, 13, 0.3);
+  background-color: var(--default-theme-secondary-button-background-color-active);
 }
