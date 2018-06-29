@@ -78,20 +78,17 @@ body {
 
 :root {
   --default-theme-background-color: #fff;
-  /*
-  --default-theme-highlight-color: #6d6d6f;
-  --default-theme-superhighlight-color: hsla(0, 0%, 80%, 0.45);
-  */
   --default-theme-color: #0c0c0d;
-  --default-theme-button-style-border-color: rgba(12, 12, 13, 0.1);
   --default-theme-primary-button-text-color: #fff;
   --default-theme-primary-button-background-color: #0060df;
   --default-theme-primary-button-background-color-hover: #003eaa;
   --default-theme-primary-button-background-color-active: #002275;
+  --default-theme-primary-button-top-border-color: rgba(12, 12, 13, 0.1);
   --default-theme-secondary-button-text-color: #0c0c0d;
   --default-theme-secondary-button-background-color: rgba(12, 12, 13, 0.1);
   --default-theme-secondary-button-background-color-hover: rgba(12, 12, 13, 0.2);
   --default-theme-secondary-button-background-color-active: rgba(12, 12, 13, 0.3);
+  --default-theme-secondary-button-top-border-color: rgba(12, 12, 13, 0.1);
 }
 
 /* Default (light) theme */
@@ -105,13 +102,10 @@ body {
   fill: var(--default-theme-color);
 }
 
-.button-style {
-  border-color: var(--default-theme-button-style-border-color);
-}
-
 #browse-addons-button {
   color: var(--default-theme-primary-button-text-color);
   background-color: var(--default-theme-primary-button-background-color);
+  border-color: var(--default-theme-primary-button-top-border-color);
 }
 
 #browse-addons-button:hover {
@@ -123,8 +117,9 @@ body {
 }
 
 #close-button {
-  background-color: var(--default-theme-secondary-button-background-color);
   color: var(--default-theme-secondary-button-text-color);
+  background-color: var(--default-theme-secondary-button-background-color);
+  border-color: var(--default-theme-secondary-button-top-border-color);
 }
 
 #close-button:hover {
@@ -133,4 +128,58 @@ body {
 
 #close-button:hover:active {
   background-color: var(--default-theme-secondary-button-background-color-active);
+}
+
+/* Dark theme */
+
+:root {
+  --dark-theme-background-color: rgba(57, 57, 62, 1.0);
+  --dark-theme-color: rgba(251, 251, 251, 1.0);
+  --dark-theme-primary-button-text-color: var(--dark-theme-color);
+  --dark-theme-primary-button-background-color: rgba(19, 128, 246, 1.0);
+  --dark-theme-primary-button-background-color-hover: rgba(14, 93, 201, 1.0);
+  --dark-theme-primary-button-background-color-active: rgba(12, 82, 171, 1.0);
+  --dark-theme-primary-button-top-border-color: rgba(45, 97, 147, 1.0);
+  --dark-theme-secondary-button-text-color: var(--dark-theme-color);
+  --dark-theme-secondary-button-background-color: rgba(74, 73, 79, 1.0);
+  --dark-theme-secondary-button-background-color-hover: rgba(81, 81, 86, 1.0);
+  --dark-theme-secondary-button-background-color-active: rgba(90, 90, 94, 1.0);
+  --dark-theme-secondary-button-top-border-color: rgba(73, 72, 78, 1.0);
+}
+
+body.dark-theme {
+  background-color: var(--dark-theme-background-color);
+  color: var(--dark-theme-color);
+}
+
+body.dark-theme #picture svg path {
+  fill: var(--dark-theme-color);
+}
+
+body.dark-theme #browse-addons-button {
+  color: var(--dark-theme-primary-button-text-color);
+  background-color: var(--dark-theme-primary-button-background-color);
+  border-color: var(--dark-theme-primary-button-top-border-color);
+}
+
+body.dark-theme #browse-addons-button:hover {
+  background-color: var(--dark-theme-primary-button-background-color-hover);
+}
+
+body.dark-theme #browse-addons-button:hover:active {
+  background-color: var(--dark-theme-primary-button-background-color-active);
+}
+
+body.dark-theme #close-button {
+  color: var(--dark-theme-secondary-button-text-color);
+  background-color: var(--dark-theme-secondary-button-background-color);
+  border-color: var(--dark-theme-secondary-button-top-border-color);
+}
+
+body.dark-theme #close-button:hover {
+  background-color: var(--dark-theme-secondary-button-background-color-hover);
+}
+
+body.dark-theme #close-button:hover:active {
+  background-color: var(--dark-theme-secondary-button-background-color-active);
 }
