@@ -19,7 +19,7 @@ for path in glob.glob("./shield-integrated-addon/addons/taar-study/addon/webexte
         <div id="topbar"></div>
         <div id="topsection">
           <div id="picture">
-              <img id="icon" src="../../img/firefoxicon.png" />
+              <img id="icon" src="../../img/extensionsicon.svg" />
           </div>
           <div id="textsection">
             <div id="messagesection">
