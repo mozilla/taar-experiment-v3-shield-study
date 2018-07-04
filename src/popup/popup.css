@@ -77,6 +77,16 @@ body {
 }
 
 :root {
+  --puzzle-icon-fill-color: #30e60b;
+}
+
+#picture svg path {
+  fill: var(--puzzle-icon-fill-color);
+}
+
+/* Default (light) theme */
+
+:root {
   --default-theme-background-color: #fff;
   --default-theme-color: #0c0c0d;
   --default-theme-primary-button-text-color: #fff;
@@ -91,15 +101,9 @@ body {
   --default-theme-secondary-button-top-border-color: rgba(12, 12, 13, 0.1);
 }
 
-/* Default (light) theme */
-
 body {
   background-color: var(--default-theme-background-color);
   color: var(--default-theme-color);
-}
-
-#picture svg path {
-  fill: var(--default-theme-color);
 }
 
 #browse-addons-button {
@@ -150,10 +154,6 @@ body {
 body.dark-theme {
   background-color: var(--dark-theme-background-color);
   color: var(--dark-theme-color);
-}
-
-body.dark-theme #picture svg path {
-  fill: var(--dark-theme-color);
 }
 
 body.dark-theme #browse-addons-button {
