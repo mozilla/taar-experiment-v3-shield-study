@@ -173,9 +173,8 @@ class TAARExperiment {
   }
 
   static async hidePreviouslyShownPageAction() {
-    const foo = await browser.storage.local.get("PA-tabId");
-    console.log("foo", foo);
-    browser.pageAction.hide(foo["PA-tabId"]);
+    const localStorageResult = await browser.storage.local.get("PA-tabId");
+    browser.pageAction.hide(localStorageResult["PA-tabId"]);
   }
 
   static async notifyClickedDiscoButton() {
