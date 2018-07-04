@@ -33,6 +33,11 @@ document.addEventListener("click", e => {
     sending.then(handleResponse, handleError);
   }
 
+  // Only react to primary button clicks
+  if (e.button !== 0) {
+    return;
+  }
+
   if (e.target.id === "browse-addons-button") {
     tellBackground({ "clicked-disco-button": true });
     // Ensure that the popup closes only after button click
@@ -43,3 +48,6 @@ document.addEventListener("click", e => {
     window.close();
   }
 });
+
+// Disable right-click context menu
+document.addEventListener("contextmenu", event => event.preventDefault());
