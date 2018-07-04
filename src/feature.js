@@ -242,8 +242,8 @@ class TAARExperiment {
         "TotalURI: " + updatedClientStatus.totalWebNav,
       );
       if (
-        (!updatedClientStatus.sawPopup &&
-          updatedClientStatus.totalWebNav <= 3)
+        !updatedClientStatus.sawPopup &&
+        updatedClientStatus.totalWebNav <= 3
       ) {
         // client has not seen popup
         // arbitrary condition for now

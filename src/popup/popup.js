@@ -3,12 +3,14 @@ function applyDarkTheme() {
 }
 
 async function checkForDark() {
-  browser.management.getAll().then((extensions) => {
-    for (let extension of extensions) {
+  browser.management.getAll().then(extensions => {
+    for (const extension of extensions) {
       // The user has the default dark theme enabled
-      if (extension.id ===
-        "firefox-compact-dark@mozilla.org@personas.mozilla.org"
-        && extension.enabled) {
+      if (
+        extension.id ===
+          "firefox-compact-dark@mozilla.org@personas.mozilla.org" &&
+        extension.enabled
+      ) {
         applyDarkTheme();
       }
     }
