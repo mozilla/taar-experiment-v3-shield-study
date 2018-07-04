@@ -126,15 +126,32 @@ class TAARExperiment {
     await browser.discoPaneNav.notifyLoaded();
   }
 
-  static async triggerPopup() {
+  static async triggerPopup(webNavInfo) {
     const clientStatus = await browser.taarStudyMonitor.getClientStatus();
     if (clientStatus.discoPaneLoaded === true) {
       await browser.taarStudyMonitor.log(
         "Not triggering popup since disco pane has already been loaded",
       );
+      await browser.pageActionRemoteControl.hide();
       return;
     }
-    await browser.taarStudyMonitor.setAndPersistClientStatus("sawPopup", true);
+    // Show popup
+    const tabId = webNavInfo.tabId;
+    const locale = browser.i18n
+      .getUILanguage()
+      .replace("_", "-")
+      .toLowerCase();
+    browser.pageAction.show(tabId);
+    browser.pageAction.setPopup({
+      tabId,
+      popup: "/popup/locales/" + locale + "/popup.html",
+    });
+    // wait 500ms second to make sure pageAction exists in chrome
+    // so we can run browser.pageActionRemoteControl.show() successfully
+    setTimeout(TAARExperiment.showPopup, 500);
+  }
+
+  static async showPopup() {
     try {
       await browser.pageActionRemoteControl.show();
       // send telemetry
@@ -147,6 +164,7 @@ class TAARExperiment {
         console.error(e);
       }
     }
+    await browser.taarStudyMonitor.setAndPersistClientStatus("sawPopup", true);
   }
 
   static async notifyClickedDiscoButton() {
@@ -212,13 +230,6 @@ class TAARExperiment {
 
       const clientStatus = await browser.taarStudyMonitor.getClientStatus();
 
-      const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
-      const locale = browser.i18n
-        .getUILanguage()
-        .replace("_", "-")
-        .toLowerCase();
-      const tabId = webNavInfo.tabId;
-
       clientStatus.totalWebNav++;
 
       await browser.taarStudyMonitor.setAndPersistClientStatus(
@@ -232,20 +243,12 @@ class TAARExperiment {
       );
       if (
         (!updatedClientStatus.sawPopup &&
-          updatedClientStatus.totalWebNav <= 3) ||
-        forcePopup
+          updatedClientStatus.totalWebNav <= 3)
       ) {
         // client has not seen popup
         // arbitrary condition for now
-        if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
-          browser.pageAction.show(tabId);
-          browser.pageAction.setPopup({
-            tabId,
-            popup: "/popup/locales/" + locale + "/popup.html",
-          });
-          // wait 500ms second to make sure pageAction exists in chrome
-          // so we can pageAction.show() from bootstrap.js
-          setTimeout(TAARExperiment.triggerPopup, 500);
+        if (updatedClientStatus.totalWebNav > 2) {
+          await TAARExperiment.triggerPopup(webNavInfo);
         }
       } else {
         // client has seen the popup
