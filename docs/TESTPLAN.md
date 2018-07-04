@@ -36,7 +36,11 @@
 
 ### Example of how the popup appears when testing in Firefox
 
-![Example of how the popup appears when testing in Firefox](https://user-images.githubusercontent.com/793037/37150760-9cad116c-22db-11e8-822c-9959f70a8257.png)
+Light theme:
+<img width="841" alt="example_domain_and_browser_console_and_1__plugin-container" src="https://user-images.githubusercontent.com/793037/42239477-5688cbb0-7f04-11e8-9203-b608807246bc.png">
+
+Dark theme:
+<img width="841" alt="example_domain_and_browser_console_and_bear" src="https://user-images.githubusercontent.com/793037/42239488-5fb08494-7f04-11e8-8c9f-5fbf0f737aa1.png">
 
 ### Do these tests
 
