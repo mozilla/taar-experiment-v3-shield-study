@@ -137,11 +137,11 @@ class TAARExperiment {
     }
     // Show popup
     const tabId = webNavInfo.tabId;
+    TAARExperiment.showPageActionAndRememberWhereItWasShown(tabId);
     const locale = browser.i18n
       .getUILanguage()
       .replace("_", "-")
       .toLowerCase();
-    browser.pageAction.show(tabId);
     browser.pageAction.setPopup({
       tabId,
       popup: "/popup/locales/" + locale + "/popup.html",
@@ -167,13 +167,25 @@ class TAARExperiment {
     await browser.taarStudyMonitor.setAndPersistClientStatus("sawPopup", true);
   }
 
+  static async showPageActionAndRememberWhereItWasShown(tabId) {
+    browser.pageAction.show(tabId);
+    browser.storage.local.set({ "PA-tabId": tabId });
+  }
+
+  static async hidePreviouslyShownPageAction() {
+    const foo = await browser.storage.local.get("PA-tabId");
+    console.log("foo", foo);
+    browser.pageAction.hide(foo["PA-tabId"]);
+  }
+
   static async notifyClickedDiscoButton() {
     await browser.discoPaneNav.goto();
     await browser.taarStudyMonitor.setAndPersistClientStatus(
       "clickedButton",
       true,
     );
-    browser.pageActionRemoteControl.hide();
+    await browser.pageActionRemoteControl.hide();
+    await TAARExperiment.hidePreviouslyShownPageAction();
     // send telemetry
     const dataOut = {
       pingType: "button-click",
@@ -186,7 +198,8 @@ class TAARExperiment {
       "clickedButton",
       false,
     );
-    browser.pageActionRemoteControl.hide();
+    await browser.pageActionRemoteControl.hide();
+    await TAARExperiment.hidePreviouslyShownPageAction();
   }
 
   static webNavListener(webNavInfo) {
