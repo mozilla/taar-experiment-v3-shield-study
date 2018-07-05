@@ -56,8 +56,8 @@ this.taarStudyMonitor = class extends ExtensionAPI {
         },
 
         /* @TODO no description given */
-        reset: async function reset() {
-          console.log("called reset ");
+        cleanup: async function cleanup() {
+          console.log("called cleanup ");
           return undefined;
         },
 

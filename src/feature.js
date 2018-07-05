@@ -15,21 +15,20 @@ class TAARExperiment {
       return;
     }
 
+    let clientStatus;
+    clientStatus = await browser.taarStudyMonitor.getClientStatus();
+
+    if (isFirstRun || clientStatus.startTime === null) {
+      await TAARExperiment.firstRun();
+      clientStatus = await browser.taarStudyMonitor.getClientStatus();
+    }
+
+    await browser.taarStudyMonitor.log("clientStatus", clientStatus);
     await browser.taarStudyMonitor.enableTaarInDiscoPane(variation.name);
     browser.runtime.onMessage.addListener(TAARExperiment.popupMessageListener);
     browser.taarStudyMonitor.onAddonChangeTelemetry.addListener(
       TAARExperiment.addonChangeTelemetryListener,
     );
-
-    const clientStatus = await browser.taarStudyMonitor.getClientStatus();
-    await browser.taarStudyMonitor.log("clientStatus", clientStatus);
-
-    if (isFirstRun) {
-      if (clientStatus.startTime === null) {
-        await TAARExperiment.firstRun();
-      }
-    }
-
     await browser.taarStudyMonitor.monitorAddonChanges();
     await TAARExperiment.monitorNavigation();
     await TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
@@ -335,9 +334,9 @@ class TAARExperiment {
     const dataOut = {
       pingType: "shutdown",
     };
-    TAARExperiment.notifyViaTelemetry(dataOut);
-
-    await browser.taarStudyMonitor.reset();
+    await TAARExperiment.notifyViaTelemetry(dataOut);
+    // remove artifacts of this study
+    await browser.taarStudyMonitor.cleanup();
   }
 }
 

@@ -195,6 +195,14 @@ this.taarStudyMonitor = class extends ExtensionAPI {
         onFirstRunOnly: async function onFirstRunOnly() {
           // Reset client status during first run = a new study period begins
           client.resetStatus();
+          // Store the previous preference values to be able to restore them after the study has ended
+          const currentAboutAddonsDomain = Preferences.get(
+            "extensions.webservice.discoverURL",
+          );
+          Preferences.set(
+            PREF_BRANCH + ".originalAboutAddonsDomain",
+            currentAboutAddonsDomain,
+          );
         },
 
         enableTaarInDiscoPane: async function enableTaarInDiscoPane(
@@ -241,8 +249,66 @@ this.taarStudyMonitor = class extends ExtensionAPI {
           client.incrementAndPersistClientStatusAboutAddonsActiveTabSeconds();
         },
 
-        reset: async function reset() {
-          // remove artifacts of this study
+        cleanup: async function cleanup() {
+          // Restore original preferences
+          const originalAboutAddonsDomain = Preferences.get(
+            PREF_BRANCH + ".originalAboutAddonsDomain",
+          );
+
+          if (originalAboutAddonsDomain !== undefined) {
+            Preferences.set(
+              "extensions.webservice.discoverURL",
+              originalAboutAddonsDomain,
+            );
+          }
+
+          // Remove our add-on from browser.pageActions.persistedActions
+          // Example expected contents of this preference: {"version":1,"ids":["bookmark","bookmarkSeparator","copyURL","emailLink","addSearchEngine","sendToDevice","shareURL","pocket","screenshots","taarexpv3_shield_mozilla_org","webcompat-reporter-button"],"idsInUrlbar":["pocket","taarexpv3_shield_mozilla_org","bookmark"]}
+          const currentBrowserPageActionsPersistedActions = Preferences.get(
+            "browser.pageActions.persistedActions",
+          );
+
+          if (currentBrowserPageActionsPersistedActions !== undefined) {
+            const removeMatchingArrayItem = (array, search) => {
+              const index = array.indexOf(widgetId);
+              if (index > -1) {
+                array.splice(index, 1);
+              }
+            };
+
+            const parsedBrowserPageActionsPersistedActions = JSON.parse(
+              currentBrowserPageActionsPersistedActions,
+            );
+
+            if (parsedBrowserPageActionsPersistedActions.ids) {
+              removeMatchingArrayItem(
+                parsedBrowserPageActionsPersistedActions.ids,
+                widgetId,
+              );
+            }
+            if (parsedBrowserPageActionsPersistedActions.idsInUrlbar) {
+              removeMatchingArrayItem(
+                parsedBrowserPageActionsPersistedActions.idsInUrlbar,
+                widgetId,
+              );
+            }
+
+            const cleanBrowserPageActionsPersistedActions = JSON.stringify(
+              parsedBrowserPageActionsPersistedActions,
+            );
+
+            if (
+              currentBrowserPageActionsPersistedActions !==
+              parsedBrowserPageActionsPersistedActions
+            ) {
+              Preferences.set(
+                "browser.pageActions.persistedActions",
+                cleanBrowserPageActionsPersistedActions,
+              );
+            }
+          }
+
+          // Remove add-on preference branch
           const defaultBranch = Services.prefs.getDefaultBranch(null);
           defaultBranch.deleteBranch(PREF_BRANCH);
         },

@@ -38,6 +38,7 @@ const FIREFOX_PREFERENCES = {
 // Re-usable test methods from shield-studies-addon-utils
 const { executeJs } = require("shield-studies-addon-utils/testUtils/executeJs");
 const { nav } = require("shield-studies-addon-utils/testUtils/nav");
+const { preferences } = require("./preferences");
 const {
   setupWebdriver,
 } = require("shield-studies-addon-utils/testUtils/setupWebdriver");
@@ -49,6 +50,7 @@ module.exports = {
   FIREFOX_PREFERENCES,
   executeJs,
   nav,
+  preferences,
   setupWebdriver,
   telemetry,
   ui,
