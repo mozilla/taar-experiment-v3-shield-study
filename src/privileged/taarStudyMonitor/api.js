@@ -193,8 +193,8 @@ this.taarStudyMonitor = class extends ExtensionAPI {
     return {
       taarStudyMonitor: {
         onFirstRunOnly: async function onFirstRunOnly() {
-          // reset client status during first run = a new study period begins
-          this.client.resetStatus();
+          // Reset client status during first run = a new study period begins
+          client.resetStatus();
         },
 
         enableTaarInDiscoPane: async function enableTaarInDiscoPane(

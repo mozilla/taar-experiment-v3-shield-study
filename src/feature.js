@@ -54,6 +54,7 @@ class TAARExperiment {
 
   static async firstRun() {
     // console.debug("init received");
+    await browser.taarStudyMonitor.onFirstRunOnly();
     await browser.taarStudyMonitor.setAndPersistClientStatus(
       "startTime",
       String(Date.now()),
