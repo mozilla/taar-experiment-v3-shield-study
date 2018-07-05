@@ -260,6 +260,7 @@ describe("setup of a study that expires within a few seconds should result in en
     let studyPings;
 
     before(async() => {
+      beginTime = Date.now();
       // allow our shield study add-on some time to send initial pings
       await driver.sleep(7000);
       // collect sent pings
