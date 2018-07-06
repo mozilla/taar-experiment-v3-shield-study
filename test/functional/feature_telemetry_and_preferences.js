@@ -6,7 +6,7 @@ process.on("unhandledRejection", r => console.error(r)); // eslint-disable-line 
 const assert = require("assert");
 const utils = require("./utils");
 
-describe("intact preferences", function() {
+describe("feature telemetry and preferences", function() {
   // This gives Firefox time to start, and us a bit longer during some of the tests.
   this.timeout(15000);
 
@@ -71,7 +71,7 @@ describe("intact preferences", function() {
   beforeEach(async() => {});
   afterEach(async() => {});
 
-  describe("start the study", function() {
+  describe("study start", function() {
     const currentPreferences = {};
     before(async() => {
       // allow our shield study add-on some time to get started
@@ -105,33 +105,89 @@ describe("intact preferences", function() {
       // console.log("currentPreferences after installation", currentPreferences);
     });
 
-    it("should have modified the expected preferences", async() => {
-      assert(
-        currentPreferences[
-          "extensions.taarexpv3_shield_mozilla_org.client-status"
-        ].indexOf('{"discoPaneLoaded":false') > -1,
-      );
-      assert.strictEqual(
-        currentPreferences[
-          "extensions.taarexpv3_shield_mozilla_org.test.variationName"
-        ],
-        originalPreferences[
-          "extensions.taarexpv3_shield_mozilla_org.test.variationName"
-        ],
-      );
-      assert(
-        currentPreferences["extensions.webservice.discoverURL"].indexOf(
-          "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%?study=taarexpv3&branch=intervention-a&clientId=",
-        ) > -1,
-      );
-      assert.strictEqual(
-        currentPreferences["browser.pageActions.persistedActions"],
-        '{"version":1,"ids":["bookmark","bookmarkSeparator","copyURL","emailLink","addSearchEngine","sendToDevice","shareURL","pocket","screenshots","webcompat-reporter-button","taarexpv3_shield_mozilla_org"],"idsInUrlbar":["pocket","taarexpv3_shield_mozilla_org","bookmark"]}',
-      );
+    describe("should have started properly", function() {
+      let studyPings;
+
+      before(async() => {
+        // collect sent pings
+        studyPings = await utils.telemetry.getShieldPingsAfterTimestamp(
+          driver,
+          beginTime,
+        );
+        // for debugging tests
+        // console.log("Pings report: ", utils.telemetry.pingsReport(studyPings));
+      });
+
+      it("should have sent at least one shield telemetry ping", async() => {
+        assert(studyPings.length > 0, "at least one shield telemetry ping");
+      });
+
+      it("should have sent the expected telemetry", function() {
+        // Telemetry:  order, and summary of pings is good.
+        const filteredPings = studyPings.filter(
+          ping => ping.type === "shield-study-addon",
+        );
+
+        const maskedPings = filteredPings.map(p => {
+          // prevent irrelevant comparisons of dynamic variables
+          if (
+            p.payload.data.attributes &&
+            p.payload.data.attributes.startTime
+          ) {
+            p.payload.data.attributes.startTime = "***";
+          }
+          return p;
+        });
+
+        const observed = utils.telemetry.summarizePings(maskedPings);
+        const expected = [
+          [
+            "shield-study-addon",
+            {
+              attributes: {
+                aboutAddonsActiveTabSeconds: "0",
+                addon_id: "null",
+                clickedButton: "false",
+                discoPaneLoaded: "false",
+                pingType: "init",
+                sawPopup: "false",
+                srcURI: "null",
+                startTime: "***",
+              },
+            },
+          ],
+        ];
+        assert.deepEqual(expected, observed, "telemetry pings do not match");
+      });
+
+      it("should have modified the expected preferences", async() => {
+        assert(
+          currentPreferences[
+            "extensions.taarexpv3_shield_mozilla_org.client-status"
+          ].indexOf('{"discoPaneLoaded":false') > -1,
+        );
+        assert.strictEqual(
+          currentPreferences[
+            "extensions.taarexpv3_shield_mozilla_org.test.variationName"
+          ],
+          originalPreferences[
+            "extensions.taarexpv3_shield_mozilla_org.test.variationName"
+          ],
+        );
+        assert(
+          currentPreferences["extensions.webservice.discoverURL"].indexOf(
+            "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%?study=taarexpv3&branch=intervention-a&clientId=",
+          ) > -1,
+        );
+        assert.strictEqual(
+          currentPreferences["browser.pageActions.persistedActions"],
+          '{"version":1,"ids":["bookmark","bookmarkSeparator","copyURL","emailLink","addSearchEngine","sendToDevice","shareURL","pocket","screenshots","webcompat-reporter-button","taarexpv3_shield_mozilla_org"],"idsInUrlbar":["pocket","taarexpv3_shield_mozilla_org","bookmark"]}',
+        );
+      });
     });
   });
 
-  describe("end the study", function() {
+  describe("study end", function() {
     const finalPreferences = {};
 
     before(async() => {
@@ -184,25 +240,38 @@ describe("intact preferences", function() {
         // console.log("Pings report: ", utils.telemetry.pingsReport(studyPings));
       });
 
-      it("should have sent exit telemetry after expiry", function() {
+      it("should have sent final telemetry on study end", function() {
         // Telemetry:  order, and summary of pings is good.
         const filteredPings = studyPings.filter(
-          ping => ping.type === "shield-study",
+          ping => ping.type === "shield-study-addon",
         );
 
-        const observed = utils.telemetry.summarizePings(filteredPings);
+        const maskedPings = filteredPings.map(p => {
+          // prevent irrelevant comparisons of dynamic variables
+          if (
+            p.payload.data.attributes &&
+            p.payload.data.attributes.startTime
+          ) {
+            p.payload.data.attributes.startTime = "***";
+          }
+          return p;
+        });
+
+        const observed = utils.telemetry.summarizePings(maskedPings);
         const expected = [
           [
-            "shield-study",
+            "shield-study-addon",
             {
-              study_state: "exit",
-            },
-          ],
-          [
-            "shield-study",
-            {
-              study_state: "expired",
-              study_state_fullname: "expired",
+              attributes: {
+                aboutAddonsActiveTabSeconds: "0",
+                addon_id: "null",
+                clickedButton: "false",
+                discoPaneLoaded: "false",
+                pingType: "shutdown",
+                sawPopup: "false",
+                srcURI: "null",
+                startTime: "***",
+              },
             },
           ],
         ];
