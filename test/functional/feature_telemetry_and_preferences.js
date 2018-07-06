@@ -179,9 +179,10 @@ describe("feature telemetry and preferences", function() {
             "https://discovery.addons.mozilla.org/%LOCALE%/firefox/discovery/pane/%VERSION%/%OS%/%COMPATIBILITY_MODE%?study=taarexpv3&branch=intervention-a&clientId=",
           ) > -1,
         );
-        assert.strictEqual(
-          currentPreferences["browser.pageActions.persistedActions"],
-          '{"version":1,"ids":["bookmark","bookmarkSeparator","copyURL","emailLink","addSearchEngine","sendToDevice","shareURL","pocket","screenshots","webcompat-reporter-button","taarexpv3_shield_mozilla_org"],"idsInUrlbar":["pocket","taarexpv3_shield_mozilla_org","bookmark"]}',
+        assert(
+          currentPreferences["browser.pageActions.persistedActions"].indexOf(
+            "taarexpv3_shield_mozilla_org",
+          ) > -1,
         );
       });
     });
@@ -297,9 +298,10 @@ describe("feature telemetry and preferences", function() {
           finalPreferences["extensions.webservice.discoverURL"],
           originalPreferences["extensions.webservice.discoverURL"],
         );
-        assert.strictEqual(
-          finalPreferences["browser.pageActions.persistedActions"],
-          originalPreferences["browser.pageActions.persistedActions"],
+        assert(
+          finalPreferences["browser.pageActions.persistedActions"].indexOf(
+            "taarexpv3_shield_mozilla_org",
+          ) === -1,
         );
       });
     });
