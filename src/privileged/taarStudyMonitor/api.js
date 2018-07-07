@@ -11,7 +11,8 @@ const { ExtensionUtils } = ChromeUtils.import(
   "resource://gre/modules/ExtensionUtils.jsm",
 );
 const { EventManager } = ExtensionCommon;
-const { EventEmitter } = ExtensionUtils;
+const EventEmitter =
+  ExtensionCommon.EventEmitter || ExtensionUtils.EventEmitter;
 
 const { Preferences } = ChromeUtils.import(
   "resource://gre/modules/Preferences.jsm",
