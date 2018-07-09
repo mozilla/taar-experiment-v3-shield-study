@@ -75,7 +75,7 @@ describe("feature telemetry and preferences", function() {
     const currentPreferences = {};
     before(async() => {
       // allow our shield study add-on some time to get started
-      await driver.sleep(2000);
+      await driver.sleep(1000);
 
       // check preferences after study add-on installation
       currentPreferences[
