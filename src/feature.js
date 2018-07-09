@@ -15,21 +15,20 @@ class TAARExperiment {
       return;
     }
 
+    let clientStatus;
+    clientStatus = await browser.taarStudyMonitor.getClientStatus();
+
+    if (isFirstRun || clientStatus.startTime === null) {
+      await TAARExperiment.firstRun();
+      clientStatus = await browser.taarStudyMonitor.getClientStatus();
+    }
+
+    await browser.taarStudyMonitor.log("clientStatus", clientStatus);
     await browser.taarStudyMonitor.enableTaarInDiscoPane(variation.name);
     browser.runtime.onMessage.addListener(TAARExperiment.popupMessageListener);
     browser.taarStudyMonitor.onAddonChangeTelemetry.addListener(
       TAARExperiment.addonChangeTelemetryListener,
     );
-
-    const clientStatus = await browser.taarStudyMonitor.getClientStatus();
-    await browser.taarStudyMonitor.log("clientStatus", clientStatus);
-
-    if (isFirstRun) {
-      if (clientStatus.startTime === null) {
-        await TAARExperiment.firstRun();
-      }
-    }
-
     await browser.taarStudyMonitor.monitorAddonChanges();
     await TAARExperiment.monitorNavigation();
     await TAARExperiment.notifyStudyEverySecondAboutAddonsIsTheActiveTabUrl();
@@ -54,6 +53,7 @@ class TAARExperiment {
 
   static async firstRun() {
     // console.debug("init received");
+    await browser.taarStudyMonitor.onFirstRunOnly();
     await browser.taarStudyMonitor.setAndPersistClientStatus(
       "startTime",
       String(Date.now()),
@@ -126,15 +126,32 @@ class TAARExperiment {
     await browser.discoPaneNav.notifyLoaded();
   }
 
-  static async triggerPopup() {
+  static async triggerPopup(webNavInfo) {
     const clientStatus = await browser.taarStudyMonitor.getClientStatus();
     if (clientStatus.discoPaneLoaded === true) {
       await browser.taarStudyMonitor.log(
         "Not triggering popup since disco pane has already been loaded",
       );
+      await browser.pageActionRemoteControl.hide();
       return;
     }
-    await browser.taarStudyMonitor.setAndPersistClientStatus("sawPopup", true);
+    // Show popup
+    const tabId = webNavInfo.tabId;
+    TAARExperiment.showPageActionAndRememberWhereItWasShown(tabId);
+    const locale = browser.i18n
+      .getUILanguage()
+      .replace("_", "-")
+      .toLowerCase();
+    browser.pageAction.setPopup({
+      tabId,
+      popup: "/popup/locales/" + locale + "/popup.html",
+    });
+    // wait 500ms second to make sure pageAction exists in chrome
+    // so we can run browser.pageActionRemoteControl.show() successfully
+    setTimeout(TAARExperiment.showPopup, 500);
+  }
+
+  static async showPopup() {
     try {
       await browser.pageActionRemoteControl.show();
       // send telemetry
@@ -147,6 +164,17 @@ class TAARExperiment {
         console.error(e);
       }
     }
+    await browser.taarStudyMonitor.setAndPersistClientStatus("sawPopup", true);
+  }
+
+  static async showPageActionAndRememberWhereItWasShown(tabId) {
+    browser.pageAction.show(tabId);
+    browser.storage.local.set({ "PA-tabId": tabId });
+  }
+
+  static async hidePreviouslyShownPageAction() {
+    const localStorageResult = await browser.storage.local.get("PA-tabId");
+    browser.pageAction.hide(localStorageResult["PA-tabId"]);
   }
 
   static async notifyClickedDiscoButton() {
@@ -155,7 +183,8 @@ class TAARExperiment {
       "clickedButton",
       true,
     );
-    browser.pageActionRemoteControl.hide();
+    await browser.pageActionRemoteControl.hide();
+    await TAARExperiment.hidePreviouslyShownPageAction();
     // send telemetry
     const dataOut = {
       pingType: "button-click",
@@ -168,7 +197,8 @@ class TAARExperiment {
       "clickedButton",
       false,
     );
-    browser.pageActionRemoteControl.hide();
+    await browser.pageActionRemoteControl.hide();
+    await TAARExperiment.hidePreviouslyShownPageAction();
   }
 
   static webNavListener(webNavInfo) {
@@ -212,13 +242,6 @@ class TAARExperiment {
 
       const clientStatus = await browser.taarStudyMonitor.getClientStatus();
 
-      const forcePopup = false; // for testing/debugging - true makes the popup trigger regardless of how many urls have been loaded and despite it having been recorded as shown in local storage
-      const locale = browser.i18n
-        .getUILanguage()
-        .replace("_", "-")
-        .toLowerCase();
-      const tabId = webNavInfo.tabId;
-
       clientStatus.totalWebNav++;
 
       await browser.taarStudyMonitor.setAndPersistClientStatus(
@@ -231,21 +254,13 @@ class TAARExperiment {
         "TotalURI: " + updatedClientStatus.totalWebNav,
       );
       if (
-        (!updatedClientStatus.sawPopup &&
-          updatedClientStatus.totalWebNav <= 3) ||
-        forcePopup
+        !updatedClientStatus.sawPopup &&
+        updatedClientStatus.totalWebNav <= 3
       ) {
         // client has not seen popup
         // arbitrary condition for now
-        if (updatedClientStatus.totalWebNav > 2 || forcePopup) {
-          browser.pageAction.show(tabId);
-          browser.pageAction.setPopup({
-            tabId,
-            popup: "/popup/locales/" + locale + "/popup.html",
-          });
-          // wait 500ms second to make sure pageAction exists in chrome
-          // so we can pageAction.show() from bootstrap.js
-          setTimeout(TAARExperiment.triggerPopup, 500);
+        if (updatedClientStatus.totalWebNav > 2) {
+          await TAARExperiment.triggerPopup(webNavInfo);
         }
       } else {
         // client has seen the popup
@@ -319,9 +334,9 @@ class TAARExperiment {
     const dataOut = {
       pingType: "shutdown",
     };
-    TAARExperiment.notifyViaTelemetry(dataOut);
-
-    await browser.taarStudyMonitor.reset();
+    await TAARExperiment.notifyViaTelemetry(dataOut);
+    // remove artifacts of this study
+    await browser.taarStudyMonitor.cleanup();
   }
 }
 

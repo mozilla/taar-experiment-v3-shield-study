@@ -17,6 +17,7 @@ this.discoPaneNav = class extends ExtensionAPI {
           // set pref to force discovery page temporarily so that navigation to about:addons leads directly to the discovery pane
           currentExtensionsUiLastCategoryPreferenceValue = Preferences.get(
             "extensions.ui.lastCategory",
+            null,
           );
           Preferences.set("extensions.ui.lastCategory", "addons://discover/");
 
@@ -26,12 +27,13 @@ this.discoPaneNav = class extends ExtensionAPI {
           });
         },
         notifyLoaded: async function notifyLoaded() {
-          // restore preference if we changed it temporarily
-          if (
-            typeof currentExtensionsUiLastCategoryPreferenceValue !==
-              "undefined" &&
-            currentExtensionsUiLastCategoryPreferenceValue !== false
-          ) {
+          if (currentExtensionsUiLastCategoryPreferenceValue === false) {
+            return;
+          }
+          // restore preference since we changed it temporarily
+          if (currentExtensionsUiLastCategoryPreferenceValue === null) {
+            Preferences.reset("extensions.ui.lastCategory");
+          } else {
             Preferences.set(
               "extensions.ui.lastCategory",
               currentExtensionsUiLastCategoryPreferenceValue,

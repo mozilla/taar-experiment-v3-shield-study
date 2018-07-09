@@ -44,7 +44,7 @@ Privileged code used to monitor the study
 
 **Parameters**
 
-### `browser.taarStudyMonitor.reset( )`
+### `browser.taarStudyMonitor.cleanup( )`
 
 **Parameters**
 

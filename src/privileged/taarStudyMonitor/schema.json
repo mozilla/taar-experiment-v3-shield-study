@@ -95,7 +95,7 @@
         "parameters": []
       },
       {
-        "name": "reset",
+        "name": "cleanup",
         "type": "function",
         "async": true,
         "description": "",

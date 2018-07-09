@@ -12,6 +12,7 @@ describe("basic shield utils integration", function() {
 
   let driver;
   let beginTime;
+  let addonId;
 
   // runs ONCE
   before(async() => {
@@ -19,7 +20,7 @@ describe("basic shield utils integration", function() {
     driver = await utils.setupWebdriver.promiseSetupDriver(
       utils.FIREFOX_PREFERENCES,
     );
-    await utils.setupWebdriver.installAddon(driver);
+    addonId = await utils.setupWebdriver.installAddon(driver);
   });
 
   after(async() => {
@@ -29,7 +30,7 @@ describe("basic shield utils integration", function() {
   beforeEach(async() => {});
   afterEach(async() => {});
 
-  describe("should have sent the expected telemetry", function() {
+  describe("should have sent the expected initiation telemetry", function() {
     let studyPings;
 
     before(async() => {
@@ -69,11 +70,56 @@ describe("basic shield utils integration", function() {
           },
         ],
       ];
-      assert.deepStrictEqual(
-        expected,
-        observed,
-        "telemetry pings do not match",
+      assert.deepStrictEqual(expected, observed, "telemetry pings match");
+    });
+  });
+
+  describe("should have sent exit telemetry upon uninstallation", function() {
+    let studyPings;
+
+    before(async() => {
+      // we are only interested in pings from this point in time forward
+      beginTime = Date.now();
+      // uninstalling the add-on = opting out of the study = ending the study
+      await utils.setupWebdriver.uninstallAddon(driver, addonId);
+      // allow our shield study add-on some time to send exit pings
+      await driver.sleep(2000);
+      // collect sent pings
+      studyPings = await utils.telemetry.getShieldPingsAfterTimestamp(
+        driver,
+        beginTime,
       );
+      // for debugging tests
+      // console.log("Pings report: ", utils.telemetry.pingsReport(studyPings));
+    });
+
+    it("should have sent at least one shield telemetry ping", async() => {
+      assert(studyPings.length > 0, "at least one shield telemetry ping");
+    });
+
+    it("sent expected telemetry", function() {
+      // Telemetry:  order, and summary of pings is good.
+      const filteredPings = studyPings.filter(
+        ping => ping.type === "shield-study",
+      );
+
+      const observed = utils.telemetry.summarizePings(filteredPings);
+      const expected = [
+        [
+          "shield-study",
+          {
+            study_state: "exit",
+          },
+        ],
+        [
+          "shield-study",
+          {
+            study_state: "user-disable",
+            study_state_fullname: "user-disable",
+          },
+        ],
+      ];
+      assert.deepStrictEqual(expected, observed, "telemetry pings match");
     });
   });
 });
@@ -145,11 +191,7 @@ describe("setup of an already expired study should result in endStudy('expired')
           },
         ],
       ];
-      assert.deepStrictEqual(
-        expected,
-        observed,
-        "telemetry pings do not match",
-      );
+      assert.deepStrictEqual(expected, observed, "telemetry pings match");
     });
   });
 });
@@ -167,7 +209,7 @@ describe("setup of a study that expires within a few seconds should result in en
 
     // Set preference that simulates that the study will expire after a few seconds
     const msInOneDay = 60 * 60 * 24 * 1000;
-    const expiresInDays = 7 * 20; // Needs to be the same as in src/studySetup.js
+    const expiresInDays = 7 * 7; // Needs to be the same as in src/studySetup.js
     const firstRunTimestamp = beginTime - msInOneDay * expiresInDays + 5000;
     const addonWidgetId = await utils.ui.addonWidgetId();
     const customPreferences = Object.assign({}, utils.FIREFOX_PREFERENCES);
@@ -210,11 +252,7 @@ describe("setup of a study that expires within a few seconds should result in en
 
       const observed = utils.telemetry.summarizePings(filteredPings);
       const expected = [];
-      assert.deepStrictEqual(
-        expected,
-        observed,
-        "telemetry pings do not match",
-      );
+      assert.deepStrictEqual(expected, observed, "telemetry pings match");
     });
   });
 
@@ -222,6 +260,7 @@ describe("setup of a study that expires within a few seconds should result in en
     let studyPings;
 
     before(async() => {
+      beginTime = Date.now();
       // allow our shield study add-on some time to send initial pings
       await driver.sleep(7000);
       // collect sent pings
@@ -255,11 +294,7 @@ describe("setup of a study that expires within a few seconds should result in en
           },
         ],
       ];
-      assert.deepStrictEqual(
-        expected,
-        observed,
-        "telemetry pings do not match",
-      );
+      assert.deepStrictEqual(expected, observed, "telemetry pings match");
     });
   });
 });

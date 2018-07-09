@@ -31,6 +31,8 @@ this.Helpers = {
   bucketURI: uri => {
     if (uri.indexOf("about:addons") === 0) {
       uri = "about:addons";
+    } else if (uri.indexOf("about:blank") === 0) {
+      uri = "about:blank";
     } else if (uri.indexOf("addons.mozilla") > 0) {
       uri = "AMO";
     } else {

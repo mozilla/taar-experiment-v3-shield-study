@@ -17,7 +17,7 @@ jobs:
       # Download and cache dependencies (update the cache keys to force a newer version)
       - restore_cache:
           keys:
-          - dependencies-and-browsers-{{ checksum "package.json" }}-20180619
+          - dependencies-and-browsers-{{ checksum "package.json" }}-20180708
 
       - run:
           name: Install dependencies
@@ -41,7 +41,7 @@ jobs:
             - firefox-beta
             - firefox-release
             - firefox-unbranded-release
-          key: dependencies-and-browsers-{{ checksum "package.json" }}-20180619
+          key: dependencies-and-browsers-{{ checksum "package.json" }}-20180708
 
       - run:
           name: Reveal which Firefox versions are installed
@@ -67,11 +67,10 @@ jobs:
           name: Unit tests
           command: npm run test:unit
 
-      - run:
-          name: Functional tests with Firefox Release
-          command: FIREFOX_BINARY=/home/circleci/checkout/firefox-release/firefox-bin npm run test:func
-
-      # Utils v5 does not work with Firefox Beta #200
+      # Needs signed add-on to work on branded releases
+      #- run:
+      #    name: Functional tests with Firefox Release
+      #    command: FIREFOX_BINARY=/home/circleci/checkout/firefox-release/firefox-bin npm run test:func
       #- run:
       #    name: Functional tests with Firefox Beta
       #    command: FIREFOX_BINARY=/home/circleci/checkout/firefox-beta/firefox-bin npm run test:func
