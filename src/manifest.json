@@ -70,6 +70,8 @@
     "scripts": ["studySetup.js", "helpers.js", "feature.js", "background.js"]
   },
   "icons": {
+    "16": "icons/green-extensionsicon.svg",
+    "24": "icons/green-extensionsicon.svg",
     "48": "icons/green-extensionsicon.svg",
     "96": "icons/green-extensionsicon.svg"
   }
