@@ -1,7 +1,7 @@
 {
   "name": "TAAR v3 (Telemetry-Aware Addon Recommender)",
   "description": "__MSG_extensionDescription__",
-  "version": "3.0.2",
+  "version": "3.0.3",
   "manifest_version": 2,
   "applications": {
     "gecko": {
@@ -70,7 +70,9 @@
     "scripts": ["studySetup.js", "helpers.js", "feature.js", "background.js"]
   },
   "icons": {
-    "48": "icons/green-extensionsicon.svg",
-    "96": "icons/green-extensionsicon.svg"
+    "16": "icons/green-extensionsicon.svg",
+    "24": "icons/green-extensionsicon.svg",
+    "48": "icons/green-extensionsicon-48px.png",
+    "96": "icons/green-extensionsicon-96px.png"
   }
 }

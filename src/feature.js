@@ -154,17 +154,17 @@ class TAARExperiment {
   static async showPopup() {
     try {
       await browser.pageActionRemoteControl.show();
-      // send telemetry
-      const dataOut = {
-        pingType: "trigger-popup",
-      };
-      await TAARExperiment.notifyViaTelemetry(dataOut);
     } catch (e) {
       if (e.name === "PageActionUrlbarIconElementNotFoundError") {
         console.error(e);
       }
     }
     await browser.taarStudyMonitor.setAndPersistClientStatus("sawPopup", true);
+    // send telemetry
+    const dataOut = {
+      pingType: "trigger-popup",
+    };
+    await TAARExperiment.notifyViaTelemetry(dataOut);
   }
 
   static async showPageActionAndRememberWhereItWasShown(tabId) {
