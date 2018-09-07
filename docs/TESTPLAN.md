@@ -97,6 +97,24 @@ Dark theme:
 * Verify that sent exit Telemetry is correct
 * Verify that the preference `extensions.webservice.discoverURL` no longer is annotated with query string parameters `?study=taarexpv3&branch={the-current-branch}`
 
+**Recommendation server test 1**
+
+* Install the add-on as per above
+* Verify that the study starts
+* Navigate to the "about:addons > Get Add-ons" page and observe the displayed add-on suggestions.
+* Refresh/reload the page and observe that the displayed add-ons remains the same.
+* Navigate to the "about:config" page.
+* Change the "clientId" value from the `extensions.webservice.discoverURL` pref to one of the following ID's:
+  - 00000000-0000-0000-0000-000000000000
+  - 11111111-1111-1111-1111-111111111111
+  - 22222222-2222-2222-2222-222222222222
+* Navigate to the "about:addons > Get Add-ons" page again.
+* Verify that the add-on suggestions are different from the ones from before.
+
+### QA Test plan
+
+QA uses the following test plan to test this add-on: https://testrail.stage.mozaws.net/index.php?/suites/view/2634
+
 ### Design
 
 Any UI in a Shield study should be consistent with standard Firefox design specifications. These standards can be found at [design.firefox.com](https://design.firefox.com/photon/welcome.html). Firefox logo specifications can be found [here](https://design.firefox.com/photon/visuals/product-identity-assets.html).
