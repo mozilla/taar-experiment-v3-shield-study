@@ -11,7 +11,7 @@ class TAARExperiment {
       await browser.taarStudyMonitor.log(
         "Permanent private browsing, exiting study",
       );
-      await browser.study.endStudy({ reason: "ineligible" });
+      await browser.study.endStudy("ineligible");
       return;
     }
 
